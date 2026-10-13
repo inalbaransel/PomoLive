@@ -6,10 +6,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-silenthall}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-silenthall}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pomolive}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-pomolive}?schema=public
       REDIS_URL: redis://redis:6379
       SESSION_SECRET: ${SESSION_SECRET:?}
-      APPLE_BUNDLE_ID: ${APPLE_BUNDLE_ID:-com.baransel.silenthall}
+      APPLE_BUNDLE_ID: ${APPLE_BUNDLE_ID:-com.baransel.pomolive}
       DEV_AUTH_ENABLED: "false"
     expose:
       - "3000"
@@ -23,9 +23,9 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-silenthall}
+      POSTGRES_USER: ${POSTGRES_USER:-pomolive}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
-      POSTGRES_DB: ${POSTGRES_DB:-silenthall}
+      POSTGRES_DB: ${POSTGRES_DB:-pomolive}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:

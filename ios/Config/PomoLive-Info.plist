@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>SilentHall</string>
+	<string>PomoLive</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
 	</dict>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
-	<key>SilentHallServerURL</key>
-	<string>$(SILENTHALL_SERVER_URL)</string>
+	<key>PomoLiveServerURL</key>
+	<string>$(POMOLIVE_SERVER_URL)</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

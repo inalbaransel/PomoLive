@@ -1,4 +1,4 @@
-# SilentHall
+# PomoLive
 
 16-bit piksel bir kütüphane salonunda, başkalarıyla birlikte eşzamanlı odaklanma uygulaması.
 Native iOS 26 (SwiftUI, Liquid Glass) + NestJS WebSocket backend.
@@ -16,7 +16,7 @@ docker-compose.yml   Coolify için production stack (server + postgres + redis)
 - Çerçeve: `{ "event": string, "data": object }`. İstemci komutları `data.ref` taşır, sunucu her birine
   aynı `ref` ile bir `reply` döner (`ok: true, result` veya `ok: false, error: { code, message }`).
   Oda değişiklikleri `ref`'siz yayın olarak gelir: `desk:occupied`, `desk:updated`, `desk:vacated`, `room:presence`.
-- Kontrat: [`server/src/realtime/protocol.ts`](server/src/realtime/protocol.ts) ↔ [`ios/SilentHall/Networking`](ios/SilentHall/Networking).
+- Kontrat: [`server/src/realtime/protocol.ts`](server/src/realtime/protocol.ts) ↔ [`ios/PomoLive/Networking`](ios/PomoLive/Networking).
 - **Zaman damgası senkronu:** Sunucu tick göndermez. Salonun pomodoro döngüsü `cycleAnchorAt`'ten deterministik
   hesaplanır (sunucu `cycle.ts`, iOS `HallCycle.swift`). İstemci saat farkını her heartbeat'te NTP tarzı ölçer.
 - **Masa durumu Redis'te, atomik Lua script'leriyle** (`desk-store.ts`): masa kaydı, kullanıcının koltuk
@@ -29,7 +29,7 @@ docker-compose.yml   Coolify için production stack (server + postgres + redis)
   Debug build'lerde simülatör için "Geliştirici olarak devam et" (`DEV_AUTH_ENABLED`, production'da reddedilir).
 - **Harita veri odaklı:** Salon planı (`library-layout.ts`) her snapshot'la gelir. iOS zemin ve dekoru
   tek bir bitmap'e basar (16 px/tile, nearest-neighbour), masalar animasyonlu sprite'lardır. Tüm piksel
-  sanat kodla üretilir (`ios/Shared/PixelArt`, `ios/SilentHall/PixelArt`).
+  sanat kodla üretilir (`ios/Shared/PixelArt`, `ios/PomoLive/PixelArt`).
 
 ## Yerel geliştirme
 
@@ -47,10 +47,10 @@ npm run start:dev             # ws://localhost:3000/ws
 ```bash
 cd ios
 xcodegen generate             # yalnızca project.yml değişince gerekir; klasörler senkronize
-open SilentHall.xcodeproj
+open PomoLive.xcodeproj
 ```
 
-Debug build `ws://localhost:3000/ws`'e, Release build `SILENTHALL_SERVER_URL`'e bağlanır (`ios/project.yml`).
+Debug build `ws://localhost:3000/ws`'e, Release build `POMOLIVE_SERVER_URL`'e bağlanır (`ios/project.yml`).
 Gerçek cihazda Sign in with Apple için `DEVELOPMENT_TEAM`'i ayarla ve App ID'de capability'yi aç.
 
 ### Testler

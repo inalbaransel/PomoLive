@@ -29,7 +29,7 @@ final class AppModel {
     @ObservationIgnored private var isActive = true
 
     init() {
-        let address = Bundle.main.object(forInfoDictionaryKey: "SilentHallServerURL") as? String
+        let address = Bundle.main.object(forInfoDictionaryKey: "PomoLiveServerURL") as? String
         socket = LibrarySocket(url: URL(string: address ?? "")!)
         hall = HallStore(socket: socket)
 

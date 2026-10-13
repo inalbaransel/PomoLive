@@ -119,8 +119,8 @@ struct HallScreen: View {
         if let code = app.hall.room?.code, app.hall.room?.type == .private {
             ToolbarItem(placement: .topBarTrailing) {
                 ShareLink(
-                    item: "SilentHall'da benimle çalış! Özel salon kodu: \(code)",
-                    subject: Text("SilentHall salon kodu")
+                    item: "PomoLive'da benimle çalış! Özel salon kodu: \(code)",
+                    subject: Text("PomoLive salon kodu")
                 ) {
                     Label("Kodu Paylaş", systemImage: "square.and.arrow.up")
                 }

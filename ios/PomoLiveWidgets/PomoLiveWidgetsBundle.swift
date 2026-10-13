@@ -2,7 +2,7 @@ import SwiftUI
 import WidgetKit
 
 @main
-struct SilentHallWidgetsBundle: WidgetBundle {
+struct PomoLiveWidgetsBundle: WidgetBundle {
     var body: some Widget {
         FocusLiveActivityWidget()
     }

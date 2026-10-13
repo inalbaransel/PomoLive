@@ -1,7 +1,7 @@
 {
-  "name": "silenthall-server",
+  "name": "pomolive-server",
   "version": "0.0.1",
-  "description": "SilentHall realtime library backend",
+  "description": "PomoLive realtime library backend",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",

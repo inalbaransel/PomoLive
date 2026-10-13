@@ -3,7 +3,7 @@ import Security
 
 /// Persists the server session (token in the Keychain, profile in defaults) so launches can go straight into the hall.
 struct SessionStore {
-    private static let service = "com.baransel.silenthall.session"
+    private static let service = "com.baransel.pomolive.session"
     private static let account = "sessionToken"
     private static let profileKey = "cachedUserProfile"
 

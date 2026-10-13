@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { jwtVerify, SignJWT } from 'jose';
 import { AppConfig } from '../config/app-config.js';
 
-const ISSUER = 'silenthall';
+const ISSUER = 'pomolive';
 const LIFETIME_SECONDS = 60 * 60 * 24 * 30;
 
 export interface IssuedSession {

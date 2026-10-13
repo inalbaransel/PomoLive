@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct SilentHallApp: App {
+struct PomoLiveApp: App {
     @State private var model = AppModel()
     @Environment(\.scenePhase) private var scenePhase
 

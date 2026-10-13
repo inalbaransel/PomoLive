@@ -7,27 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		30A75ADBB8100691BB9DA450 /* SilentHallWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D220DC65DCCB3BF54B870BEE /* SilentHallWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		73E5956124CA13B76EACF9E0 /* PomoLiveWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 35A387858A11C5567CE708A6 /* PomoLiveWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		167B99D2B7A1F9CD01F9BDC0 /* PBXContainerItemProxy */ = {
+		34893E8AE6E7953F69216AA9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 43CB3A2A98D7D369081DE8B8 /* Project object */;
+			containerPortal = 0A6A1839DD9400E788AE887E /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 98E72056E1AA59283C47961F;
-			remoteInfo = SilentHallWidgets;
+			remoteGlobalIDString = 5A7E0C0962B86FF521CF572E;
+			remoteInfo = PomoLiveWidgets;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		B3739777580E2A285B62CE19 /* Embed Foundation Extensions */ = {
+		071E2F957935F0FB61374EAE /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				30A75ADBB8100691BB9DA450 /* SilentHallWidgets.appex in Embed Foundation Extensions */,
+				73E5956124CA13B76EACF9E0 /* PomoLiveWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -35,30 +35,30 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5048978B2B5B6B663936B667 /* SilentHall.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SilentHall.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D220DC65DCCB3BF54B870BEE /* SilentHallWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = SilentHallWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		35A387858A11C5567CE708A6 /* PomoLiveWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PomoLiveWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		74C19D228FEA22096753F4E5 /* PomoLive.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PomoLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		3F1D06E3D752E4F577E6897C /* SilentHall */ = {
+		0CDE536F016C08599F322308 /* PomoLive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
 			};
 			explicitFolders = (
 			);
-			path = SilentHall;
+			path = PomoLive;
 			sourceTree = "<group>";
 		};
-		753DA864659CAE2A6B32D64B /* SilentHallWidgets */ = {
+		80576E7920CD76F230F1D782 /* PomoLiveWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
 			};
 			explicitFolders = (
 			);
-			path = SilentHallWidgets;
+			path = PomoLiveWidgets;
 			sourceTree = "<group>";
 		};
-		88DC22692492851BECF67A5D /* Shared */ = {
+		EA427FFBF83BD91B7C9F0D5D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
 			};
@@ -70,120 +70,120 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
-		27AFFBA00C904E4193F4D97B = {
+		4D8DD939E968A5A693CE5B78 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				88DC22692492851BECF67A5D /* Shared */,
-				3F1D06E3D752E4F577E6897C /* SilentHall */,
-				753DA864659CAE2A6B32D64B /* SilentHallWidgets */,
-				851CB6B6BA6B73D60A818B14 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		851CB6B6BA6B73D60A818B14 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5048978B2B5B6B663936B667 /* SilentHall.app */,
-				D220DC65DCCB3BF54B870BEE /* SilentHallWidgets.appex */,
+				74C19D228FEA22096753F4E5 /* PomoLive.app */,
+				35A387858A11C5567CE708A6 /* PomoLiveWidgets.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E08E3089EB4FD1C69560B87F = {
+			isa = PBXGroup;
+			children = (
+				0CDE536F016C08599F322308 /* PomoLive */,
+				80576E7920CD76F230F1D782 /* PomoLiveWidgets */,
+				EA427FFBF83BD91B7C9F0D5D /* Shared */,
+				4D8DD939E968A5A693CE5B78 /* Products */,
+			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		082143B7F3F95D22B784E394 /* SilentHall */ = {
+		5A7E0C0962B86FF521CF572E /* PomoLiveWidgets */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 32765D91C0D8B3645FF77B25 /* Build configuration list for PBXNativeTarget "SilentHall" */;
+			buildConfigurationList = 994C4F2BBDDCE4BC18FDD12F /* Build configuration list for PBXNativeTarget "PomoLiveWidgets" */;
 			buildPhases = (
-				52D70A622F3A1B037DC8D750 /* Sources */,
-				49B57D63F2C0F2F93927957E /* Resources */,
-				B3739777580E2A285B62CE19 /* Embed Foundation Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0DF8200B2BDBB985CB9AB7C2 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				88DC22692492851BECF67A5D /* Shared */,
-				3F1D06E3D752E4F577E6897C /* SilentHall */,
-			);
-			name = SilentHall;
-			packageProductDependencies = (
-			);
-			productName = SilentHall;
-			productReference = 5048978B2B5B6B663936B667 /* SilentHall.app */;
-			productType = "com.apple.product-type.application";
-		};
-		98E72056E1AA59283C47961F /* SilentHallWidgets */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 19A1FC3F96C0E37F209B34E3 /* Build configuration list for PBXNativeTarget "SilentHallWidgets" */;
-			buildPhases = (
-				F01C274E26356978D8847AF0 /* Sources */,
-				FF7FF8CBBAB4115240ED72F6 /* Resources */,
+				DFD7018398C53D4DE6C8593E /* Sources */,
+				8891CF22DE5C0FAB6D8DF5F6 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				88DC22692492851BECF67A5D /* Shared */,
-				753DA864659CAE2A6B32D64B /* SilentHallWidgets */,
+				80576E7920CD76F230F1D782 /* PomoLiveWidgets */,
+				EA427FFBF83BD91B7C9F0D5D /* Shared */,
 			);
-			name = SilentHallWidgets;
+			name = PomoLiveWidgets;
 			packageProductDependencies = (
 			);
-			productName = SilentHallWidgets;
-			productReference = D220DC65DCCB3BF54B870BEE /* SilentHallWidgets.appex */;
+			productName = PomoLiveWidgets;
+			productReference = 35A387858A11C5567CE708A6 /* PomoLiveWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		AC327E516EA4844079D8D61A /* PomoLive */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 245ABCB107769F8114C3FACF /* Build configuration list for PBXNativeTarget "PomoLive" */;
+			buildPhases = (
+				9369F768046F9EF8FA5EFD62 /* Sources */,
+				541218A47791B34EA936CA1C /* Resources */,
+				071E2F957935F0FB61374EAE /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F5C88E4B431BE06733354E5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0CDE536F016C08599F322308 /* PomoLive */,
+				EA427FFBF83BD91B7C9F0D5D /* Shared */,
+			);
+			name = PomoLive;
+			packageProductDependencies = (
+			);
+			productName = PomoLive;
+			productReference = 74C19D228FEA22096753F4E5 /* PomoLive.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		43CB3A2A98D7D369081DE8B8 /* Project object */ = {
+		0A6A1839DD9400E788AE887E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					082143B7F3F95D22B784E394 = {
+					5A7E0C0962B86FF521CF572E = {
 						DevelopmentTeam = "";
 					};
-					98E72056E1AA59283C47961F = {
+					AC327E516EA4844079D8D61A = {
 						DevelopmentTeam = "";
 					};
 				};
 			};
-			buildConfigurationList = 6A31B2728E97E64C6E27A500 /* Build configuration list for PBXProject "SilentHall" */;
+			buildConfigurationList = 2FC3AF749C28EF1C9C6727EB /* Build configuration list for PBXProject "PomoLive" */;
 			developmentRegion = tr;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
 				tr,
 			);
-			mainGroup = 27AFFBA00C904E4193F4D97B;
+			mainGroup = E08E3089EB4FD1C69560B87F;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 851CB6B6BA6B73D60A818B14 /* Products */;
+			productRefGroup = 4D8DD939E968A5A693CE5B78 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				082143B7F3F95D22B784E394 /* SilentHall */,
-				98E72056E1AA59283C47961F /* SilentHallWidgets */,
+				AC327E516EA4844079D8D61A /* PomoLive */,
+				5A7E0C0962B86FF521CF572E /* PomoLiveWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		49B57D63F2C0F2F93927957E /* Resources */ = {
+		541218A47791B34EA936CA1C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FF7FF8CBBAB4115240ED72F6 /* Resources */ = {
+		8891CF22DE5C0FAB6D8DF5F6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -193,14 +193,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		52D70A622F3A1B037DC8D750 /* Sources */ = {
+		9369F768046F9EF8FA5EFD62 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F01C274E26356978D8847AF0 /* Sources */ = {
+		DFD7018398C53D4DE6C8593E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -210,15 +210,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		0DF8200B2BDBB985CB9AB7C2 /* PBXTargetDependency */ = {
+		4F5C88E4B431BE06733354E5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 98E72056E1AA59283C47961F /* SilentHallWidgets */;
-			targetProxy = 167B99D2B7A1F9CD01F9BDC0 /* PBXContainerItemProxy */;
+			target = 5A7E0C0962B86FF521CF572E /* PomoLiveWidgets */;
+			targetProxy = 34893E8AE6E7953F69216AA9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		48F8DA125A290561036016AD /* Debug */ = {
+		03EB22CDC02D2502DC678D1C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -277,9 +277,9 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				POMOLIVE_SERVER_URL = "ws://localhost:3000/ws";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SILENTHALL_SERVER_URL = "ws://localhost:3000/ws";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -288,37 +288,43 @@
 			};
 			name = Debug;
 		};
-		58395ED730922FF81728D85E /* Release */ = {
+		0FEEC400E7E01F945CC40BEE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = "Config/SilentHallWidgets-Info.plist";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PomoLive.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Config/PomoLive-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.silenthall.widgets;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		6F3841A8BC0E47E533850EE1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				INFOPLIST_FILE = "Config/SilentHallWidgets-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.silenthall.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.pomolive;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		8E186E9E49723CAD26A95957 /* Release */ = {
+		16DCB36B5B0F43E8DCEB2827 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PomoLive.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Config/PomoLive-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.pomolive;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		187303F06CEFC7C7282799DC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -370,9 +376,9 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				POMOLIVE_SERVER_URL = "wss://api.pomolive.app/ws";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SILENTHALL_SERVER_URL = "wss://api.silenthall.app/ws";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -381,73 +387,67 @@
 			};
 			name = Release;
 		};
-		B4A21900645DDBAD3CED22C0 /* Release */ = {
+		366FB196FABDA1A2AC45F90C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Config/SilentHall.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_FILE = "Config/SilentHall-Info.plist";
+				INFOPLIST_FILE = "Config/PomoLiveWidgets-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.silenthall;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		F683E3FF9110CA8810AD697E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Config/SilentHall.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_FILE = "Config/SilentHall-Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.silenthall;
+				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.pomolive.widgets;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
+		9BB29A4A8CC6EF6D79DF5330 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Config/PomoLiveWidgets-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.baransel.pomolive.widgets;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		19A1FC3F96C0E37F209B34E3 /* Build configuration list for PBXNativeTarget "SilentHallWidgets" */ = {
+		245ABCB107769F8114C3FACF /* Build configuration list for PBXNativeTarget "PomoLive" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6F3841A8BC0E47E533850EE1 /* Debug */,
-				58395ED730922FF81728D85E /* Release */,
+				0FEEC400E7E01F945CC40BEE /* Debug */,
+				16DCB36B5B0F43E8DCEB2827 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		32765D91C0D8B3645FF77B25 /* Build configuration list for PBXNativeTarget "SilentHall" */ = {
+		2FC3AF749C28EF1C9C6727EB /* Build configuration list for PBXProject "PomoLive" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F683E3FF9110CA8810AD697E /* Debug */,
-				B4A21900645DDBAD3CED22C0 /* Release */,
+				03EB22CDC02D2502DC678D1C /* Debug */,
+				187303F06CEFC7C7282799DC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		6A31B2728E97E64C6E27A500 /* Build configuration list for PBXProject "SilentHall" */ = {
+		994C4F2BBDDCE4BC18FDD12F /* Build configuration list for PBXNativeTarget "PomoLiveWidgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				48F8DA125A290561036016AD /* Debug */,
-				8E186E9E49723CAD26A95957 /* Release */,
+				366FB196FABDA1A2AC45F90C /* Debug */,
+				9BB29A4A8CC6EF6D79DF5330 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 43CB3A2A98D7D369081DE8B8 /* Project object */;
+	rootObject = 0A6A1839DD9400E788AE887E /* Project object */;
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-/// The single WebSocket to the SilentHall server.
+/// The single WebSocket to the PomoLive server.
 ///
 /// Requests are correlated with replies by `ref`, so callers simply `await send(command)`.
 /// Everything the server pushes on its own arrives through `events`.

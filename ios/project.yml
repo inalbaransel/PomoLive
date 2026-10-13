@@ -1,4 +1,4 @@
-name: SilentHall
+name: PomoLive
 options:
   bundleIdPrefix: com.baransel
   deploymentTarget:
@@ -17,55 +17,55 @@ settings:
     DEVELOPMENT_TEAM: ""
   configs:
     Debug:
-      SILENTHALL_SERVER_URL: "ws://localhost:3000/ws"
+      POMOLIVE_SERVER_URL: "ws://localhost:3000/ws"
     Release:
-      SILENTHALL_SERVER_URL: "wss://api.silenthall.app/ws"
+      POMOLIVE_SERVER_URL: "wss://api.pomolive.app/ws"
 
 targets:
-  SilentHall:
+  PomoLive:
     type: application
     platform: iOS
     sources:
-      - path: SilentHall
+      - path: PomoLive
         type: syncedFolder
       - path: Shared
         type: syncedFolder
     info:
-      path: Config/SilentHall-Info.plist
+      path: Config/PomoLive-Info.plist
       properties:
-        CFBundleDisplayName: SilentHall
-        SilentHallServerURL: $(SILENTHALL_SERVER_URL)
+        CFBundleDisplayName: PomoLive
+        PomoLiveServerURL: $(POMOLIVE_SERVER_URL)
         NSSupportsLiveActivities: true
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     entitlements:
-      path: Config/SilentHall.entitlements
+      path: Config/PomoLive.entitlements
       properties:
         com.apple.developer.applesignin: [Default]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.baransel.silenthall
+        PRODUCT_BUNDLE_IDENTIFIER: com.baransel.pomolive
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     dependencies:
-      - target: SilentHallWidgets
+      - target: PomoLiveWidgets
 
-  SilentHallWidgets:
+  PomoLiveWidgets:
     type: app-extension
     platform: iOS
     sources:
-      - path: SilentHallWidgets
+      - path: PomoLiveWidgets
         type: syncedFolder
       - path: Shared
         type: syncedFolder
     info:
-      path: Config/SilentHallWidgets-Info.plist
+      path: Config/PomoLiveWidgets-Info.plist
       properties:
-        CFBundleDisplayName: SilentHall
+        CFBundleDisplayName: PomoLive
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.baransel.silenthall.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.baransel.pomolive.widgets

@@ -23,7 +23,7 @@ struct SignInView: View {
             .accessibilityHidden(true)
 
             VStack(spacing: 12) {
-                Text("SilentHall")
+                Text("PomoLive")
                     .font(.system(size: 46, weight: .black, design: .monospaced))
                 Text("Piksel bir kütüphanede bir masaya otur,\nbaşkalarıyla birlikte sessizce odaklan.")
                     .font(.body)

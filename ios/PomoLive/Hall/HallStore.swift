@@ -30,7 +30,7 @@ final class HallStore {
     }
 
     var title: String {
-        guard let room else { return "SilentHall" }
+        guard let room else { return "PomoLive" }
         switch room.type {
         case .public: return "Piksel Salon \(room.id.split(separator: "-").last ?? "")"
         case .private: return "Özel Salon"
