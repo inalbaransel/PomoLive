@@ -10,7 +10,9 @@ services:
       REDIS_URL: redis://redis:6379
       SESSION_SECRET: ${SESSION_SECRET:?}
       APPLE_BUNDLE_ID: ${APPLE_BUNDLE_ID:-com.baransel.pomolive}
-      DEV_AUTH_ENABLED: "false"
+      GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-PomoLive <giris@harbidigital.com>}
     expose:
       - "3000"
     depends_on:

@@ -32,7 +32,9 @@ export class RoomEventBus implements OnModuleInit {
   async publish(roomId: string, event: string, data: object): Promise<void> {
     await this.redis.client
       .publish(RedisKeys.roomEvents(roomId), JSON.stringify({ event, data }))
-      .catch((error: Error) => this.logger.error(`Publish to ${roomId} failed: ${error.message}`));
+      .catch((error: Error) =>
+        this.logger.error(`Publish to ${roomId} failed: ${error.message}`),
+      );
   }
 
   subscribe(listener: RoomListener): void {

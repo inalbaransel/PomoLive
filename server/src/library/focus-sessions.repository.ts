@@ -6,14 +6,22 @@ import { DeskRecord, VacateReason } from './library.types.js';
 const MINIMUM_RECORDED_FOCUS_MS = 60_000;
 
 export function focusedMsAt(desk: DeskRecord, now: number): number {
-  return desk.focusAccumulatedMs + (desk.status === 'FOCUS' ? Math.max(0, now - desk.statusSince) : 0);
+  return (
+    desk.focusAccumulatedMs +
+    (desk.status === 'FOCUS' ? Math.max(0, now - desk.statusSince) : 0)
+  );
 }
 
 @Injectable()
 export class FocusSessionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async record(roomId: string, desk: DeskRecord, endedAt: number, endReason: VacateReason): Promise<void> {
+  async record(
+    roomId: string,
+    desk: DeskRecord,
+    endedAt: number,
+    endReason: VacateReason,
+  ): Promise<void> {
     const focusedMs = focusedMsAt(desk, endedAt);
     if (focusedMs < MINIMUM_RECORDED_FOCUS_MS) return;
     await this.prisma.focusSession.create({
@@ -31,6 +39,8 @@ export class FocusSessionsRepository {
   }
 
   countSince(userId: string, since: Date): Promise<number> {
-    return this.prisma.focusSession.count({ where: { userId, startedAt: { gte: since } } });
+    return this.prisma.focusSession.count({
+      where: { userId, startedAt: { gte: since } },
+    });
   }
 }

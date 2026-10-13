@@ -6,10 +6,8 @@ extension View {
         alert(
             isPresented: Binding(get: { error.wrappedValue != nil }, set: { if !$0 { error.wrappedValue = nil } }),
             error: error.wrappedValue
-        ) { _ in
+        ) {
             Button("Tamam", role: .cancel) {}
-        } message: { error in
-            Text(error.errorDescription ?? "")
         }
     }
 }

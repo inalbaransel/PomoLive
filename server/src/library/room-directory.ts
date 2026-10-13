@@ -27,14 +27,23 @@ export class RoomDirectory {
   /** The first public hall below the shard threshold, opening a new one when all are busy. */
   async assignPublicRoom(now: number): Promise<string> {
     const roomIds = await this.redis.zrange(RedisKeys.publicRooms, '0', '-1');
-    const counts = await Promise.all(roomIds.map((roomId) => this.presenceCount(roomId, now)));
-    const available = roomIds.find((_, index) => counts[index] < this.config.shardThreshold);
+    const counts = await Promise.all(
+      roomIds.map((roomId) => this.presenceCount(roomId, now)),
+    );
+    const available = roomIds.find(
+      (_, index) => counts[index] < this.config.shardThreshold,
+    );
     return available ?? this.createPublicRoom(now);
   }
 
-  async createPrivateRoom(now: number): Promise<{ roomId: string; code: string }> {
+  async createPrivateRoom(
+    now: number,
+  ): Promise<{ roomId: string; code: string }> {
     for (;;) {
-      const code = Array.from({ length: 6 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('');
+      const code = Array.from(
+        { length: 6 },
+        () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)],
+      ).join('');
       const roomId = RoomDirectory.privateRoomId(code);
       if (await this.redis.hsetnx(RedisKeys.roomState(roomId), 'id', roomId)) {
         await this.writeRoomState(roomId, 'PRIVATE', code, now);
@@ -54,7 +63,11 @@ export class RoomDirectory {
       .hgetall(RedisKeys.roomState(roomId))
       .hlen(RedisKeys.roomDesks(roomId))
       .zcount(RedisKeys.roomPresence(roomId), now - PRESENCE_TTL_MS, '+inf')
-      .exec())! as [[null, Record<string, string>], [null, number], [null, number]];
+      .exec())! as [
+      [null, Record<string, string>],
+      [null, number],
+      [null, number],
+    ];
     if (!fields.id) return null;
 
     const focusMinutes = Number(fields.focusMinutes);
@@ -76,9 +89,14 @@ export class RoomDirectory {
     };
   }
 
-  async touchPresence(roomId: string, userId: string, now: number): Promise<void> {
+  async touchPresence(
+    roomId: string,
+    userId: string,
+    now: number,
+  ): Promise<void> {
     await this.redis.zadd(RedisKeys.roomPresence(roomId), now, userId);
-    if (roomId.startsWith('private-')) await this.redis.zadd(RedisKeys.privateRooms, now, roomId);
+    if (roomId.startsWith('private-'))
+      await this.redis.zadd(RedisKeys.privateRooms, now, roomId);
   }
 
   async removePresence(roomId: string, userId: string): Promise<void> {
@@ -87,18 +105,38 @@ export class RoomDirectory {
 
   /** Drops stale presence and deletes halls nobody uses. The first public hall is permanent. */
   async collectGarbage(now: number): Promise<void> {
-    const publicRooms = await this.redis.zrange(RedisKeys.publicRooms, '0', '-1');
-    const privateRooms = await this.redis.zrange(RedisKeys.privateRooms, '0', '-1', 'WITHSCORES');
+    const publicRooms = await this.redis.zrange(
+      RedisKeys.publicRooms,
+      '0',
+      '-1',
+    );
+    const privateRooms = await this.redis.zrange(
+      RedisKeys.privateRooms,
+      '0',
+      '-1',
+      'WITHSCORES',
+    );
 
-    for (const roomId of [...publicRooms, ...privateRooms.filter((_, index) => index % 2 === 0)]) {
-      await this.redis.zremrangebyscore(RedisKeys.roomPresence(roomId), '-inf', now - PRESENCE_TTL_MS);
+    for (const roomId of [
+      ...publicRooms,
+      ...privateRooms.filter((_, index) => index % 2 === 0),
+    ]) {
+      await this.redis.zremrangebyscore(
+        RedisKeys.roomPresence(roomId),
+        '-inf',
+        now - PRESENCE_TTL_MS,
+      );
     }
     for (const roomId of publicRooms.slice(1)) {
       await this.deleteIfEmpty(roomId, RedisKeys.publicRooms);
     }
     for (let index = 0; index < privateRooms.length; index += 2) {
-      const [roomId, lastActiveAt] = [privateRooms[index], Number(privateRooms[index + 1])];
-      if (now - lastActiveAt > PRIVATE_ROOM_IDLE_MS) await this.deleteIfEmpty(roomId, RedisKeys.privateRooms);
+      const [roomId, lastActiveAt] = [
+        privateRooms[index],
+        Number(privateRooms[index + 1]),
+      ];
+      if (now - lastActiveAt > PRIVATE_ROOM_IDLE_MS)
+        await this.deleteIfEmpty(roomId, RedisKeys.privateRooms);
     }
   }
 
@@ -114,7 +152,12 @@ export class RoomDirectory {
     return roomId;
   }
 
-  private async writeRoomState(roomId: string, type: RoomType, code: string, now: number): Promise<void> {
+  private async writeRoomState(
+    roomId: string,
+    type: RoomType,
+    code: string,
+    now: number,
+  ): Promise<void> {
     await this.redis.hset(RedisKeys.roomState(roomId), {
       id: roomId,
       type,
@@ -127,7 +170,11 @@ export class RoomDirectory {
   }
 
   private async presenceCount(roomId: string, now: number): Promise<number> {
-    return this.redis.zcount(RedisKeys.roomPresence(roomId), now - PRESENCE_TTL_MS, '+inf');
+    return this.redis.zcount(
+      RedisKeys.roomPresence(roomId),
+      now - PRESENCE_TTL_MS,
+      '+inf',
+    );
   }
 
   private async deleteIfEmpty(roomId: string, registry: string): Promise<void> {

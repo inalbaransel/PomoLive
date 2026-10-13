@@ -7,8 +7,17 @@ import { UserProfile } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { DeskStore, LeaseRef } from './desk-store.js';
 import { FocusSessionsRepository } from './focus-sessions.repository.js';
-import { findLayoutDesk, LIBRARY_LAYOUT, LibraryLayout } from './layout/library-layout.js';
-import { DeskRecord, DeskStatus, RoomState, VacateReason } from './library.types.js';
+import {
+  findLayoutDesk,
+  LIBRARY_LAYOUT,
+  LibraryLayout,
+} from './layout/library-layout.js';
+import {
+  DeskRecord,
+  DeskStatus,
+  RoomState,
+  VacateReason,
+} from './library.types.js';
 import { startOfLocalDay } from './local-day.js';
 import { RoomDirectory } from './room-directory.js';
 
@@ -41,9 +50,14 @@ export class LibraryService {
    * Enters a hall. Without a code the reader returns to the hall where they still hold a desk,
    * otherwise they are routed to a public hall with room to spare.
    */
-  async join(session: ReaderSession, code: string | undefined): Promise<RoomSnapshot> {
+  async join(
+    session: ReaderSession,
+    code: string | undefined,
+  ): Promise<RoomSnapshot> {
     const now = Date.now();
-    const roomId = code ? await this.privateRoomId(code) : await this.resumeOrAssign(session.user.id, now);
+    const roomId = code
+      ? await this.privateRoomId(code)
+      : await this.resumeOrAssign(session.user.id, now);
     if (session.roomId && session.roomId !== roomId) await this.leave(session);
 
     session.roomId = roomId;
@@ -62,7 +76,8 @@ export class LibraryService {
     const roomId = session.roomId;
     if (!roomId) return;
     const seat = await this.desks.seatOf(session.user.id);
-    if (seat?.roomId === roomId) await this.vacate({ ...seat, userId: session.user.id }, 'STOOD_UP');
+    if (seat?.roomId === roomId)
+      await this.vacate({ ...seat, userId: session.user.id }, 'STOOD_UP');
 
     session.roomId = null;
     await this.rooms.removePresence(roomId, session.user.id);
@@ -76,15 +91,28 @@ export class LibraryService {
     await this.publishPresence(session.roomId);
   }
 
-  async sit(session: ReaderSession, deskId: string, taskLabel: string): Promise<DeskRecord> {
+  async sit(
+    session: ReaderSession,
+    deskId: string,
+    taskLabel: string,
+  ): Promise<DeskRecord> {
     const roomId = LibraryService.requireRoom(session);
-    const layoutDesk = findLayoutDesk(deskId) ?? ProtocolError.throw('DESK_NOT_FOUND', `Unknown desk ${deskId}`);
+    const layoutDesk =
+      findLayoutDesk(deskId) ??
+      ProtocolError.throw('DESK_NOT_FOUND', `Unknown desk ${deskId}`);
 
     const currentSeat = await this.desks.seatOf(session.user.id);
-    if (currentSeat) await this.vacate({ ...currentSeat, userId: session.user.id }, 'STOOD_UP');
+    if (currentSeat)
+      await this.vacate(
+        { ...currentSeat, userId: session.user.id },
+        'STOOD_UP',
+      );
 
     const now = Date.now();
-    const sessionsToday = await this.sessions.countSince(session.user.id, startOfLocalDay(now, session.timeZone));
+    const sessionsToday = await this.sessions.countSince(
+      session.user.id,
+      startOfLocalDay(now, session.timeZone),
+    );
     const desk: DeskRecord = {
       ...layoutDesk,
       userId: session.user.id,
@@ -105,22 +133,35 @@ export class LibraryService {
         await this.bus.publish(roomId, ServerEvent.deskOccupied, { desk });
         return desk;
       case 'DESK_TAKEN':
-        return ProtocolError.throw('DESK_TAKEN', 'Someone just sat at this desk');
+        return ProtocolError.throw(
+          'DESK_TAKEN',
+          'Someone just sat at this desk',
+        );
       case 'ROOM_NOT_FOUND':
         return ProtocolError.throw('ROOM_NOT_FOUND', 'This hall has closed');
       case 'ALREADY_SEATED':
-        return ProtocolError.throw('DESK_TAKEN', 'You sat down somewhere else in the meantime');
+        return ProtocolError.throw(
+          'DESK_TAKEN',
+          'You sat down somewhere else in the meantime',
+        );
     }
   }
 
   async stand(session: ReaderSession): Promise<void> {
-    const seat = (await this.desks.seatOf(session.user.id)) ?? ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
+    const seat =
+      (await this.desks.seatOf(session.user.id)) ??
+      ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
     await this.vacate({ ...seat, userId: session.user.id }, 'STOOD_UP');
   }
 
-  async setStatus(session: ReaderSession, status: DeskStatus): Promise<DeskRecord> {
+  async setStatus(
+    session: ReaderSession,
+    status: DeskStatus,
+  ): Promise<DeskRecord> {
     const ref = await this.requireSeat(session);
-    const desk = (await this.desks.get(ref)) ?? ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
+    const desk =
+      (await this.desks.get(ref)) ??
+      ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
     if (desk.status === status) return desk;
 
     const now = Date.now();
@@ -136,24 +177,41 @@ export class LibraryService {
    * Keeps presence and the desk lease alive. Before the app is suspended the client sends
    * `background: true`, which stretches the lease so a locked phone does not lose its chair.
    */
-  async heartbeat(session: ReaderSession, background: boolean): Promise<{ serverTime: number; leaseExpiresAt: number | null }> {
+  async heartbeat(
+    session: ReaderSession,
+    background: boolean,
+  ): Promise<{ serverTime: number; leaseExpiresAt: number | null }> {
     const now = Date.now();
-    if (session.roomId && !background) await this.rooms.touchPresence(session.roomId, session.user.id, now);
+    if (session.roomId && !background)
+      await this.rooms.touchPresence(session.roomId, session.user.id, now);
 
     const seat = await this.desks.seatOf(session.user.id);
     if (!seat) return { serverTime: now, leaseExpiresAt: null };
-    const leaseExpiresAt = now + (background ? this.config.backgroundLeaseMs : this.config.foregroundLeaseMs);
-    const desk = await this.desks.patch({ ...seat, userId: session.user.id }, { leaseExpiresAt });
+    const leaseExpiresAt =
+      now +
+      (background
+        ? this.config.backgroundLeaseMs
+        : this.config.foregroundLeaseMs);
+    const desk = await this.desks.patch(
+      { ...seat, userId: session.user.id },
+      { leaseExpiresAt },
+    );
     return { serverTime: now, leaseExpiresAt: desk?.leaseExpiresAt ?? null };
   }
 
-  async updateProfile(session: ReaderSession, changes: Partial<Omit<UserProfile, 'id'>>): Promise<UserProfile> {
+  async updateProfile(
+    session: ReaderSession,
+    changes: Partial<Omit<UserProfile, 'id'>>,
+  ): Promise<UserProfile> {
     session.user = await this.users.update(session.user.id, changes);
     const seat = await this.desks.seatOf(session.user.id);
     if (seat) {
       await this.patchAndPublish(
         { ...seat, userId: session.user.id },
-        { userName: session.user.displayName, avatarSpriteId: session.user.avatarSpriteId },
+        {
+          userName: session.user.displayName,
+          avatarSpriteId: session.user.avatarSpriteId,
+        },
       );
     }
     return session.user;
@@ -164,22 +222,38 @@ export class LibraryService {
     await this.vacate(ref, 'LEASE_EXPIRED', now);
   }
 
-  private async vacate(ref: LeaseRef, reason: VacateReason, expiredBefore = 0): Promise<void> {
+  private async vacate(
+    ref: LeaseRef,
+    reason: VacateReason,
+    expiredBefore = 0,
+  ): Promise<void> {
     const desk = await this.desks.release(ref, expiredBefore);
     if (!desk) return;
     await this.sessions.record(ref.roomId, desk, Date.now(), reason);
-    await this.bus.publish(ref.roomId, ServerEvent.deskVacated, { deskId: desk.deskId, userId: desk.userId, reason });
+    await this.bus.publish(ref.roomId, ServerEvent.deskVacated, {
+      deskId: desk.deskId,
+      userId: desk.userId,
+      reason,
+    });
   }
 
-  private async patchAndPublish(ref: LeaseRef, changes: Partial<DeskRecord>): Promise<DeskRecord> {
-    const desk = (await this.desks.patch(ref, changes)) ?? ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
+  private async patchAndPublish(
+    ref: LeaseRef,
+    changes: Partial<DeskRecord>,
+  ): Promise<DeskRecord> {
+    const desk =
+      (await this.desks.patch(ref, changes)) ??
+      ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
     await this.bus.publish(ref.roomId, ServerEvent.deskUpdated, { desk });
     return desk;
   }
 
   private async snapshot(roomId: string): Promise<RoomSnapshot> {
     const now = Date.now();
-    const [room, desks] = await Promise.all([this.rooms.roomState(roomId, now), this.desks.list(roomId)]);
+    const [room, desks] = await Promise.all([
+      this.rooms.roomState(roomId, now),
+      this.desks.list(roomId),
+    ]);
     if (!room) ProtocolError.throw('ROOM_NOT_FOUND', 'This hall has closed');
     return { room, layout: LIBRARY_LAYOUT, desks, serverTime: now };
   }
@@ -196,7 +270,8 @@ export class LibraryService {
 
   private async privateRoomId(code: string): Promise<string> {
     const roomId = RoomDirectory.privateRoomId(code);
-    if (!(await this.rooms.exists(roomId))) ProtocolError.throw('ROOM_NOT_FOUND', `No hall with code ${code}`);
+    if (!(await this.rooms.exists(roomId)))
+      ProtocolError.throw('ROOM_NOT_FOUND', `No hall with code ${code}`);
     return roomId;
   }
 
@@ -207,11 +282,15 @@ export class LibraryService {
   }
 
   private async requireSeat(session: ReaderSession): Promise<LeaseRef> {
-    const seat = (await this.desks.seatOf(session.user.id)) ?? ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
+    const seat =
+      (await this.desks.seatOf(session.user.id)) ??
+      ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
     return { ...seat, userId: session.user.id };
   }
 
   private static requireRoom(session: ReaderSession): string {
-    return session.roomId ?? ProtocolError.throw('NOT_IN_ROOM', 'Join a hall first');
+    return (
+      session.roomId ?? ProtocolError.throw('NOT_IN_ROOM', 'Join a hall first')
+    );
   }
 }

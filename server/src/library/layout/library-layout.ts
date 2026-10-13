@@ -2,7 +2,8 @@
  * The hall's floor plan, sent to clients inside every room snapshot so the map is fully data-driven.
  * Coordinates are tiles; the client decides pixel size. Rows `y < WALL_HEIGHT` are the back wall.
  */
-export type PropKind = 'window' | 'clock' | 'bookshelf' | 'plant' | 'coffeeMachine' | 'rug' | 'door';
+export type PropKind =
+  'window' | 'clock' | 'bookshelf' | 'plant' | 'coffeeMachine' | 'rug' | 'door';
 
 export interface LayoutDesk {
   deskId: string;
@@ -33,7 +34,13 @@ const WALL_HEIGHT = 3;
 const DESK_COLUMNS = [5, 9, 13, 23, 27, 31];
 const DESK_ROWS = [7, 11, 15, 19, 23];
 
-const prop = (kind: PropKind, tileX: number, tileY: number, width: number, height: number): LayoutProp => ({
+const prop = (
+  kind: PropKind,
+  tileX: number,
+  tileY: number,
+  width: number,
+  height: number,
+): LayoutProp => ({
   kind,
   tileX,
   tileY,
@@ -42,7 +49,9 @@ const prop = (kind: PropKind, tileX: number, tileY: number, width: number, heigh
 });
 
 function buildLayout(): LibraryLayout {
-  const desks = DESK_ROWS.flatMap((tileY) => DESK_COLUMNS.map((tileX) => ({ tileX, tileY }))).map((position, index) => ({
+  const desks = DESK_ROWS.flatMap((tileY) =>
+    DESK_COLUMNS.map((tileX) => ({ tileX, tileY })),
+  ).map((position, index) => ({
     deskId: `desk_${index}`,
     ...position,
   }));
@@ -52,7 +61,10 @@ function buildLayout(): LibraryLayout {
     ...[6, 12, 24, 30].map((x) => prop('window', x, 0, 2, 2)),
     prop('clock', 18, 0, 2, 2),
     ...[2, 4, 8, 10, 26, 28, 32, 34].map((x) => prop('bookshelf', x, 3, 2, 2)),
-    ...[8, 12, 16, 20, 24].flatMap((y) => [prop('bookshelf', 1, y, 2, 2), prop('bookshelf', 35, y, 2, 2)]),
+    ...[8, 12, 16, 20, 24].flatMap((y) => [
+      prop('bookshelf', 1, y, 2, 2),
+      prop('bookshelf', 35, y, 2, 2),
+    ]),
     ...[
       [14, 4],
       [23, 4],
@@ -63,12 +75,21 @@ function buildLayout(): LibraryLayout {
     prop('door', 18, 29, 2, 1),
   ];
 
-  return { version: 1, width: WIDTH, height: HEIGHT, wallHeight: WALL_HEIGHT, desks, props };
+  return {
+    version: 1,
+    width: WIDTH,
+    height: HEIGHT,
+    wallHeight: WALL_HEIGHT,
+    desks,
+    props,
+  };
 }
 
 export const LIBRARY_LAYOUT: LibraryLayout = buildLayout();
 
-const desksById = new Map(LIBRARY_LAYOUT.desks.map((desk) => [desk.deskId, desk]));
+const desksById = new Map(
+  LIBRARY_LAYOUT.desks.map((desk) => [desk.deskId, desk]),
+);
 
 export function findLayoutDesk(deskId: string): LayoutDesk | undefined {
   return desksById.get(deskId);

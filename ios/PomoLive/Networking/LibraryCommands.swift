@@ -20,15 +20,16 @@ struct AuthenticateCommand: LibraryCommand {
 
     enum Credential: Sendable {
         case apple(identityToken: String, rawNonce: String, displayName: String?)
+        case google(identityToken: String, rawNonce: String)
+        case email(address: String, code: String)
         case session(token: String)
-        case developer(deviceId: String, displayName: String?)
     }
 
     var credential: Credential
     var timeZone = TimeZone.current.identifier
 
     private enum CodingKeys: String, CodingKey {
-        case method, identityToken, rawNonce, displayName, sessionToken, deviceId, timeZone
+        case method, identityToken, rawNonce, displayName, email, code, sessionToken, timeZone
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -40,15 +41,30 @@ struct AuthenticateCommand: LibraryCommand {
             try container.encode(identityToken, forKey: .identityToken)
             try container.encode(rawNonce, forKey: .rawNonce)
             try container.encodeIfPresent(displayName, forKey: .displayName)
+        case .google(let identityToken, let rawNonce):
+            try container.encode("google", forKey: .method)
+            try container.encode(identityToken, forKey: .identityToken)
+            try container.encode(rawNonce, forKey: .rawNonce)
+        case .email(let address, let code):
+            try container.encode("email", forKey: .method)
+            try container.encode(address, forKey: .email)
+            try container.encode(code, forKey: .code)
         case .session(let token):
             try container.encode("session", forKey: .method)
             try container.encode(token, forKey: .sessionToken)
-        case .developer(let deviceId, let displayName):
-            try container.encode("dev", forKey: .method)
-            try container.encode(deviceId, forKey: .deviceId)
-            try container.encodeIfPresent(displayName, forKey: .displayName)
         }
     }
+}
+
+struct EmailCodeResult: Decodable, Sendable {
+    var resendAfterSeconds: Int
+}
+
+/// Sent before authentication: mails a 6-digit sign-in code to `email`.
+struct RequestEmailCodeCommand: LibraryCommand {
+    typealias Result = EmailCodeResult
+    static let event = "auth:email-code"
+    var email: String
 }
 
 struct JoinHallCommand: LibraryCommand {

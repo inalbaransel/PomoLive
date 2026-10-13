@@ -12,7 +12,9 @@ export class ProtocolErrorFilter extends BaseWsExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const context = host.switchToWs();
     const socket = context.getClient<WebSocket>();
-    const ref = (context.getData<{ ref?: unknown } | undefined>()?.ref as string | undefined) ?? null;
+    const ref =
+      (context.getData<{ ref?: unknown } | undefined>()?.ref as
+        string | undefined) ?? null;
 
     const error =
       exception instanceof ProtocolError
@@ -21,7 +23,12 @@ export class ProtocolErrorFilter extends BaseWsExceptionFilter {
     if (!(exception instanceof ProtocolError)) this.logger.error(exception);
 
     if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ event: ServerEvent.reply, data: { ref, ok: false, error } }));
+      socket.send(
+        JSON.stringify({
+          event: ServerEvent.reply,
+          data: { ref, ok: false, error },
+        }),
+      );
     }
   }
 }

@@ -4,7 +4,10 @@ import { AppConfig } from '../config/app-config.js';
 import { PrismaClient } from '../generated/prisma/client.js';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   constructor(config: AppConfig) {
     super({ adapter: new PrismaPg({ connectionString: config.databaseUrl }) });
   }

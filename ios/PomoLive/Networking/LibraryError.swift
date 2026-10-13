@@ -22,6 +22,9 @@ enum LibraryError: LocalizedError, Equatable, Sendable {
             case "UNAUTHORIZED": "Oturumun sona erdi, lütfen tekrar giriş yap."
             case "NOT_SEATED": "Şu anda bir masada oturmuyorsun."
             case "INVALID_PAYLOAD": "Girdiğin bilgiler geçersiz."
+            case "INVALID_CODE": "Kod hatalı ya da süresi dolmuş."
+            case "RATE_LIMITED": "Yeni kod istemeden önce biraz bekle."
+            case "UNAVAILABLE": "Bu giriş yöntemi şu anda kullanılamıyor."
             default: message
             }
         }

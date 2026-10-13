@@ -13,7 +13,10 @@ export class HealthController {
   @Get()
   async check(): Promise<{ status: 'ok' }> {
     try {
-      await Promise.all([this.prisma.$queryRaw`SELECT 1`, this.redis.client.ping()]);
+      await Promise.all([
+        this.prisma.$queryRaw`SELECT 1`,
+        this.redis.client.ping(),
+      ]);
       return { status: 'ok' };
     } catch {
       throw new ServiceUnavailableException();

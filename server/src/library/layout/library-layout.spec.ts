@@ -15,11 +15,20 @@ describe('LIBRARY_LAYOUT', () => {
 
   it('never places solid props on top of a desk', () => {
     const occupied = new Set(
-      LIBRARY_LAYOUT.desks.flatMap(({ tileX, tileY }) => [0, 1].flatMap((dx) => [0, 1].map((dy) => `${tileX + dx},${tileY + dy}`))),
+      LIBRARY_LAYOUT.desks.flatMap(({ tileX, tileY }) =>
+        [0, 1].flatMap((dx) =>
+          [0, 1].map((dy) => `${tileX + dx},${tileY + dy}`),
+        ),
+      ),
     );
-    for (const prop of LIBRARY_LAYOUT.props.filter((candidate) => candidate.kind !== 'rug')) {
+    for (const prop of LIBRARY_LAYOUT.props.filter(
+      (candidate) => candidate.kind !== 'rug',
+    )) {
       for (let dx = 0; dx < prop.width; dx++) {
-        for (let dy = 0; dy < prop.height; dy++) expect(occupied.has(`${prop.tileX + dx},${prop.tileY + dy}`)).toBe(false);
+        for (let dy = 0; dy < prop.height; dy++)
+          expect(occupied.has(`${prop.tileX + dx},${prop.tileY + dy}`)).toBe(
+            false,
+          );
       }
     }
   });

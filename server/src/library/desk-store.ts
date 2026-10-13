@@ -4,7 +4,8 @@ import { RedisService } from '../infra/redis.service.js';
 import { DeskRecord } from './library.types.js';
 import { RedisKeys } from './redis-keys.js';
 
-export type ClaimOutcome = 'OK' | 'ROOM_NOT_FOUND' | 'DESK_TAKEN' | 'ALREADY_SEATED';
+export type ClaimOutcome =
+  'OK' | 'ROOM_NOT_FOUND' | 'DESK_TAKEN' | 'ALREADY_SEATED';
 
 export interface SeatRef {
   roomId: string;
@@ -18,13 +19,39 @@ export interface LeaseRef extends SeatRef {
 declare module 'ioredis' {
   interface RedisCommander<Context> {
     claimDesk(
-      ...args: [state: string, desks: string, seat: string, leases: string, deskId: string, record: string, seatValue: string, leaseMember: string, leaseExpiresAt: number]
+      ...args: [
+        state: string,
+        desks: string,
+        seat: string,
+        leases: string,
+        deskId: string,
+        record: string,
+        seatValue: string,
+        leaseMember: string,
+        leaseExpiresAt: number,
+      ]
     ): Result<ClaimOutcome, Context>;
     releaseDesk(
-      ...args: [desks: string, seat: string, leases: string, deskId: string, userId: string, seatValue: string, leaseMember: string, expiredBefore: number]
+      ...args: [
+        desks: string,
+        seat: string,
+        leases: string,
+        deskId: string,
+        userId: string,
+        seatValue: string,
+        leaseMember: string,
+        expiredBefore: number,
+      ]
     ): Result<string | null, Context>;
     patchDesk(
-      ...args: [desks: string, leases: string, deskId: string, userId: string, patch: string, leaseMember: string]
+      ...args: [
+        desks: string,
+        leases: string,
+        deskId: string,
+        userId: string,
+        patch: string,
+        leaseMember: string,
+      ]
     ): Result<string | null, Context>;
   }
 }
@@ -77,7 +104,8 @@ const SCRIPTS = {
   },
 } as const;
 
-const leaseMember = ({ roomId, deskId, userId }: LeaseRef) => `${roomId}|${deskId}|${userId}`;
+const leaseMember = ({ roomId, deskId, userId }: LeaseRef) =>
+  `${roomId}|${deskId}|${userId}`;
 const seatValue = ({ roomId, deskId }: SeatRef) => `${roomId}|${deskId}`;
 
 @Injectable()
@@ -121,7 +149,10 @@ export class DeskStore {
     return raw ? (JSON.parse(raw) as DeskRecord) : null;
   }
 
-  async patch(ref: LeaseRef, changes: Partial<Omit<DeskRecord, 'deskId' | 'userId'>>): Promise<DeskRecord | null> {
+  async patch(
+    ref: LeaseRef,
+    changes: Partial<Omit<DeskRecord, 'deskId' | 'userId'>>,
+  ): Promise<DeskRecord | null> {
     const raw = await this.redis.patchDesk(
       RedisKeys.roomDesks(ref.roomId),
       RedisKeys.deskLeases,
@@ -134,7 +165,10 @@ export class DeskStore {
   }
 
   async get(ref: SeatRef): Promise<DeskRecord | null> {
-    const raw = await this.redis.hget(RedisKeys.roomDesks(ref.roomId), ref.deskId);
+    const raw = await this.redis.hget(
+      RedisKeys.roomDesks(ref.roomId),
+      ref.deskId,
+    );
     return raw ? (JSON.parse(raw) as DeskRecord) : null;
   }
 
@@ -151,7 +185,14 @@ export class DeskStore {
   }
 
   async expiredLeases(now: number, limit: number): Promise<LeaseRef[]> {
-    const members = await this.redis.zrangebyscore(RedisKeys.deskLeases, '-inf', now, 'LIMIT', 0, limit);
+    const members = await this.redis.zrangebyscore(
+      RedisKeys.deskLeases,
+      '-inf',
+      now,
+      'LIMIT',
+      0,
+      limit,
+    );
     return members.map((member) => {
       const [roomId, deskId, userId] = member.split('|');
       return { roomId, deskId, userId };

@@ -9,7 +9,14 @@ import { RoomDirectory } from './room-directory.js';
 
 @Module({
   imports: [UsersModule],
-  providers: [LibraryService, RoomDirectory, DeskStore, FocusSessionsRepository, LeaseReaper, RoomEventBus],
+  providers: [
+    LibraryService,
+    RoomDirectory,
+    DeskStore,
+    FocusSessionsRepository,
+    LeaseReaper,
+    RoomEventBus,
+  ],
   exports: [LibraryService, RoomEventBus],
 })
 export class LibraryModule {}

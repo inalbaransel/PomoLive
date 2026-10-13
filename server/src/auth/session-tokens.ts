@@ -32,7 +32,10 @@ export class SessionTokens {
   }
 
   async verify(token: string): Promise<string> {
-    const { payload } = await jwtVerify(token, this.key, { issuer: ISSUER, algorithms: ['HS256'] });
+    const { payload } = await jwtVerify(token, this.key, {
+      issuer: ISSUER,
+      algorithms: ['HS256'],
+    });
     if (!payload.sub) throw new Error('Session token has no subject');
     return payload.sub;
   }

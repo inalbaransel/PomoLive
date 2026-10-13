@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnApplicationShutdown,
+  OnModuleInit,
+} from '@nestjs/common';
 import { RedisService } from '../infra/redis.service.js';
 import { DeskStore } from './desk-store.js';
 import { LibraryService } from './library.service.js';
@@ -37,13 +42,20 @@ export class LeaseReaper implements OnModuleInit, OnApplicationShutdown {
   }
 
   private async tick(): Promise<void> {
-    const acquired = await this.redis.client.set(RedisKeys.reaperLock, '1', 'PX', TICK_MS - 500, 'NX');
+    const acquired = await this.redis.client.set(
+      RedisKeys.reaperLock,
+      '1',
+      'PX',
+      TICK_MS - 500,
+      'NX',
+    );
     if (!acquired) return;
 
     const now = Date.now();
     for (const lease of await this.desks.expiredLeases(now, BATCH_SIZE)) {
       await this.library.expireLease(lease, now);
     }
-    if (++this.ticks % GARBAGE_COLLECTION_EVERY_TICKS === 0) await this.rooms.collectGarbage(now);
+    if (++this.ticks % GARBAGE_COLLECTION_EVERY_TICKS === 0)
+      await this.rooms.collectGarbage(now);
   }
 }

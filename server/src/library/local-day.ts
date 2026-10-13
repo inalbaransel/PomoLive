@@ -7,7 +7,10 @@ export function startOfLocalDay(now: number, timeZone: string): Date {
     minute: 'numeric',
     second: 'numeric',
   }).formatToParts(now);
-  const field = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value ?? 0);
-  const elapsedToday = ((field('hour') * 60 + field('minute')) * 60 + field('second')) * 1000 + (now % 1000);
+  const field = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const elapsedToday =
+    ((field('hour') * 60 + field('minute')) * 60 + field('second')) * 1000 +
+    (now % 1000);
   return new Date(now - elapsedToday);
 }

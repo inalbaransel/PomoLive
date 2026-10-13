@@ -1,5 +1,8 @@
 export type ProtocolErrorCode =
   | 'UNAUTHORIZED'
+  | 'INVALID_CODE'
+  | 'RATE_LIMITED'
+  | 'UNAVAILABLE'
   | 'INVALID_PAYLOAD'
   | 'ROOM_NOT_FOUND'
   | 'NOT_IN_ROOM'

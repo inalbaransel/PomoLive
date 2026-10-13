@@ -19,7 +19,6 @@ final class AppModel {
     private(set) var connection: Connection = .offline
     private(set) var user: UserProfile?
     private(set) var isSigningIn = false
-    var signInError: LibraryError?
     let hall: HallStore
 
     @ObservationIgnored private let socket: LibrarySocket
@@ -46,15 +45,17 @@ final class AppModel {
         }
     }
 
-    func signIn(with credential: AuthenticateCommand.Credential) async {
+    func signIn(with credential: AuthenticateCommand.Credential) async throws {
         isSigningIn = true
         defer { isSigningIn = false }
-        do {
-            try await openSession(credential)
-            phase = .signedIn
-        } catch {
-            signInError = error as? LibraryError ?? .offline
-        }
+        try await openSession(credential)
+        phase = .signedIn
+    }
+
+    /// First half of e-mail sign-in. Uses a short-lived unauthenticated connection.
+    func requestEmailCode(for email: String) async throws -> Int {
+        if await !socket.isConnected { try await socket.connect() }
+        return try await socket.send(RequestEmailCodeCommand(email: email)).resendAfterSeconds
     }
 
     func signOut() async {
