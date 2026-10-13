@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String         @id @default(uuid()) @db.Uuid
+  appleSubject   String?        @unique
+  devSubject     String?        @unique
+  displayName    String         @db.VarChar(24)
+  avatarSpriteId String         @default("scholar_01") @db.VarChar(32)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  focusSessions  FocusSession[]
+}
+
+enum SessionEndReason {
+  STOOD_UP
+  LEASE_EXPIRED
+}
+
+model FocusSession {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId    String           @db.VarChar(64)
+  deskId    String           @db.VarChar(16)
+  taskLabel String           @db.VarChar(48)
+  startedAt DateTime
+  endedAt   DateTime
+  focusedMs Int
+  endReason SessionEndReason
+
+  @@index([userId, startedAt])
+}
