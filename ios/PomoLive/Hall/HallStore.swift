@@ -146,7 +146,7 @@ final class HallStore {
         do {
             try await operation()
         } catch {
-            self.error = error as? LibraryError ?? .malformedResponse
+            self.error = LibraryError(error)
             haptics.play(.denied)
         }
     }

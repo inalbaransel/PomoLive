@@ -44,7 +44,7 @@ actor LibrarySocket {
             }
         } catch {
             close(task)
-            throw error
+            throw LibraryError(error)
         }
         receive(on: task)
     }
@@ -65,7 +65,7 @@ actor LibrarySocket {
             do {
                 try await task.send(.string(String(decoding: frame, as: UTF8.self)))
             } catch {
-                fail(ref, with: error)
+                fail(ref, with: LibraryError(error))
             }
         }
         Task {

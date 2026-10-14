@@ -98,7 +98,7 @@ struct ProfileSheet: View {
                 )
                 dismiss()
             } catch {
-                saveError = error as? LibraryError ?? .offline
+                saveError = LibraryError(error)
             }
         }
     }

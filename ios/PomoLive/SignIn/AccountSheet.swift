@@ -106,7 +106,7 @@ struct AccountSheet: View {
                 try await app.signIn(with: credential)
                 dismiss()
             } catch {
-                self.error = error as? LibraryError ?? .offline
+                self.error = LibraryError(error)
             }
         }
     }
