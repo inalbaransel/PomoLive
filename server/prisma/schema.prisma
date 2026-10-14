@@ -8,15 +8,62 @@ datasource db {
 }
 
 model User {
-  id             String         @id @default(uuid()) @db.Uuid
-  email          String         @unique
+  id             String           @id @default(uuid()) @db.Uuid
+  email          String           @unique
   /// scrypt hash, see `src/auth/passwords.ts`.
   passwordHash   String
-  displayName    String         @db.VarChar(24)
-  avatarSpriteId String         @default("scholar_01") @db.VarChar(32)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  displayName    String           @db.VarChar(24)
+  avatarSpriteId String           @default("scholar_01") @db.VarChar(32)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   focusSessions  FocusSession[]
+  ownedRooms     Room[]
+  memberships    RoomMembership[]
+  categories     Category[]
+}
+
+enum RoomVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+/// A user-created room. System halls ("Piksel Salon N") live only in Redis.
+model Room {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique @db.VarChar(6)
+  name        String           @db.VarChar(32)
+  emoji       String           @db.VarChar(16)
+  visibility  RoomVisibility
+  ownerId     String           @db.Uuid
+  owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  memberships RoomMembership[]
+
+  @@index([visibility, createdAt])
+}
+
+/// Rooms a reader created or entered, for the "Odalarım" list.
+model RoomMembership {
+  userId        String   @db.Uuid
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId        String   @db.Uuid
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  lastVisitedAt DateTime @default(now())
+
+  @@id([userId, roomId])
+  @@index([userId, lastVisitedAt])
+}
+
+/// A reader's own focus category, next to the built-in ones in `src/categories/built-in-categories.ts`.
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   @db.VarChar(24)
+  emoji     String   @db.VarChar(16)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, name])
 }
 
 enum SessionEndReason {
@@ -24,17 +71,28 @@ enum SessionEndReason {
   LEASE_EXPIRED
 }
 
+enum TimerMode {
+  POMODORO
+  STOPWATCH
+}
+
+/// Category and room are copied in, so history survives renamed or deleted categories and rooms.
 model FocusSession {
-  id        String           @id @default(uuid()) @db.Uuid
-  userId    String           @db.Uuid
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roomId    String           @db.VarChar(64)
-  deskId    String           @db.VarChar(16)
-  taskLabel String           @db.VarChar(48)
-  startedAt DateTime
-  endedAt   DateTime
-  focusedMs Int
-  endReason SessionEndReason
+  id            String           @id @default(uuid()) @db.Uuid
+  userId        String           @db.Uuid
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId        String           @db.VarChar(64)
+  roomName      String           @db.VarChar(32)
+  deskId        String           @db.VarChar(16)
+  mode          TimerMode
+  categoryKey   String           @db.VarChar(64)
+  categoryName  String           @db.VarChar(24)
+  categoryEmoji String           @db.VarChar(16)
+  note          String?          @db.VarChar(48)
+  startedAt     DateTime
+  endedAt       DateTime
+  focusedMs     Int
+  endReason     SessionEndReason
 
   @@index([userId, startedAt])
 }

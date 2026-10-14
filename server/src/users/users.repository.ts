@@ -53,6 +53,19 @@ export class UsersRepository {
     });
   }
 
+  async passwordHash(id: string): Promise<string | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { passwordHash: true },
+    });
+    return user?.passwordHash ?? null;
+  }
+
+  /** Removes the account with its sessions, categories, memberships and owned rooms. */
+  async delete(id: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id } });
+  }
+
   findById(id: string): Promise<UserProfile | null> {
     return this.prisma.user.findUnique({
       where: { id },

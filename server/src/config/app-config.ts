@@ -10,8 +10,6 @@ const environmentSchema = z.object({
   SESSION_SECRET: z.string().min(32),
   /** Readers in a public hall before new arrivals are routed to a fresh one. */
   SHARD_THRESHOLD: z.coerce.number().int().min(1).default(25),
-  FOCUS_MINUTES: z.coerce.number().int().min(1).default(25),
-  BREAK_MINUTES: z.coerce.number().int().min(1).default(5),
   FOREGROUND_LEASE_SECONDS: z.coerce.number().int().min(15).default(90),
   BACKGROUND_LEASE_SECONDS: z.coerce
     .number()
@@ -28,8 +26,6 @@ export class AppConfig {
   readonly redisUrl: string;
   readonly sessionSecret: string;
   readonly shardThreshold: number;
-  readonly focusMinutes: number;
-  readonly breakMinutes: number;
   readonly foregroundLeaseMs: number;
   readonly backgroundLeaseMs: number;
 
@@ -46,8 +42,6 @@ export class AppConfig {
       redisUrl: env.REDIS_URL,
       sessionSecret: env.SESSION_SECRET,
       shardThreshold: env.SHARD_THRESHOLD,
-      focusMinutes: env.FOCUS_MINUTES,
-      breakMinutes: env.BREAK_MINUTES,
       foregroundLeaseMs: env.FOREGROUND_LEASE_SECONDS * 1000,
       backgroundLeaseMs: env.BACKGROUND_LEASE_SECONDS * 1000,
     });

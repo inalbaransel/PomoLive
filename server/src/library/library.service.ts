@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CategoriesRepository } from '../categories/categories.repository.js';
 import { AppConfig } from '../config/app-config.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import { ServerEvent } from '../realtime/protocol.js';
@@ -6,25 +7,22 @@ import { RoomEventBus } from '../realtime/room-event-bus.js';
 import { UserProfile } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { DeskStore, LeaseRef } from './desk-store.js';
+import { DeskTimer, resumeFocus, startBreak } from './desk-timer.js';
 import { FocusSessionsRepository } from './focus-sessions.repository.js';
 import {
   findLayoutDesk,
   LIBRARY_LAYOUT,
   LibraryLayout,
 } from './layout/library-layout.js';
-import {
-  DeskRecord,
-  DeskStatus,
-  RoomState,
-  VacateReason,
-} from './library.types.js';
+import { DeskRecord, RoomState, VacateReason } from './library.types.js';
 import { startOfLocalDay } from './local-day.js';
-import { RoomDirectory } from './room-directory.js';
+import { RoomDirectory, RoomIdentity } from './room-directory.js';
 
 /** Per-connection state the gateway owns and passes into every command. */
 export interface ReaderSession {
   user: UserProfile;
   timeZone: string;
+  /** The room this connection is looking at; independent of where the reader holds a desk. */
   roomId: string | null;
 }
 
@@ -35,6 +33,18 @@ export interface RoomSnapshot {
   serverTime: number;
 }
 
+export type TimerSetup =
+  | { mode: 'POMODORO'; focusMinutes: number; breakMinutes: number }
+  | { mode: 'STOPWATCH' };
+
+export interface SitRequest {
+  deskId: string;
+  timer: TimerSetup;
+  categoryKey: string;
+  note?: string;
+}
+
+/** What happens inside a room: who looks at it, who sits where, and each desk's timer. */
 @Injectable()
 export class LibraryService {
   constructor(
@@ -42,64 +52,45 @@ export class LibraryService {
     private readonly rooms: RoomDirectory,
     private readonly desks: DeskStore,
     private readonly sessions: FocusSessionsRepository,
+    private readonly categories: CategoriesRepository,
     private readonly users: UsersRepository,
     private readonly bus: RoomEventBus,
   ) {}
 
-  /**
-   * Enters a hall. Without a code the reader returns to the hall where they still hold a desk,
-   * otherwise they are routed to a public hall with room to spare.
-   */
-  async join(
+  async enter(
     session: ReaderSession,
-    code: string | undefined,
+    room: RoomIdentity,
   ): Promise<RoomSnapshot> {
     const now = Date.now();
-    const roomId = code
-      ? await this.privateRoomId(code)
-      : await this.resumeOrAssign(session.user.id, now);
-    if (session.roomId && session.roomId !== roomId) await this.leave(session);
+    if (session.roomId && session.roomId !== room.id)
+      await this.stopViewing(session);
+    await this.rooms.ensureLive(room, now);
 
-    session.roomId = roomId;
-    await this.rooms.touchPresence(roomId, session.user.id, now);
-    await this.publishPresence(roomId);
-    return this.snapshot(roomId);
+    session.roomId = room.id;
+    await this.rooms.touchPresence(room.id, session.user.id, now);
+    await this.publishPresence(room.id);
+    return this.snapshot(room.id);
   }
 
-  async createPrivateRoom(session: ReaderSession): Promise<RoomSnapshot> {
-    const { code } = await this.rooms.createPrivateRoom(Date.now());
-    return this.join(session, code);
-  }
-
-  /** Stops viewing the hall. A desk held in that hall is given up too. */
-  async leave(session: ReaderSession): Promise<void> {
+  /** Stops looking at the room. A desk held there stays taken: the timer keeps running. */
+  async stopViewing(session: ReaderSession): Promise<void> {
     const roomId = session.roomId;
     if (!roomId) return;
-    const seat = await this.desks.seatOf(session.user.id);
-    if (seat?.roomId === roomId)
-      await this.vacate({ ...seat, userId: session.user.id }, 'STOOD_UP');
-
     session.roomId = null;
     await this.rooms.removePresence(roomId, session.user.id);
     await this.publishPresence(roomId);
   }
 
-  /** Socket closed without an explicit leave: keep the desk (its lease decides), drop presence only. */
-  async disconnect(session: ReaderSession): Promise<void> {
-    if (!session.roomId) return;
-    await this.rooms.removePresence(session.roomId, session.user.id);
-    await this.publishPresence(session.roomId);
-  }
-
-  async sit(
-    session: ReaderSession,
-    deskId: string,
-    taskLabel: string,
-  ): Promise<DeskRecord> {
-    const roomId = LibraryService.requireRoom(session);
+  async sit(session: ReaderSession, request: SitRequest): Promise<DeskRecord> {
+    const roomId =
+      session.roomId ?? ProtocolError.throw('NOT_IN_ROOM', 'Join a room first');
     const layoutDesk =
-      findLayoutDesk(deskId) ??
-      ProtocolError.throw('DESK_NOT_FOUND', `Unknown desk ${deskId}`);
+      findLayoutDesk(request.deskId) ??
+      ProtocolError.throw('DESK_NOT_FOUND', `Unknown desk ${request.deskId}`);
+    const category = await this.categories.resolve(
+      session.user.id,
+      request.categoryKey,
+    );
 
     const currentSeat = await this.desks.seatOf(session.user.id);
     if (currentSeat)
@@ -118,17 +109,15 @@ export class LibraryService {
       userId: session.user.id,
       userName: session.user.displayName,
       avatarSpriteId: session.user.avatarSpriteId,
-      taskLabel,
-      status: 'FOCUS',
+      category,
+      note: request.note || null,
+      timer: LibraryService.startTimer(request.timer, now),
       startedAt: now,
-      statusSince: now,
-      focusAccumulatedMs: 0,
       sessionNumber: sessionsToday + 1,
       leaseExpiresAt: now + this.config.foregroundLeaseMs,
     };
 
-    const outcome = await this.desks.claim(roomId, desk);
-    switch (outcome) {
+    switch (await this.desks.claim(roomId, desk)) {
       case 'OK':
         await this.bus.publish(roomId, ServerEvent.deskOccupied, { desk });
         return desk;
@@ -138,7 +127,7 @@ export class LibraryService {
           'Someone just sat at this desk',
         );
       case 'ROOM_NOT_FOUND':
-        return ProtocolError.throw('ROOM_NOT_FOUND', 'This hall has closed');
+        return ProtocolError.throw('ROOM_NOT_FOUND', 'This room has closed');
       case 'ALREADY_SEATED':
         return ProtocolError.throw(
           'DESK_TAKEN',
@@ -148,34 +137,30 @@ export class LibraryService {
   }
 
   async stand(session: ReaderSession): Promise<void> {
-    const seat =
-      (await this.desks.seatOf(session.user.id)) ??
-      ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
-    await this.vacate({ ...seat, userId: session.user.id }, 'STOOD_UP');
+    await this.vacate(await this.requireSeat(session.user.id), 'STOOD_UP');
   }
 
-  async setStatus(
+  /** `BREAK` pauses a stopwatch or starts a pomodoro break now; `RESUME` resumes or skips the break. */
+  async changeTimer(
     session: ReaderSession,
-    status: DeskStatus,
+    action: 'BREAK' | 'RESUME',
   ): Promise<DeskRecord> {
-    const ref = await this.requireSeat(session);
+    const ref = await this.requireSeat(session.user.id);
     const desk =
       (await this.desks.get(ref)) ??
       ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
-    if (desk.status === status) return desk;
-
     const now = Date.now();
-    const bankedFocus = desk.status === 'FOCUS' ? now - desk.statusSince : 0;
-    return this.patchAndPublish(ref, {
-      status,
-      statusSince: now,
-      focusAccumulatedMs: desk.focusAccumulatedMs + bankedFocus,
-    });
+    const timer =
+      action === 'BREAK'
+        ? startBreak(desk.timer, now)
+        : resumeFocus(desk.timer, now);
+    if (timer === desk.timer) return desk;
+    return this.patchAndPublish(ref, { timer });
   }
 
   /**
    * Keeps presence and the desk lease alive. Before the app is suspended the client sends
-   * `background: true`, which stretches the lease so a locked phone does not lose its chair.
+   * `background: true`, which stretches the lease so a locked phone does not lose its desk.
    */
   async heartbeat(
     session: ReaderSession,
@@ -197,6 +182,12 @@ export class LibraryService {
       { leaseExpiresAt },
     );
     return { serverTime: now, leaseExpiresAt: desk?.leaseExpiresAt ?? null };
+  }
+
+  /** The reader's own desk wherever it is, so a client can show its timer outside the room. */
+  async mySeat(userId: string): Promise<DeskRecord | null> {
+    const seat = await this.desks.seatOf(userId);
+    return seat ? this.desks.get(seat) : null;
   }
 
   async updateProfile(
@@ -222,6 +213,23 @@ export class LibraryService {
     await this.vacate(ref, 'LEASE_EXPIRED', now);
   }
 
+  /** Ends every session in the room and tells viewers it is gone. */
+  async closeRoom(roomId: string): Promise<void> {
+    for (const desk of await this.desks.list(roomId)) {
+      await this.vacate(
+        { roomId, deskId: desk.deskId, userId: desk.userId },
+        'ROOM_CLOSED',
+      );
+    }
+    await this.bus.publish(roomId, ServerEvent.roomClosed, {});
+    await this.rooms.close(roomId);
+  }
+
+  async standUp(userId: string): Promise<void> {
+    const seat = await this.desks.seatOf(userId);
+    if (seat) await this.vacate({ ...seat, userId }, 'STOOD_UP');
+  }
+
   private async vacate(
     ref: LeaseRef,
     reason: VacateReason,
@@ -229,7 +237,14 @@ export class LibraryService {
   ): Promise<void> {
     const desk = await this.desks.release(ref, expiredBefore);
     if (!desk) return;
-    await this.sessions.record(ref.roomId, desk, Date.now(), reason);
+    const now = Date.now();
+    const room = await this.rooms.roomState(ref.roomId, now);
+    await this.sessions.record(
+      { id: ref.roomId, name: room?.name ?? 'Piksel Salon' },
+      desk,
+      now,
+      reason,
+    );
     await this.bus.publish(ref.roomId, ServerEvent.deskVacated, {
       deskId: desk.deskId,
       userId: desk.userId,
@@ -254,7 +269,7 @@ export class LibraryService {
       this.rooms.roomState(roomId, now),
       this.desks.list(roomId),
     ]);
-    if (!room) ProtocolError.throw('ROOM_NOT_FOUND', 'This hall has closed');
+    if (!room) ProtocolError.throw('ROOM_NOT_FOUND', 'This room has closed');
     return { room, layout: LIBRARY_LAYOUT, desks, serverTime: now };
   }
 
@@ -268,29 +283,16 @@ export class LibraryService {
     }
   }
 
-  private async privateRoomId(code: string): Promise<string> {
-    const roomId = RoomDirectory.privateRoomId(code);
-    if (!(await this.rooms.exists(roomId)))
-      ProtocolError.throw('ROOM_NOT_FOUND', `No hall with code ${code}`);
-    return roomId;
-  }
-
-  private async resumeOrAssign(userId: string, now: number): Promise<string> {
-    const seat = await this.desks.seatOf(userId);
-    if (seat && (await this.rooms.exists(seat.roomId))) return seat.roomId;
-    return this.rooms.assignPublicRoom(now);
-  }
-
-  private async requireSeat(session: ReaderSession): Promise<LeaseRef> {
+  private async requireSeat(userId: string): Promise<LeaseRef> {
     const seat =
-      (await this.desks.seatOf(session.user.id)) ??
+      (await this.desks.seatOf(userId)) ??
       ProtocolError.throw('NOT_SEATED', 'You are not at a desk');
-    return { ...seat, userId: session.user.id };
+    return { ...seat, userId };
   }
 
-  private static requireRoom(session: ReaderSession): string {
-    return (
-      session.roomId ?? ProtocolError.throw('NOT_IN_ROOM', 'Join a hall first')
-    );
+  private static startTimer(setup: TimerSetup, now: number): DeskTimer {
+    return setup.mode === 'POMODORO'
+      ? { ...setup, anchorAt: now, bankedFocusMs: 0 }
+      : { mode: 'STOPWATCH', running: true, since: now, bankedFocusMs: 0 };
   }
 }

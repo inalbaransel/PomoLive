@@ -29,9 +29,13 @@ export class RoomEventBus implements OnModuleInit {
     await this.redis.subscriber.psubscribe(RedisKeys.roomEventsPattern);
   }
 
+  /** Every payload carries its `roomId`: a reader also receives their own desk's events from other rooms. */
   async publish(roomId: string, event: string, data: object): Promise<void> {
     await this.redis.client
-      .publish(RedisKeys.roomEvents(roomId), JSON.stringify({ event, data }))
+      .publish(
+        RedisKeys.roomEvents(roomId),
+        JSON.stringify({ event, data: { roomId, ...data } }),
+      )
       .catch((error: Error) =>
         this.logger.error(`Publish to ${roomId} failed: ${error.message}`),
       );

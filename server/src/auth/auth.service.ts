@@ -32,6 +32,17 @@ export class AuthService {
     return { user, session: await this.sessions.issue(user.id) };
   }
 
+  /** Re-checks the password before destructive account actions. */
+  async confirmPassword(userId: string, password: string): Promise<void> {
+    const hash = await this.users.passwordHash(userId);
+    if (
+      !(await verifyPassword(password, hash ?? DECOY_PASSWORD_HASH)) ||
+      !hash
+    ) {
+      ProtocolError.throw('INVALID_CREDENTIALS', 'Password is wrong');
+    }
+  }
+
   private async resolveUser(command: AuthCommand): Promise<UserProfile> {
     switch (command.method) {
       case 'register':

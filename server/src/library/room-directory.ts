@@ -1,18 +1,32 @@
-import { randomInt } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { AppConfig } from '../config/app-config.js';
 import { RedisService } from '../infra/redis.service.js';
-import { cyclePhaseAt } from './cycle.js';
 import { LIBRARY_LAYOUT } from './layout/library-layout.js';
-import { RoomState, RoomType } from './library.types.js';
+import { RoomKind, RoomState } from './library.types.js';
 import { RedisKeys } from './redis-keys.js';
 
 const PRESENCE_TTL_MS = 2 * 60_000;
-const PRIVATE_ROOM_IDLE_MS = 24 * 60 * 60_000;
-const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const HALL_EMOJI = '🏛️';
 
-/** Creates rooms, routes readers into public halls (auto-sharding) and tracks who is looking at which hall. */
+export interface RoomIdentity {
+  id: string;
+  kind: RoomKind;
+  name: string;
+  emoji: string;
+  code: string | null;
+  ownerId: string | null;
+}
+
+export interface LiveCounts {
+  presenceCount: number;
+  occupiedCount: number;
+}
+
+/**
+ * Live state of every room in Redis: who is looking at it and how many desks are taken.
+ * System halls are created here and auto-sharded; user rooms get live state on first entry.
+ */
 @Injectable()
 export class RoomDirectory {
   private readonly redis: Redis;
@@ -24,33 +38,52 @@ export class RoomDirectory {
     this.redis = redis.client;
   }
 
-  /** The first public hall below the shard threshold, opening a new one when all are busy. */
-  async assignPublicRoom(now: number): Promise<string> {
-    const roomIds = await this.redis.zrange(RedisKeys.publicRooms, '0', '-1');
-    const counts = await Promise.all(
-      roomIds.map((roomId) => this.presenceCount(roomId, now)),
-    );
-    const available = roomIds.find(
-      (_, index) => counts[index] < this.config.shardThreshold,
-    );
-    return available ?? this.createPublicRoom(now);
+  static isHallId(roomId: string): boolean {
+    return /^pixel-hall-\d+$/.test(roomId);
   }
 
-  async createPrivateRoom(
-    now: number,
-  ): Promise<{ roomId: string; code: string }> {
-    for (;;) {
-      const code = Array.from(
-        { length: 6 },
-        () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)],
-      ).join('');
-      const roomId = RoomDirectory.privateRoomId(code);
-      if (await this.redis.hsetnx(RedisKeys.roomState(roomId), 'id', roomId)) {
-        await this.writeRoomState(roomId, 'PRIVATE', code, now);
-        await this.redis.zadd(RedisKeys.privateRooms, now, roomId);
-        return { roomId, code };
-      }
+  static hallIdentity(roomId: string): RoomIdentity {
+    const number = roomId.slice('pixel-hall-'.length);
+    return {
+      id: roomId,
+      kind: 'HALL',
+      name: `Piksel Salon ${number}`,
+      emoji: HALL_EMOJI,
+      code: null,
+      ownerId: null,
+    };
+  }
+
+  /** All system halls, opening the first one if none exists yet. */
+  async hallIds(): Promise<string[]> {
+    const ids = await this.redis.zrange(RedisKeys.halls, '0', '-1');
+    return ids.length > 0 ? ids : [await this.createHall()];
+  }
+
+  /** The first hall below the shard threshold, opening a new one when all are busy. */
+  async assignHall(now: number): Promise<string> {
+    const ids = await this.hallIds();
+    const counts = await this.liveCounts(ids, now);
+    return (
+      ids.find(
+        (id) => counts.get(id)!.presenceCount < this.config.shardThreshold,
+      ) ?? this.createHall()
+    );
+  }
+
+  /** Creates the room's live state unless it already exists, and marks user rooms as active. */
+  async ensureLive(room: RoomIdentity, now: number): Promise<void> {
+    if (await this.redis.hsetnx(RedisKeys.roomState(room.id), 'id', room.id)) {
+      await this.redis.hset(RedisKeys.roomState(room.id), {
+        kind: room.kind,
+        name: room.name,
+        emoji: room.emoji,
+        code: room.code ?? '',
+        ownerId: room.ownerId ?? '',
+      });
     }
+    if (room.kind !== 'HALL')
+      await this.redis.zadd(RedisKeys.liveRooms, now, room.id);
   }
 
   async exists(roomId: string): Promise<boolean> {
@@ -58,35 +91,45 @@ export class RoomDirectory {
   }
 
   async roomState(roomId: string, now: number): Promise<RoomState | null> {
-    const [[, fields], [, occupiedCount], [, presenceCount]] = (await this.redis
-      .multi()
-      .hgetall(RedisKeys.roomState(roomId))
-      .hlen(RedisKeys.roomDesks(roomId))
-      .zcount(RedisKeys.roomPresence(roomId), now - PRESENCE_TTL_MS, '+inf')
-      .exec())! as [
-      [null, Record<string, string>],
-      [null, number],
-      [null, number],
-    ];
+    const fields = await this.redis.hgetall(RedisKeys.roomState(roomId));
     if (!fields.id) return null;
-
-    const focusMinutes = Number(fields.focusMinutes);
-    const breakMinutes = Number(fields.breakMinutes);
-    const cycleAnchorAt = Number(fields.cycleAnchorAt);
-    const cycle = cyclePhaseAt(cycleAnchorAt, focusMinutes, breakMinutes, now);
+    const counts = (await this.liveCounts([roomId], now)).get(roomId)!;
     return {
       id: fields.id,
-      type: fields.type as RoomType,
+      kind: fields.kind as RoomKind,
+      name: fields.name,
+      emoji: fields.emoji,
       code: fields.code || null,
+      ownerId: fields.ownerId || null,
       capacity: LIBRARY_LAYOUT.desks.length,
-      occupiedCount,
-      presenceCount,
-      focusMinutes,
-      breakMinutes,
-      cycleAnchorAt,
-      cyclePhase: cycle.phase,
-      cycleEndsAt: cycle.endsAt,
+      ...counts,
     };
+  }
+
+  /** Readers looking at and seated in each room, in one round-trip. Rooms without live state count as empty. */
+  async liveCounts(
+    roomIds: string[],
+    now: number,
+  ): Promise<Map<string, LiveCounts>> {
+    const pipeline = this.redis.pipeline();
+    for (const roomId of roomIds) {
+      pipeline.zcount(
+        RedisKeys.roomPresence(roomId),
+        now - PRESENCE_TTL_MS,
+        '+inf',
+      );
+      pipeline.hlen(RedisKeys.roomDesks(roomId));
+    }
+    const results = (await pipeline.exec()) ?? [];
+    return new Map(
+      roomIds.map((roomId, index) => [
+        roomId,
+        {
+          presenceCount: Number(results[index * 2]?.[1] ?? 0),
+          occupiedCount: Number(results[index * 2 + 1]?.[1] ?? 0),
+        },
+      ]),
+    );
   }
 
   async touchPresence(
@@ -95,86 +138,50 @@ export class RoomDirectory {
     now: number,
   ): Promise<void> {
     await this.redis.zadd(RedisKeys.roomPresence(roomId), now, userId);
-    if (roomId.startsWith('private-'))
-      await this.redis.zadd(RedisKeys.privateRooms, now, roomId);
+    if (!RoomDirectory.isHallId(roomId))
+      await this.redis.zadd(RedisKeys.liveRooms, now, roomId);
   }
 
   async removePresence(roomId: string, userId: string): Promise<void> {
     await this.redis.zrem(RedisKeys.roomPresence(roomId), userId);
   }
 
-  /** Drops stale presence and deletes halls nobody uses. The first public hall is permanent. */
-  async collectGarbage(now: number): Promise<void> {
-    const publicRooms = await this.redis.zrange(
-      RedisKeys.publicRooms,
-      '0',
-      '-1',
-    );
-    const privateRooms = await this.redis.zrange(
-      RedisKeys.privateRooms,
-      '0',
-      '-1',
-      'WITHSCORES',
-    );
+  /** Drops a room's live state entirely (it was deleted). Desks must be vacated first. */
+  async close(roomId: string): Promise<void> {
+    await this.redis
+      .multi()
+      .del(
+        RedisKeys.roomState(roomId),
+        RedisKeys.roomDesks(roomId),
+        RedisKeys.roomPresence(roomId),
+      )
+      .zrem(RedisKeys.liveRooms, roomId)
+      .exec();
+  }
 
-    for (const roomId of [
-      ...publicRooms,
-      ...privateRooms.filter((_, index) => index % 2 === 0),
-    ]) {
+  /** Drops stale presence; deletes empty extra halls and the live state of empty user rooms. The first hall stays. */
+  async collectGarbage(now: number): Promise<void> {
+    const halls = await this.redis.zrange(RedisKeys.halls, '0', '-1');
+    const liveRooms = await this.redis.zrange(RedisKeys.liveRooms, '0', '-1');
+    for (const roomId of [...halls, ...liveRooms]) {
       await this.redis.zremrangebyscore(
         RedisKeys.roomPresence(roomId),
         '-inf',
         now - PRESENCE_TTL_MS,
       );
     }
-    for (const roomId of publicRooms.slice(1)) {
-      await this.deleteIfEmpty(roomId, RedisKeys.publicRooms);
-    }
-    for (let index = 0; index < privateRooms.length; index += 2) {
-      const [roomId, lastActiveAt] = [
-        privateRooms[index],
-        Number(privateRooms[index + 1]),
-      ];
-      if (now - lastActiveAt > PRIVATE_ROOM_IDLE_MS)
-        await this.deleteIfEmpty(roomId, RedisKeys.privateRooms);
-    }
+    for (const roomId of halls.slice(1))
+      await this.deleteIfEmpty(roomId, RedisKeys.halls);
+    for (const roomId of liveRooms)
+      await this.deleteIfEmpty(roomId, RedisKeys.liveRooms);
   }
 
-  static privateRoomId(code: string): string {
-    return `private-${code}`;
-  }
-
-  private async createPublicRoom(now: number): Promise<string> {
-    const sequence = await this.redis.incr(RedisKeys.roomSequence);
+  private async createHall(): Promise<string> {
+    const sequence = await this.redis.incr(RedisKeys.hallSequence);
     const roomId = `pixel-hall-${sequence}`;
-    await this.writeRoomState(roomId, 'PUBLIC', '', now);
-    await this.redis.zadd(RedisKeys.publicRooms, sequence, roomId);
+    await this.ensureLive(RoomDirectory.hallIdentity(roomId), Date.now());
+    await this.redis.zadd(RedisKeys.halls, sequence, roomId);
     return roomId;
-  }
-
-  private async writeRoomState(
-    roomId: string,
-    type: RoomType,
-    code: string,
-    now: number,
-  ): Promise<void> {
-    await this.redis.hset(RedisKeys.roomState(roomId), {
-      id: roomId,
-      type,
-      code,
-      focusMinutes: this.config.focusMinutes,
-      breakMinutes: this.config.breakMinutes,
-      cycleAnchorAt: Math.floor(now / 60_000) * 60_000,
-      createdAt: now,
-    });
-  }
-
-  private async presenceCount(roomId: string, now: number): Promise<number> {
-    return this.redis.zcount(
-      RedisKeys.roomPresence(roomId),
-      now - PRESENCE_TTL_MS,
-      '+inf',
-    );
   }
 
   private async deleteIfEmpty(roomId: string, registry: string): Promise<void> {
