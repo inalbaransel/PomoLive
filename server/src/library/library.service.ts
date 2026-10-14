@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CategoriesRepository } from '../categories/categories.repository.js';
 import { AppConfig } from '../config/app-config.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
@@ -48,6 +48,8 @@ export interface SitRequest {
 /** What happens inside a room: who looks at it, who sits where, and each desk's timer. */
 @Injectable()
 export class LibraryService {
+  private readonly logger = new Logger(LibraryService.name);
+
   constructor(
     private readonly config: AppConfig,
     private readonly rooms: RoomDirectory,
@@ -186,6 +188,12 @@ export class LibraryService {
       { ...seat, userId: session.user.id },
       { leaseExpiresAt },
     );
+    if (!desk) {
+      // The seat pointer names a desk the reader no longer holds; the lease cannot be renewed.
+      this.logger.warn(
+        `Heartbeat could not renew ${session.user.id} at ${seat.roomId}/${seat.deskId}`,
+      );
+    }
     return { serverTime: now, leaseExpiresAt: desk?.leaseExpiresAt ?? null };
   }
 

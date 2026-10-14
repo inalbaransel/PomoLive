@@ -15,16 +15,22 @@ docker-compose.yml   Coolify için production stack (server + postgres + redis)
 
 - Çerçeve: `{ "event": string, "data": object }`. İstemci komutları `data.ref` taşır, sunucu her birine
   aynı `ref` ile bir `reply` döner (`ok: true, result` veya `ok: false, error: { code, message }`).
-  Oda değişiklikleri `ref`'siz yayın olarak gelir: `desk:occupied`, `desk:updated`, `desk:vacated`, `room:presence`.
+  Oda değişiklikleri `ref`'siz yayın olarak gelir: `desk:occupied`, `desk:updated`, `desk:vacated`, `room:presence`,
+  `room:closed`. Her yayın `roomId` taşır; kişi kendi masasının olaylarını hangi ekranda olursa olsun alır.
 - Kontrat: [`server/src/realtime/protocol.ts`](server/src/realtime/protocol.ts) ↔ [`ios/PomoLive/Networking`](ios/PomoLive/Networking).
-- **Zaman damgası senkronu:** Sunucu tick göndermez. Salonun pomodoro döngüsü `cycleAnchorAt`'ten deterministik
-  hesaplanır (sunucu `cycle.ts`, iOS `HallCycle.swift`). İstemci saat farkını her heartbeat'te NTP tarzı ölçer.
+- **Kişisel sayaç, sunucu tick'i yok:** Her masa kendi sayacını taşır: pomodoro (odak/mola süreleri + başlangıç)
+  ya da kronometre (çalışıyor/duraklatıldı + birikmiş süre). Faz ve süre aynı formülle sunucuda
+  (`desk-timer.ts`) ve iOS'ta (`DeskTimer.swift`) hesaplanır. İstemci saat farkını her heartbeat'te NTP tarzı ölçer.
 - **Masa durumu Redis'te, atomik Lua script'leriyle** (`desk-store.ts`): masa kaydı, kullanıcının koltuk
   işaretçisi ve lease her zaman tutarlıdır. Çoklu instance'ta yayın Redis pub/sub ile yapılır.
 - **Lease:** ön planda 90 sn, arka plana geçerken 45 dk (kilitli telefon masasını kaybetmez). `LeaseReaper`
   süresi dolan masaları boşaltır ve seansı Postgres'e yazar (Redis kilidiyle tek instance çalışır).
-- **Auto-sharding:** Genel salon 25 kişiye (`SHARD_THRESHOLD`) ulaşınca yeni `pixel-hall-N` açılır.
-  Özel salonlar 6 haneli kodla (`room:create` / `room:join { code }`).
+- **Odalar:** Sistemin genel salonları (`pixel-hall-N`, 25 kişide yeni salon açılır) yalnızca Redis'te yaşar.
+  Kullanıcı odaları (ad, simge, özel/herkese açık, 6 haneli kod) Postgres'te; canlı durumları Redis'te.
+  "Odalarım": oluşturduğun, kodla katıldığın ya da masaya oturduğun odalar. Odadan çıkmak masayı bırakmaz.
+- **Kategoriler ve istatistik:** 8 hazır kategori + kullanıcının kendi kategorileri. Biten her oturum
+  mod, kategori ve oda adıyla Postgres'e yazılır; `stats:summary` bugün/hafta/seri/son 7 gün/kategori dağılımını,
+  `history:list` sayfalı geçmişi döner.
 - **Kimlik:** E-posta + şifre. Şifreler `scrypt` ile hash'lenir (`server/src/auth/passwords.ts`); aynı e-postaya
   15 dakikada 10 hatalı denemeden sonra giriş geçici olarak kilitlenir. Sunucu 30 günlük session JWT verir,
   cihaz Keychain'de saklar. iOS formu sistem Parolalar otomatik doldurmasıyla çalışır.
