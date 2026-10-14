@@ -52,11 +52,6 @@ final class AppModel {
         phase = .signedIn
     }
 
-    /// First half of e-mail sign-in. Uses a short-lived unauthenticated connection.
-    func requestEmailCode(for email: String) async throws -> Int {
-        if await !socket.isConnected { try await socket.connect() }
-        return try await socket.send(RequestEmailCodeCommand(email: email)).resendAfterSeconds
-    }
 
     func signOut() async {
         connectionTask?.cancel()

@@ -9,10 +9,9 @@ datasource db {
 
 model User {
   id             String         @id @default(uuid()) @db.Uuid
-  appleSubject   String?        @unique
-  googleSubject  String?        @unique
-  /// Verified address only; links Apple, Google and e-mail sign-ins to one account.
-  email          String?        @unique
+  email          String         @unique
+  /// scrypt hash, see `src/auth/passwords.ts`.
+  passwordHash   String
   displayName    String         @db.VarChar(24)
   avatarSpriteId String         @default("scholar_01") @db.VarChar(32)
   createdAt      DateTime       @default(now())

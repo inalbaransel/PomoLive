@@ -7,7 +7,6 @@ import { WebSocket } from 'ws';
 import { AppModule } from '../src/app.module.js';
 import { RedisService } from '../src/infra/redis.service.js';
 import { RedisKeys } from '../src/library/redis-keys.js';
-import { Mailer } from '../src/mail/mailer.js';
 
 interface Frame {
   event: string;
@@ -64,26 +63,14 @@ class TestClient {
   }
 }
 
-/** Captures sign-in codes instead of sending e-mail. */
-class InboxMailer {
-  readonly codes = new Map<string, string>();
-
-  sendSignInCode(email: string, code: string): Promise<void> {
-    this.codes.set(email, code);
-    return Promise.resolve();
-  }
-}
-
 describe('Library realtime protocol (e2e)', () => {
   let app: INestApplication;
   let url: string;
-  const inbox = new InboxMailer();
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(Mailer)
-      .useValue(inbox)
-      .compile();
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = moduleRef.createNestApplication();
     app.useWebSocketAdapter(new WsAdapter(app));
     await app.listen(0);
@@ -94,17 +81,17 @@ describe('Library realtime protocol (e2e)', () => {
     await app.close();
   });
 
-  async function signInWithEmail(
+  const password = 'kütüphane-2026';
+
+  function register(
     client: TestClient,
     email: string,
     displayName?: string,
   ): Promise<any> {
-    expect((await client.send('auth:email-code', { email })).ok).toBe(true);
-    const code = inbox.codes.get(email.toLowerCase());
     return client.send('auth', {
-      method: 'email',
+      method: 'register',
       email,
-      code,
+      password,
       displayName,
       timeZone: 'Europe/Istanbul',
     });
@@ -112,7 +99,7 @@ describe('Library realtime protocol (e2e)', () => {
 
   async function signedIn(name: string): Promise<TestClient> {
     const client = await TestClient.connect(url);
-    const reply = await signInWithEmail(
+    const reply = await register(
       client,
       `${name.toLowerCase()}-${randomUUID()}@example.com`,
       name,
@@ -190,36 +177,59 @@ describe('Library realtime protocol (e2e)', () => {
     selin.close();
   });
 
-  it('signs in by e-mail code once, rejecting wrong codes and rapid resends', async () => {
+  it('registers with e-mail and password, then logs in with the same credentials only', async () => {
     const client = await TestClient.connect(url);
-    const email = `Kod-${randomUUID()}@Example.com`;
-    expect((await client.send('auth:email-code', { email })).ok).toBe(true);
-    expect(await client.send('auth:email-code', { email })).toMatchObject({
+    const email = `Kayit-${randomUUID()}@Example.com`;
+
+    const created = await register(client, email);
+    expect(created.ok).toBe(true);
+    expect(created.result.user.displayName).toMatch(/^Kayit/);
+    expect(await register(client, email.toLowerCase())).toMatchObject({
       ok: false,
-      error: { code: 'RATE_LIMITED' },
+      error: { code: 'EMAIL_TAKEN' },
     });
 
     const wrong = await client.send('auth', {
-      method: 'email',
+      method: 'password',
       email,
-      code:
-        '000000' === inbox.codes.get(email.toLowerCase()) ? '111111' : '000000',
+      password: 'yanlis-sifre',
     });
-    expect(wrong).toMatchObject({ ok: false, error: { code: 'INVALID_CODE' } });
+    expect(wrong).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_CREDENTIALS' },
+    });
+    const unknown = await client.send('auth', {
+      method: 'password',
+      email: `yok-${randomUUID()}@example.com`,
+      password,
+    });
+    expect(unknown).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_CREDENTIALS' },
+    });
 
-    const code = inbox.codes.get(email.toLowerCase());
-    const first = await client.send('auth', { method: 'email', email, code });
-    expect(first.ok).toBe(true);
-    expect(first.result.user.displayName).toMatch(/^Kod/);
-    expect(
-      await client.send('auth', { method: 'email', email, code }),
-    ).toMatchObject({ ok: false, error: { code: 'INVALID_CODE' } });
+    const loggedIn = await client.send('auth', {
+      method: 'password',
+      email,
+      password,
+    });
+    expect(loggedIn.result.user.id).toBe(created.result.user.id);
+
+    const tooShort = await client.send('auth', {
+      method: 'register',
+      email: `kisa-${randomUUID()}@example.com`,
+      password: '1234',
+    });
+    expect(tooShort).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_PAYLOAD' },
+    });
     client.close();
   });
 
   it('returns a seated reader to their hall when they reconnect with their session token', async () => {
     const first = await TestClient.connect(url);
-    const signIn = await signInWithEmail(
+    const signIn = await register(
       first,
       `baransel-${randomUUID()}@example.com`,
       'Baransel',

@@ -85,6 +85,7 @@ struct FocusDeckView: View {
                 Button(action: onToggleBreak) {
                     Label(isOnBreak ? "Odaklan" : "Mola Ver", systemImage: isOnBreak ? "bolt.fill" : "cup.and.saucer.fill")
                         .frame(maxWidth: .infinity)
+                        .foregroundStyle(.black)
                 }
                 .buttonStyle(.glassProminent)
 

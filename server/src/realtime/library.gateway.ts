@@ -24,7 +24,6 @@ import {
   joinRoomSchema,
   parsePayload,
   refSchema,
-  requestEmailCodeSchema,
   ServerEvent,
   setStatusSchema,
   sitSchema,
@@ -119,13 +118,6 @@ export class LibraryGateway
       sessionToken: session.token,
       sessionExpiresAt: session.expiresAt,
     });
-  }
-
-  /** Allowed before authentication: it is the first half of e-mail sign-in. */
-  @SubscribeMessage(ClientEvent.requestEmailCode)
-  async onRequestEmailCode(@MessageBody() data: Payload) {
-    const { email } = parsePayload(requestEmailCodeSchema, data);
-    return reply(data, await this.auth.requestEmailCode(email));
   }
 
   @SubscribeMessage(ClientEvent.joinRoom)

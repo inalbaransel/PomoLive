@@ -10,7 +10,7 @@ export interface IssuedSession {
   expiresAt: number;
 }
 
-/** Long-lived bearer tokens that let a device reconnect without repeating Sign in with Apple. */
+/** Long-lived bearer tokens that let a device reconnect without asking for the password again. */
 @Injectable()
 export class SessionTokens {
   private readonly key: Uint8Array;

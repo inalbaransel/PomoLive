@@ -1,15 +1,8 @@
-import AuthenticationServices
 import SwiftUI
 
 struct SignInView: View {
     @Environment(AppModel.self) private var app
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.webAuthenticationSession) private var webAuthenticationSession
-    @State private var appleNonce = SignInNonce()
-    @State private var isEmailSheetPresented = false
-    @State private var error: LibraryError?
-
-    private let google = GoogleSignIn()
+    @State private var accountMode: AccountSheet.Mode?
 
     var body: some View {
         VStack(spacing: 28) {
@@ -36,90 +29,31 @@ struct SignInView: View {
 
             Spacer()
 
-            if app.isSigningIn {
-                ProgressView()
-                    .controlSize(.large)
-                    .frame(height: 52)
-            } else {
-                signInButtons
-            }
-        }
-        .padding(24)
-        .sheet(isPresented: $isEmailSheetPresented) {
-            EmailSignInSheet()
-                .presentationDetents([.medium])
-        }
-        .errorAlert($error)
-    }
-
-    private var signInButtons: some View {
-        VStack(spacing: 12) {
-            SignInWithAppleButton(.continue) { request in
-                appleNonce = SignInNonce()
-                request.requestedScopes = [.fullName, .email]
-                request.nonce = appleNonce.hashed
-            } onCompletion: { result in
-                handleApple(result)
-            }
-            .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-            .frame(height: 52)
-            .clipShape(.capsule)
-
-            if let google {
+            VStack(spacing: 12) {
                 Button {
-                    signInWithGoogle(google)
+                    accountMode = .signIn
                 } label: {
-                    Label("Google ile devam et", systemImage: "g.circle.fill")
+                    Text("Giriş Yap")
+                        .frame(maxWidth: .infinity)
+                        // White on the lamp-gold accent fails contrast; dark text reads in both themes.
+                        .foregroundStyle(.black)
+                }
+                .buttonStyle(.glassProminent)
+
+                Button {
+                    accountMode = .register
+                } label: {
+                    Text("Hesap Oluştur")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.glass)
             }
-
-            Button {
-                isEmailSheetPresented = true
-            } label: {
-                Label("E-posta ile devam et", systemImage: "envelope.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.glass)
+            .controlSize(.extraLarge)
         }
-        .controlSize(.extraLarge)
-    }
-
-    private func handleApple(_ result: Result<ASAuthorization, any Error>) {
-        guard
-            case .success(let authorization) = result,
-            let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
-            let tokenData = credential.identityToken
-        else { return }
-
-        let credentialToSend = AuthenticateCommand.Credential.apple(
-            identityToken: String(decoding: tokenData, as: UTF8.self),
-            rawNonce: appleNonce.raw,
-            displayName: credential.fullName?.givenName
-        )
-        Task { await signIn(with: credentialToSend) }
-    }
-
-    private func signInWithGoogle(_ google: GoogleSignIn) {
-        Task {
-            let nonce = SignInNonce()
-            do {
-                let token = try await google.identityToken(using: webAuthenticationSession, nonce: nonce)
-                await signIn(with: .google(identityToken: token, rawNonce: nonce.raw))
-            } catch ASWebAuthenticationSessionError.canceledLogin {
-                return
-            } catch {
-                self.error = .server(code: "UNAVAILABLE", message: "")
-            }
-        }
-    }
-
-    private func signIn(with credential: AuthenticateCommand.Credential) async {
-        do {
-            try await app.signIn(with: credential)
-        } catch {
-            self.error = error as? LibraryError ?? .offline
+        .padding(24)
+        .sheet(item: $accountMode) { mode in
+            AccountSheet(mode: mode)
+                .presentationDetents([.medium, .large])
         }
     }
 }

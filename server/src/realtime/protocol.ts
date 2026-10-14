@@ -9,7 +9,6 @@ import { ProtocolError } from './protocol-error.js';
  */
 export const ClientEvent = {
   auth: 'auth',
-  requestEmailCode: 'auth:email-code',
   joinRoom: 'room:join',
   createRoom: 'room:create',
   leaveRoom: 'room:leave',
@@ -45,31 +44,23 @@ const email = z
   .toLowerCase()
   .pipe(z.email())
   .pipe(z.string().max(254));
-const oidcCredential = {
-  identityToken: z.string().min(1),
-  rawNonce: z.string().min(16).max(128),
-  displayName: displayName.optional(),
-  timeZone,
-};
+const password = z.string().min(8).max(128);
 
 export const authCommandSchema = z.discriminatedUnion('method', [
-  z.object({ method: z.literal('apple'), ...oidcCredential }),
-  z.object({ method: z.literal('google'), ...oidcCredential }),
   z.object({
-    method: z.literal('email'),
+    method: z.literal('register'),
     email,
-    code: z.string().regex(/^\d{6}$/),
+    password,
     displayName: displayName.optional(),
     timeZone,
   }),
+  z.object({ method: z.literal('password'), email, password, timeZone }),
   z.object({
     method: z.literal('session'),
     sessionToken: z.string().min(1),
     timeZone,
   }),
 ]);
-
-export const requestEmailCodeSchema = z.object({ email });
 
 export const joinRoomSchema = z.object({
   code: z

@@ -19,9 +19,8 @@ struct AuthenticateCommand: LibraryCommand {
     static let event = "auth"
 
     enum Credential: Sendable {
-        case apple(identityToken: String, rawNonce: String, displayName: String?)
-        case google(identityToken: String, rawNonce: String)
-        case email(address: String, code: String)
+        case register(email: String, password: String, displayName: String?)
+        case password(email: String, password: String)
         case session(token: String)
     }
 
@@ -29,42 +28,27 @@ struct AuthenticateCommand: LibraryCommand {
     var timeZone = TimeZone.current.identifier
 
     private enum CodingKeys: String, CodingKey {
-        case method, identityToken, rawNonce, displayName, email, code, sessionToken, timeZone
+        case method, email, password, displayName, sessionToken, timeZone
     }
 
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(timeZone, forKey: .timeZone)
         switch credential {
-        case .apple(let identityToken, let rawNonce, let displayName):
-            try container.encode("apple", forKey: .method)
-            try container.encode(identityToken, forKey: .identityToken)
-            try container.encode(rawNonce, forKey: .rawNonce)
+        case .register(let email, let password, let displayName):
+            try container.encode("register", forKey: .method)
+            try container.encode(email, forKey: .email)
+            try container.encode(password, forKey: .password)
             try container.encodeIfPresent(displayName, forKey: .displayName)
-        case .google(let identityToken, let rawNonce):
-            try container.encode("google", forKey: .method)
-            try container.encode(identityToken, forKey: .identityToken)
-            try container.encode(rawNonce, forKey: .rawNonce)
-        case .email(let address, let code):
-            try container.encode("email", forKey: .method)
-            try container.encode(address, forKey: .email)
-            try container.encode(code, forKey: .code)
+        case .password(let email, let password):
+            try container.encode("password", forKey: .method)
+            try container.encode(email, forKey: .email)
+            try container.encode(password, forKey: .password)
         case .session(let token):
             try container.encode("session", forKey: .method)
             try container.encode(token, forKey: .sessionToken)
         }
     }
-}
-
-struct EmailCodeResult: Decodable, Sendable {
-    var resendAfterSeconds: Int
-}
-
-/// Sent before authentication: mails a 6-digit sign-in code to `email`.
-struct RequestEmailCodeCommand: LibraryCommand {
-    typealias Result = EmailCodeResult
-    static let event = "auth:email-code"
-    var email: String
 }
 
 struct JoinHallCommand: LibraryCommand {

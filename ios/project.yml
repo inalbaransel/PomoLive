@@ -17,8 +17,6 @@ settings:
     DEVELOPMENT_TEAM: ""
     # Point at ws://localhost:3000/ws when running the server locally.
     POMOLIVE_SERVER_URL: "wss://api.pomolive.harbidigital.com/ws"
-    # iOS OAuth client from Google Cloud Console (…apps.googleusercontent.com). Empty hides Google sign-in.
-    GOOGLE_IOS_CLIENT_ID: ""
 
 targets:
   PomoLive:
@@ -34,16 +32,11 @@ targets:
       properties:
         CFBundleDisplayName: PomoLive
         PomoLiveServerURL: $(POMOLIVE_SERVER_URL)
-        GoogleClientID: $(GOOGLE_IOS_CLIENT_ID)
         NSSupportsLiveActivities: true
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-    entitlements:
-      path: Config/PomoLive.entitlements
-      properties:
-        com.apple.developer.applesignin: [Default]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.baransel.pomolive

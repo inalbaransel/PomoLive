@@ -25,10 +25,9 @@ docker-compose.yml   Coolify için production stack (server + postgres + redis)
   süresi dolan masaları boşaltır ve seansı Postgres'e yazar (Redis kilidiyle tek instance çalışır).
 - **Auto-sharding:** Genel salon 25 kişiye (`SHARD_THRESHOLD`) ulaşınca yeni `pixel-hall-N` açılır.
   Özel salonlar 6 haneli kodla (`room:create` / `room:join { code }`).
-- **Kimlik:** Apple, Google ve e-posta. Apple/Google ID token'ları sunucuda JWKS + nonce ile doğrulanır
-  (Google, SDK'sız: `WebAuthenticationSession` + PKCE). E-posta şifresizdir: 6 haneli kod (10 dk, 5 deneme,
-  60 sn tekrar gönderme limiti). Aynı doğrulanmış e-posta farklı yöntemlerle gelirse tek hesaba bağlanır.
-  Sunucu 30 günlük session JWT verir, cihaz Keychain'de saklar. `SMTP_URL` yoksa geliştirmede kod loga yazılır.
+- **Kimlik:** E-posta + şifre. Şifreler `scrypt` ile hash'lenir (`server/src/auth/passwords.ts`); aynı e-postaya
+  15 dakikada 10 hatalı denemeden sonra giriş geçici olarak kilitlenir. Sunucu 30 günlük session JWT verir,
+  cihaz Keychain'de saklar. iOS formu sistem Parolalar otomatik doldurmasıyla çalışır.
 - **Harita veri odaklı:** Salon planı (`library-layout.ts`) her snapshot'la gelir. iOS zemin ve dekoru
   tek bir bitmap'e basar (16 px/tile, nearest-neighbour), masalar animasyonlu sprite'lardır. Tüm piksel
   sanat kodla üretilir (`ios/Shared/PixelArt`, `ios/PomoLive/PixelArt`).
@@ -53,8 +52,7 @@ open PomoLive.xcodeproj
 ```
 
 Uygulama `POMOLIVE_SERVER_URL`'e bağlanır (`ios/project.yml`, varsayılan production). Yerel sunucuyla
-çalışmak için `ws://localhost:3000/ws` yap. Sign in with Apple için `DEVELOPMENT_TEAM`'i ayarla ve App ID'de
-capability'yi aç. Google için `GOOGLE_IOS_CLIENT_ID`'yi doldur; boşken Google butonu gizlenir.
+çalışmak için `ws://localhost:3000/ws` yap.
 
 ### Testler
 
@@ -68,6 +66,5 @@ npm run lint
 ## Deploy (Coolify / Hetzner)
 
 Coolify'da "Docker Compose" build pack ile repo kökündeki `docker-compose.yml`'ı kullan ve şu değişkenleri tanımla:
-`POSTGRES_PASSWORD`, `SESSION_SECRET` (`openssl rand -base64 48`), `APPLE_BUNDLE_ID`, `GOOGLE_CLIENT_IDS`,
-`SMTP_URL`, `MAIL_FROM`.
+`POSTGRES_PASSWORD` ve `SESSION_SECRET` (`openssl rand -base64 48`).
 Container açılışta `prisma migrate deploy` çalıştırır. Domain'i `server:3000`'e yönlendir; WebSocket upgrade Coolify proxy'sinde varsayılan olarak açıktır.

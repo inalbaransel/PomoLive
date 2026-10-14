@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { RedisService } from '../infra/redis.service.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import type { AuthCommand } from '../realtime/protocol.js';
 import { UserProfile } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
-import { AppleIdentityVerifier } from './apple-identity.verifier.js';
-import { EmailCodes } from './email-codes.js';
-import { GoogleIdentityVerifier } from './google-identity.verifier.js';
-import { VerifiedIdentity } from './oidc.js';
+import {
+  DECOY_PASSWORD_HASH,
+  hashPassword,
+  verifyPassword,
+} from './passwords.js';
 import { IssuedSession, SessionTokens } from './session-tokens.js';
+
+const MAX_FAILED_LOGINS = 10;
+const FAILED_LOGIN_WINDOW_SECONDS = 15 * 60;
 
 export interface AuthResult {
   user: UserProfile;
@@ -17,11 +22,9 @@ export interface AuthResult {
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly apple: AppleIdentityVerifier,
-    private readonly google: GoogleIdentityVerifier,
-    private readonly emailCodes: EmailCodes,
-    private readonly sessions: SessionTokens,
     private readonly users: UsersRepository,
+    private readonly sessions: SessionTokens,
+    private readonly redis: RedisService,
   ) {}
 
   async authenticate(command: AuthCommand): Promise<AuthResult> {
@@ -29,48 +32,16 @@ export class AuthService {
     return { user, session: await this.sessions.issue(user.id) };
   }
 
-  requestEmailCode(email: string): Promise<{ resendAfterSeconds: number }> {
-    return this.emailCodes.send(email);
-  }
-
   private async resolveUser(command: AuthCommand): Promise<UserProfile> {
     switch (command.method) {
-      case 'apple': {
-        const identity = await this.apple
-          .verify(command.identityToken, command.rawNonce)
-          .catch(() =>
-            ProtocolError.throw(
-              'UNAUTHORIZED',
-              'Apple identity token is invalid',
-            ),
-          );
-        return this.signIn('apple', identity, command.displayName);
-      }
-      case 'google': {
-        if (!this.google.isEnabled)
-          ProtocolError.throw(
-            'UNAVAILABLE',
-            'Google sign-in is not configured',
-          );
-        const identity = await this.google
-          .verify(command.identityToken, command.rawNonce)
-          .catch(() =>
-            ProtocolError.throw(
-              'UNAUTHORIZED',
-              'Google identity token is invalid',
-            ),
-          );
-        return this.signIn('google', identity, command.displayName);
-      }
-      case 'email': {
-        await this.emailCodes.verify(command.email, command.code);
-        return this.users.signIn({
-          provider: 'email',
-          subject: command.email,
-          email: command.email,
-          displayName: command.displayName,
-        });
-      }
+      case 'register':
+        return this.users.create(
+          command.email,
+          await hashPassword(command.password),
+          command.displayName,
+        );
+      case 'password':
+        return this.logIn(command.email, command.password);
       case 'session': {
         const userId = await this.sessions
           .verify(command.sessionToken)
@@ -83,16 +54,29 @@ export class AuthService {
     }
   }
 
-  private signIn(
-    provider: 'apple' | 'google',
-    identity: VerifiedIdentity,
-    displayName: string | undefined,
-  ) {
-    return this.users.signIn({
-      provider,
-      subject: identity.subject,
-      email: identity.email?.toLowerCase(),
-      displayName: displayName ?? identity.givenName?.slice(0, 24),
-    });
+  /** Same error for unknown e-mail and wrong password; repeated failures lock the address for a while. */
+  private async logIn(email: string, password: string): Promise<UserProfile> {
+    const failuresKey = `auth:failed-logins:${email}`;
+    const failures = Number(await this.redis.client.get(failuresKey));
+    if (failures >= MAX_FAILED_LOGINS)
+      ProtocolError.throw('RATE_LIMITED', 'Too many attempts, try again later');
+
+    const account = await this.users.findCredentials(email);
+    const matches = await verifyPassword(
+      password,
+      account?.passwordHash ?? DECOY_PASSWORD_HASH,
+    );
+    if (!account || !matches) {
+      await this.redis.client
+        .multi()
+        .incr(failuresKey)
+        .expire(failuresKey, FAILED_LOGIN_WINDOW_SECONDS)
+        .exec();
+      ProtocolError.throw('INVALID_CREDENTIALS', 'E-mail or password is wrong');
+    }
+
+    await this.redis.client.del(failuresKey);
+    const { passwordHash: _, ...profile } = account;
+    return profile;
   }
 }
