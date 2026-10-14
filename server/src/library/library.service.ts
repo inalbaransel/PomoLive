@@ -4,6 +4,7 @@ import { AppConfig } from '../config/app-config.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import { ServerEvent } from '../realtime/protocol.js';
 import { RoomEventBus } from '../realtime/room-event-bus.js';
+import { RoomsRepository } from '../rooms/rooms.repository.js';
 import { UserProfile } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { DeskStore, LeaseRef } from './desk-store.js';
@@ -53,6 +54,7 @@ export class LibraryService {
     private readonly desks: DeskStore,
     private readonly sessions: FocusSessionsRepository,
     private readonly categories: CategoriesRepository,
+    private readonly roomCatalogue: RoomsRepository,
     private readonly users: UsersRepository,
     private readonly bus: RoomEventBus,
   ) {}
@@ -119,6 +121,9 @@ export class LibraryService {
 
     switch (await this.desks.claim(roomId, desk)) {
       case 'OK':
+        if (!RoomDirectory.isHallId(roomId)) {
+          await this.roomCatalogue.touchMembership(session.user.id, roomId);
+        }
         await this.bus.publish(roomId, ServerEvent.deskOccupied, { desk });
         return desk;
       case 'DESK_TAKEN':
@@ -184,10 +189,17 @@ export class LibraryService {
     return { serverTime: now, leaseExpiresAt: desk?.leaseExpiresAt ?? null };
   }
 
-  /** The reader's own desk wherever it is, so a client can show its timer outside the room. */
-  async mySeat(userId: string): Promise<DeskRecord | null> {
+  /** The reader's own desk and its room wherever it is, so a client can show the timer outside the room. */
+  async mySeat(
+    userId: string,
+  ): Promise<{ desk: DeskRecord | null; room: RoomState | null }> {
     const seat = await this.desks.seatOf(userId);
-    return seat ? this.desks.get(seat) : null;
+    if (!seat) return { desk: null, room: null };
+    const [desk, room] = await Promise.all([
+      this.desks.get(seat),
+      this.rooms.roomState(seat.roomId, Date.now()),
+    ]);
+    return { desk, room };
   }
 
   async updateProfile(

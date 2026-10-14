@@ -2,7 +2,7 @@ name: PomoLive
 options:
   bundleIdPrefix: com.baransel
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "26.1"
   developmentLanguage: tr
   createIntermediateGroups: true
 

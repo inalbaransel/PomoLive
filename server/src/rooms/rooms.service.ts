@@ -156,13 +156,12 @@ export class RoomsService {
     const room =
       (await this.rooms.findById(roomId)) ??
       ProtocolError.throw('ROOM_NOT_FOUND', 'Room no longer exists');
-    if (
-      room.visibility === 'PRIVATE' &&
-      !(await this.rooms.isMember(userId, room.id))
-    ) {
+    const isMember = await this.rooms.isMember(userId, room.id);
+    if (room.visibility === 'PRIVATE' && !isMember) {
       ProtocolError.throw('FORBIDDEN', 'Join this room with its code');
     }
-    await this.rooms.touchMembership(userId, room.id);
+    // Only browsing a public room does not add it to "Odalarım"; sitting down there does.
+    if (isMember) await this.rooms.touchMembership(userId, room.id);
     return RoomsService.identity(room);
   }
 

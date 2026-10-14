@@ -9,19 +9,41 @@ struct UserProfile: Codable, Hashable, Sendable {
     var avatarSpriteId: String
 }
 
-enum DeskStatus: String, Codable, Sendable {
-    case focus = "FOCUS"
-    case onBreak = "BREAK"
+/// A focus category: one of the built-in ones or a reader's own (`custom:<id>` keys).
+struct FocusCategory: Codable, Hashable, Sendable, Identifiable {
+    var key: String
+    var name: String
+    var emoji: String
+
+    var id: String { key }
+    var isCustom: Bool { key.hasPrefix("custom:") }
+    var customId: String? { isCustom ? String(key.dropFirst("custom:".count)) : nil }
 }
 
-enum CyclePhase: String, Codable, Sendable {
-    case focus = "FOCUS"
-    case rest = "BREAK"
-}
-
-enum HallType: String, Codable, Sendable {
+enum RoomKind: String, Codable, Sendable {
+    case hall = "HALL"
     case `public` = "PUBLIC"
     case `private` = "PRIVATE"
+}
+
+/// A room as listed and as entered: identity plus live counts.
+struct RoomState: Codable, Hashable, Sendable, Identifiable {
+    var id: String
+    var kind: RoomKind
+    var name: String
+    var emoji: String
+    var code: String?
+    var ownerId: String?
+    var capacity: Int
+    var occupiedCount: Int
+    var presenceCount: Int
+}
+
+struct RoomsOverview: Decodable, Sendable {
+    var halls: [RoomState]
+    var publicRooms: [RoomState]
+    var myRooms: [RoomState]
+    var seatedRoomId: String?
 }
 
 struct DeskRecord: Codable, Hashable, Sendable, Identifiable {
@@ -31,43 +53,22 @@ struct DeskRecord: Codable, Hashable, Sendable, Identifiable {
     var userId: String
     var userName: String
     var avatarSpriteId: String
-    var taskLabel: String
-    var status: DeskStatus
+    var category: FocusCategory
+    var note: String?
+    var timer: DeskTimer
     var startedAt: Int64
-    var statusSince: Int64
-    var focusAccumulatedMs: Int64
     var sessionNumber: Int
     var leaseExpiresAt: Int64
 
     var id: String { deskId }
     var number: Int { deskNumber(deskId) }
 
-    func focusedMs(at serverNow: Int64) -> Int64 {
-        focusAccumulatedMs + (status == .focus ? max(0, serverNow - statusSince) : 0)
-    }
-
-    /// Minutes shown on the overhead badge: focus time while working, time on break while resting.
+    /// Minutes on the overhead badge: total focus while working, time on break while resting.
     func badgeMinutes(at serverNow: Int64) -> Int {
-        let elapsed = status == .focus ? focusedMs(at: serverNow) : max(0, serverNow - statusSince)
+        let reading = timer.reading(at: serverNow)
+        let elapsed = reading.phase == .focus ? reading.focusedMs : max(0, serverNow - reading.phaseStartedAt)
         return Int(elapsed / 60_000)
     }
-}
-
-/// `desk_0` is shown to people as "Masa 1".
-private func deskNumber(_ deskId: String) -> Int {
-    Int(deskId.drop(while: { !$0.isNumber })).map { $0 + 1 } ?? 0
-}
-
-struct RoomState: Codable, Hashable, Sendable {
-    var id: String
-    var type: HallType
-    var code: String?
-    var capacity: Int
-    var occupiedCount: Int
-    var presenceCount: Int
-    var focusMinutes: Int
-    var breakMinutes: Int
-    var cycleAnchorAt: Int64
 }
 
 struct LayoutDesk: Codable, Hashable, Sendable, Identifiable {
@@ -77,6 +78,11 @@ struct LayoutDesk: Codable, Hashable, Sendable, Identifiable {
 
     var id: String { deskId }
     var number: Int { deskNumber(deskId) }
+}
+
+/// `desk_0` is shown to people as "Masa 1".
+private func deskNumber(_ deskId: String) -> Int {
+    Int(deskId.drop(while: { !$0.isNumber })).map { $0 + 1 } ?? 0
 }
 
 struct LayoutProp: Codable, Hashable, Sendable {
@@ -111,10 +117,50 @@ struct RoomSnapshot: Decodable, Sendable {
     var serverTime: Int64
 }
 
-/// Room changes pushed by the server without being asked.
+struct CategoryTotal: Decodable, Hashable, Sendable, Identifiable {
+    var key: String
+    var name: String
+    var emoji: String
+    var ms: Int64
+
+    var id: String { key }
+}
+
+struct DayTotal: Decodable, Hashable, Sendable, Identifiable {
+    /// `YYYY-MM-DD` in the reader's time zone.
+    var date: String
+    var totalMs: Int64
+    var byCategory: [CategoryTotal]
+
+    var id: String { date }
+}
+
+struct StatsSummary: Decodable, Sendable {
+    var todayMs: Int64
+    var weekMs: Int64
+    var totalMs: Int64
+    var sessionCount: Int
+    var streakDays: Int
+    var last7Days: [DayTotal]
+    var categories: [CategoryTotal]
+}
+
+struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var roomName: String
+    var mode: TimerMode
+    var category: FocusCategory
+    var note: String?
+    var startedAt: Int64
+    var endedAt: Int64
+    var focusedMs: Int64
+}
+
+/// Room changes pushed by the server without being asked. Every one names its room.
 enum LibraryEvent: Sendable {
-    case deskOccupied(DeskRecord)
-    case deskUpdated(DeskRecord)
-    case deskVacated(deskId: String, userId: String)
-    case presence(presenceCount: Int, occupiedCount: Int)
+    case deskOccupied(roomId: String, desk: DeskRecord)
+    case deskUpdated(roomId: String, desk: DeskRecord)
+    case deskVacated(roomId: String, deskId: String, userId: String)
+    case presence(roomId: String, presenceCount: Int, occupiedCount: Int)
+    case roomClosed(roomId: String)
 }

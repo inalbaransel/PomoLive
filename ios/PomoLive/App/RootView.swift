@@ -7,7 +7,7 @@ struct RootView: View {
         Group {
             switch app.phase {
             case .signedOut: SignInView()
-            case .signedIn: HallScreen()
+            case .signedIn: MainTabView()
             }
         }
         .animation(.smooth, value: app.phase)

@@ -12,39 +12,44 @@ struct FocusLiveActivityWidget: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    PixelAvatar(id: context.attributes.avatarSpriteId, status: context.state.mode, size: 40)
+                    PixelAvatar(id: context.attributes.avatarSpriteId, phase: context.state.phase, size: 40)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    HallCountdown(state: context.state)
+                    SessionClock(state: context.state)
                         .font(.system(.title2, design: .monospaced, weight: .bold))
-                        .frame(maxWidth: 96)
+                        .frame(maxWidth: 110)
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.taskLabel)
+                    Text("\(context.attributes.categoryEmoji) \(context.attributes.categoryName)")
                         .font(.headline)
                         .lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text(statusLine(context))
+                    Text("\(phaseTitle(context)) · \(context.state.focusedMinutes) dk odak · \(context.attributes.roomName)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             } compactLeading: {
-                PixelAvatar(id: context.attributes.avatarSpriteId, status: context.state.mode, size: 22)
+                Text(context.state.phase == .focus ? context.attributes.categoryEmoji : "☕")
             } compactTrailing: {
-                HallCountdown(state: context.state)
+                SessionClock(state: context.state)
                     .font(.system(.caption, design: .monospaced, weight: .semibold))
-                    .frame(maxWidth: 52)
+                    .frame(maxWidth: 56)
             } minimal: {
-                PixelAvatar(id: context.attributes.avatarSpriteId, status: context.state.mode, size: 20)
+                PixelAvatar(id: context.attributes.avatarSpriteId, phase: context.state.phase, size: 20)
             }
             .keylineTint(.orange)
         }
     }
+}
 
-    private func statusLine(_ context: ActivityViewContext<FocusActivityAttributes>) -> String {
-        let mode = context.state.mode == .focus ? "Odaktasın" : "Moladasın"
-        return "\(mode) · \(context.state.sessionFocusMinutes) dk · \(context.attributes.hallName)"
+private func phaseTitle(_ context: ActivityViewContext<FocusActivityAttributes>) -> String {
+    switch (context.attributes.isPomodoro, context.state.phase) {
+    case (true, .focus): "Odak"
+    case (true, .rest): "Mola"
+    case (false, .focus): "Çalışıyor"
+    case (false, .rest): "Duraklatıldı"
     }
 }
 
@@ -53,44 +58,54 @@ private struct LockScreenFocusView: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            PixelAvatar(id: context.attributes.avatarSpriteId, status: context.state.mode, size: 48)
+            PixelAvatar(id: context.attributes.avatarSpriteId, phase: context.state.phase, size: 48)
             VStack(alignment: .leading, spacing: 4) {
-                Text(context.attributes.taskLabel)
+                Text("\(context.attributes.categoryEmoji) \(context.attributes.categoryName)")
                     .font(.headline)
                     .lineLimit(1)
-                Text("\(context.state.mode == .focus ? "🟢 Odakta" : "☕ Molada") · \(context.state.sessionFocusMinutes) dk")
+                Text("\(context.attributes.roomName) · \(context.state.focusedMinutes) dk odak")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             Spacer(minLength: 0)
             VStack(alignment: .trailing, spacing: 2) {
-                Text(context.state.hallPhase == .focus ? "SALON ODAKTA" : "SALON MOLADA")
+                Text(phaseTitle(context).uppercased())
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
-                HallCountdown(state: context.state)
+                SessionClock(state: context.state)
                     .font(.system(.title2, design: .monospaced, weight: .bold))
             }
         }
     }
 }
 
-private struct HallCountdown: View {
+/// Counts down a pomodoro phase, counts up a running stopwatch, or shows the frozen total while paused.
+private struct SessionClock: View {
     let state: FocusActivityAttributes.ContentState
 
     var body: some View {
-        Text(timerInterval: Date.now...max(state.hallPhaseEndsAt, .now), countsDown: true)
-            .monospacedDigit()
-            .multilineTextAlignment(.trailing)
+        Group {
+            if let end = state.phaseEndsAt {
+                Text(timerInterval: Date.now...max(end, .now), countsDown: true)
+            } else if let start = state.countUpFrom {
+                Text(timerInterval: start...Date.distantFuture, countsDown: false)
+            } else {
+                Text("\(state.focusedMinutes) dk")
+            }
+        }
+        .monospacedDigit()
+        .multilineTextAlignment(.trailing)
     }
 }
 
 private struct PixelAvatar: View {
     let id: String
-    let status: FocusActivityAttributes.ContentState.Mode
+    let phase: FocusActivityAttributes.ContentState.Phase
     let size: CGFloat
 
     var body: some View {
-        Image(decorative: AvatarSprite(id: id).image(status == .focus ? .typing(frame: 0) : .sipping(frame: 0)), scale: 1)
+        Image(decorative: AvatarSprite(id: id).image(phase == .focus ? .typing(frame: 0) : .sipping(frame: 0)), scale: 1)
             .resizable()
             .interpolation(.none)
             .frame(width: size, height: size)

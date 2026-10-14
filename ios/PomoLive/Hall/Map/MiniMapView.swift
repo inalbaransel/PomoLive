@@ -6,6 +6,7 @@ struct MiniMapView: View {
     let desks: [String: DeskRecord]
     let myUserId: String?
     let camera: MapCamera
+    let clock: ServerClock
 
     private let width: CGFloat = 104
 
@@ -17,7 +18,7 @@ struct MiniMapView: View {
             context.draw(Image(decorative: SpriteCache.shared.hall(layout), scale: 1).interpolation(.none), in: CGRect(origin: .zero, size: size))
             for desk in desks.values {
                 let dot = CGRect(x: (CGFloat(desk.tileX) + 0.5) * scale, y: CGFloat(desk.tileY) * scale, width: scale * 1.6, height: scale * 1.6)
-                let color: Color = desk.userId == myUserId ? .accentColor : desk.status == .focus ? .green : .orange
+                let color: Color = desk.userId == myUserId ? .accentColor : desk.timer.reading(at: clock.now).phase == .focus ? .green : .orange
                 context.fill(Path(dot), with: .color(color))
             }
             let visible = camera.visibleTiles

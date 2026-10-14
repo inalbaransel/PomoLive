@@ -1,7 +1,7 @@
 import ActivityKit
 import Foundation
 
-/// Mirrors the reader's desk on the Lock Screen and in the Dynamic Island while they are seated.
+/// Mirrors the reader's running session on the Lock Screen and in the Dynamic Island.
 ///
 /// `Activity` is not `Sendable`, so no reference is kept: each change is queued and applied off the
 /// main actor against `Activity.activities`, which also cleans up activities left by a killed launch.
@@ -15,7 +15,7 @@ final class FocusActivityController {
     func sync(attributes: FocusActivityAttributes, state: FocusActivityAttributes.ContentState) {
         guard lastApplied?.attributes != attributes || lastApplied?.state != state else { return }
         lastApplied = (attributes, state)
-        let content = Content(state: state, staleDate: state.hallPhaseEndsAt.addingTimeInterval(60))
+        let content = Content(state: state, staleDate: state.phaseEndsAt?.addingTimeInterval(60))
         enqueue { await Self.show(attributes, content) }
     }
 

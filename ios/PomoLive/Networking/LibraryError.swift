@@ -25,7 +25,12 @@ enum LibraryError: LocalizedError, Equatable, Sendable {
         case .server(let code, let message):
             switch code {
             case "DESK_TAKEN": "Bu masaya az önce başka biri oturdu."
-            case "ROOM_NOT_FOUND": "Bu koda sahip bir salon bulunamadı."
+            case "ROOM_NOT_FOUND": "Oda bulunamadı. Kodu kontrol et ya da oda kapanmış olabilir."
+            case "FORBIDDEN": "Bunu yapmaya yetkin yok. Özel odalara kodla girilir."
+            case "LIMIT_REACHED": "Sınıra ulaştın. Kullanmadıklarını silip tekrar dene."
+            case "NAME_TAKEN": "Bu adda bir kategorin zaten var."
+            case "CATEGORY_NOT_FOUND": "Bu kategori artık yok."
+            case "NOT_IN_ROOM": "Önce bir odaya gir."
             case "UNAUTHORIZED": "Oturumun sona erdi, lütfen tekrar giriş yap."
             case "NOT_SEATED": "Şu anda bir masada oturmuyorsun."
             case "INVALID_PAYLOAD": "Girdiğin bilgiler geçersiz."

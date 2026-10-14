@@ -243,12 +243,19 @@ describe('Library realtime protocol (e2e)', () => {
     expect(overview.myRooms).toEqual([]);
     expect(overview.seatedRoomId).toBeNull();
 
-    await visitor.send('room:join', { roomId: publicRoom.id });
-    expect(
+    const myRoomIds = async () =>
       (await visitor.send('room:list')).result.myRooms.map(
         (room: any) => room.id,
-      ),
-    ).toEqual([publicRoom.id]);
+      );
+    await visitor.send('room:join', { roomId: publicRoom.id });
+    expect(await myRoomIds()).toEqual([]);
+    await visitor.send('desk:sit', {
+      deskId: 'desk_3',
+      timer: stopwatch,
+      categoryKey: 'reading',
+    });
+    expect(await myRoomIds()).toEqual([publicRoom.id]);
+    await visitor.send('desk:stand');
     expect((await owner.send('room:list')).result.seatedRoomId).toBe(
       publicRoom.id,
     );
@@ -267,9 +274,9 @@ describe('Library realtime protocol (e2e)', () => {
     await reader.send('room:leave');
 
     const mine = await reader.send('desk:mine');
-    expect(mine.result.desk).toMatchObject({
-      deskId: 'desk_3',
-      category: { key: 'study' },
+    expect(mine.result).toMatchObject({
+      desk: { deskId: 'desk_3', category: { key: 'study' } },
+      room: { id: result.room.id },
     });
     const resumed = await reader.send('room:join');
     expect(resumed.result.room.id).toBe(result.room.id);

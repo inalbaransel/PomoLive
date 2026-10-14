@@ -3,7 +3,8 @@ import Observation
 import SwiftUI
 import UIKit
 
-/// Owns the connection lifecycle: sign-in, reconnect with backoff, heartbeats and app backgrounding.
+/// Owns the connection lifecycle (sign-in, reconnect with backoff, heartbeats, backgrounding)
+/// and the stores the tabs read from.
 @MainActor
 @Observable
 final class AppModel {
@@ -19,7 +20,13 @@ final class AppModel {
     private(set) var connection: Connection = .offline
     private(set) var user: UserProfile?
     private(set) var isSigningIn = false
+
+    let time = ServerTime()
+    let seat: SeatStore
     let hall: HallStore
+    let rooms: RoomsStore
+    let stats: StatsStore
+    let categories: CategoryStore
 
     @ObservationIgnored private let socket: LibrarySocket
     @ObservationIgnored private let sessionStore = SessionStore()
@@ -30,15 +37,15 @@ final class AppModel {
     init() {
         let address = Bundle.main.object(forInfoDictionaryKey: "PomoLiveServerURL") as? String
         socket = LibrarySocket(url: URL(string: address ?? "")!)
-        hall = HallStore(socket: socket)
+        seat = SeatStore(socket: socket, time: time)
+        hall = HallStore(socket: socket, time: time, seat: seat)
+        rooms = RoomsStore(socket: socket)
+        stats = StatsStore(socket: socket)
+        categories = CategoryStore(socket: socket)
 
-        if sessionStore.token != nil, let profile = sessionStore.profile {
-            user = profile
-            hall.user = profile
-            phase = .signedIn
-        } else {
-            phase = .signedOut
-        }
+        let restored = sessionStore.token != nil ? sessionStore.profile : nil
+        phase = restored == nil ? .signedOut : .signedIn
+        if let restored { adopt(restored) }
 
         Task { [weak self, events = socket.events] in
             for await event in events { self?.handle(event) }
@@ -52,23 +59,25 @@ final class AppModel {
         phase = .signedIn
     }
 
-
     func signOut() async {
         connectionTask?.cancel()
         heartbeatTask?.cancel()
-        if connection == .online { _ = try? await socket.send(LeaveHallCommand()) }
         await socket.disconnect()
-        sessionStore.clear()
-        hall.reset()
-        user = nil
-        connection = .offline
-        phase = .signedOut
+        endSession()
+    }
+
+    /// Permanently deletes the account after re-checking the password.
+    func deleteAccount(password: String) async throws {
+        _ = try await socket.send(DeleteAccountCommand(password: password))
+        connectionTask?.cancel()
+        heartbeatTask?.cancel()
+        await socket.disconnect()
+        endSession()
     }
 
     func updateProfile(displayName: String?, avatar: AvatarSprite?) async throws {
         let result = try await socket.send(UpdateProfileCommand(displayName: displayName, avatarSpriteId: avatar?.rawValue))
-        user = result.user
-        hall.user = result.user
+        adopt(result.user)
         sessionStore.save(profile: result.user)
     }
 
@@ -95,6 +104,24 @@ final class AppModel {
 
     // MARK: - Private
 
+    private func adopt(_ profile: UserProfile) {
+        user = profile
+        seat.userId = profile.id
+        hall.userId = profile.id
+    }
+
+    private func endSession() {
+        sessionStore.clear()
+        seat.reset()
+        hall.reset()
+        rooms.reset()
+        stats.reset()
+        categories.reset()
+        user = nil
+        connection = .offline
+        phase = .signedOut
+    }
+
     private func handle(_ event: LibrarySocket.Event) {
         switch event {
         case .disconnected:
@@ -103,6 +130,7 @@ final class AppModel {
             ensureConnected()
         case .broadcast(let event):
             hall.apply(event)
+            seat.apply(event)
         }
     }
 
@@ -112,11 +140,13 @@ final class AppModel {
             try await socket.connect()
             let auth = try await socket.send(AuthenticateCommand(credential: credential))
             sessionStore.save(token: auth.sessionToken, profile: auth.user)
-            user = auth.user
-            hall.user = auth.user
-            try await hall.enter()
+            adopt(auth.user)
             connection = .online
             startHeartbeat()
+            async let seatRefresh: Void = seat.refresh()
+            async let categoriesRefresh: Void = categories.refresh()
+            async let hallRejoin: Void = hall.rejoin()
+            _ = await (seatRefresh, categoriesRefresh, hallRejoin)
         } catch {
             await socket.disconnect()
             connection = .offline
@@ -144,9 +174,16 @@ final class AppModel {
         heartbeatTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30))
-                await self?.hall.heartbeat(background: false)
+                await self?.heartbeat(background: false)
             }
         }
+    }
+
+    /// Keeps presence and the desk lease alive, and re-measures the clock offset each round-trip.
+    private func heartbeat(background: Bool) async {
+        let sentAt = ServerClock.deviceNow()
+        guard let result = try? await socket.send(HeartbeatCommand(background: background)) else { return }
+        time.calibrate(serverTime: result.serverTime, sentAt: sentAt)
     }
 
     /// One last heartbeat before iOS suspends us, so a locked phone keeps its desk for the background lease.
@@ -154,7 +191,7 @@ final class AppModel {
         guard connection == .online else { return }
         let taskId = UIApplication.shared.beginBackgroundTask(withName: "StretchDeskLease")
         Task {
-            await hall.heartbeat(background: true)
+            await heartbeat(background: true)
             UIApplication.shared.endBackgroundTask(taskId)
         }
     }

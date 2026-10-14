@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// One desk on the map. Occupied desks loop a two-frame typing or sipping animation.
+/// One desk on the map. Occupied desks loop a two-frame typing (focus) or sipping (break) animation.
 struct PixelDeskNodeView: View {
     let desk: LayoutDesk
     let occupant: DeskRecord?
+    let clock: ServerClock
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.45)) { timeline in
@@ -16,16 +17,20 @@ struct PixelDeskNodeView: View {
         .accessibilityAddTraits(.isButton)
     }
 
+    private var phase: TimerPhase {
+        occupant?.timer.reading(at: clock.now).phase ?? .focus
+    }
+
     private func spriteKey(at date: Date) -> DeskSprite.Key {
-        guard let occupant else { return DeskSprite.Key(avatar: nil, status: .focus, frame: 0) }
-        let speed = occupant.status == .focus ? 0.45 : 1.35
+        guard let occupant else { return DeskSprite.Key(avatar: nil, phase: .focus, frame: 0) }
+        let speed = phase == .focus ? 0.45 : 1.35
         let frame = Int(date.timeIntervalSinceReferenceDate / speed) % 2
-        return DeskSprite.Key(avatar: AvatarSprite(id: occupant.avatarSpriteId), status: occupant.status, frame: frame)
+        return DeskSprite.Key(avatar: AvatarSprite(id: occupant.avatarSpriteId), phase: phase, frame: frame)
     }
 
     private var accessibilityLabel: String {
         guard let occupant else { return "Masa \(desk.number), boş" }
-        let state = occupant.status == .focus ? "odaklanıyor" : "molada"
-        return "Masa \(desk.number), \(occupant.userName) \(state), \(occupant.taskLabel)"
+        let state = phase == .focus ? "odaklanıyor" : "molada"
+        return "Masa \(desk.number), \(occupant.userName) \(state), \(occupant.category.name)"
     }
 }

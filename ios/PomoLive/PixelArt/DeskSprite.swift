@@ -4,7 +4,7 @@ import CoreGraphics
 enum DeskSprite {
     struct Key: Hashable {
         var avatar: AvatarSprite?
-        var status: DeskStatus
+        var phase: TimerPhase
         var frame: Int
     }
 
@@ -14,10 +14,10 @@ enum DeskSprite {
         var canvas = PixelCanvas(width: pixels, height: pixels)
         drawChair(&canvas)
         if let avatar = key.avatar {
-            let pose: AvatarSprite.Pose = key.status == .focus ? .typing(frame: key.frame) : .sipping(frame: key.frame)
+            let pose: AvatarSprite.Pose = key.phase == .focus ? .typing(frame: key.frame) : .sipping(frame: key.frame)
             canvas.draw(avatar.canvas(pose), x: 8, y: 4)
         }
-        drawDesk(&canvas, occupied: key.avatar != nil, status: key.status)
+        drawDesk(&canvas, occupied: key.avatar != nil, phase: key.phase)
         return canvas.makeImage()
     }
 
@@ -27,7 +27,7 @@ enum DeskSprite {
         canvas.fill(x: 12, y: 8, width: 8, height: 3, HallPalette.rug)
     }
 
-    private static func drawDesk(_ canvas: inout PixelCanvas, occupied: Bool, status: DeskStatus) {
+    private static func drawDesk(_ canvas: inout PixelCanvas, occupied: Bool, phase: TimerPhase) {
         // Surface and front panel.
         canvas.fill(x: 1, y: 17, width: 30, height: 7, HallPalette.woodLight)
         canvas.hLine(x: 1, y: 17, length: 30, HallPalette.paper.withAlpha(0x40))
@@ -51,13 +51,13 @@ enum DeskSprite {
             canvas.vLine(x: 23, y: 19, length: 3, HallPalette.floorSeam)
             return
         }
-        switch status {
+        switch phase {
         case .focus:
             // Open laptop with a glowing screen.
             canvas.fill(x: 12, y: 18, width: 9, height: 4, HallPalette.metalLight)
             canvas.fill(x: 13, y: 18, width: 7, height: 2, HallPalette.screenGlow)
             canvas.hLine(x: 11, y: 22, length: 11, HallPalette.metal)
-        case .onBreak:
+        case .rest:
             // Closed book while resting.
             canvas.fill(x: 13, y: 19, width: 7, height: 3, HallPalette.bookSpines[0])
             canvas.hLine(x: 13, y: 21, length: 7, HallPalette.paper)

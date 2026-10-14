@@ -260,7 +260,7 @@ export class LibraryGateway
     @MessageBody() data: Payload,
   ) {
     return reply(data, {
-      desk: await this.library.mySeat(this.sessionOf(socket).user.id),
+      ...(await this.library.mySeat(this.sessionOf(socket).user.id)),
       serverTime: Date.now(),
     });
   }

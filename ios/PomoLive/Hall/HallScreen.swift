@@ -1,51 +1,64 @@
 import SwiftUI
 
-/// The main screen: the pixel hall full-bleed, navigation chrome in the toolbar, the focus deck at the bottom.
+/// Inside a room: the pixel hall full-bleed, navigation chrome in the toolbar, the focus deck at the bottom.
+/// Closing the screen only stops looking at the room; a desk taken here keeps running.
 struct HallScreen: View {
+    let target: HallStore.Target
+
     @Environment(AppModel.self) private var app
+    @Environment(\.dismiss) private var dismiss
     @State private var camera = MapCamera()
     @State private var selectedDeskId: String?
     @State private var deskToSit: LayoutDesk?
-    @State private var activeSheet: ActiveSheet?
     @State private var isDeckExpanded = true
-
-    private enum ActiveSheet: String, Identifiable {
-        case hallSwitcher, profile
-        var id: String { rawValue }
-    }
+    @State private var confirmsDelete = false
+    @State private var entryError: LibraryError?
 
     var body: some View {
         @Bindable var hall = app.hall
 
         NavigationStack {
             content
-                .navigationTitle(hall.title)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbar }
                 .sheet(item: $deskToSit) { desk in
-                    SitDownSheet(desk: desk) { label in
-                        await hall.sit(at: desk, taskLabel: label)
-                        focusOnMyDesk()
+                    SessionSetupSheet(desk: desk) { timer, category, note in
+                        let didSit = await hall.sit(at: desk, timer: timer, categoryKey: category.key, note: note)
+                        if didSit { focusOnMyDesk() }
+                        return didSit
                     }
-                    .presentationDetents([.medium])
+                    .presentationDetents([.large])
                 }
-                .sheet(item: $activeSheet) { sheet in
-                    switch sheet {
-                    case .hallSwitcher:
-                        HallSwitcherSheet(
-                            room: hall.room,
-                            onJoin: { await hall.switchHall(code: $0) },
-                            onCreate: { await hall.createPrivateHall() },
-                            onReturnToPublic: { await hall.returnToPublicHall() }
-                        )
-                        .presentationDetents([.medium, .large])
-                    case .profile:
-                        if let user = app.user {
-                            ProfileSheet(user: user, onSave: app.updateProfile, onSignOut: app.signOut)
+                .confirmationDialog("Oda silinsin mi?", isPresented: $confirmsDelete, titleVisibility: .visible) {
+                    Button("Odayı Sil", role: .destructive) {
+                        Task {
+                            await hall.deleteRoom()
+                            dismiss()
                         }
                     }
+                } message: {
+                    Text("İçerideki herkesin oturumu biter ve oda listeden kalkar.")
                 }
                 .errorAlert($hall.error)
+                .alert("Odaya girilemedi", isPresented: Binding(get: { entryError != nil }, set: { if !$0 { dismiss() } })) {
+                    Button("Tamam", role: .cancel) {}
+                } message: {
+                    Text(entryError?.errorDescription ?? "")
+                }
+        }
+        .task {
+            do {
+                try await app.hall.enter(target)
+            } catch {
+                entryError = LibraryError(error)
+            }
+        }
+        .onChange(of: app.hall.wasClosed) { _, wasClosed in
+            if wasClosed { dismiss() }
+        }
+        .onDisappear {
+            let visit = app.hall.visit
+            Task { await app.hall.leave(visit: visit) }
         }
     }
 
@@ -57,93 +70,85 @@ struct HallScreen: View {
                 layout: layout,
                 desks: hall.desks,
                 myUserId: app.user?.id,
-                clock: hall.clock,
+                clock: app.time.clock,
                 camera: camera,
                 selectedDeskId: $selectedDeskId,
                 onEmptyDeskTap: { deskToSit = $0 }
             )
             .ignoresSafeArea()
             .safeAreaBar(edge: .top, alignment: .trailing) {
-                MiniMapView(layout: layout, desks: hall.desks, myUserId: app.user?.id, camera: camera)
+                MiniMapView(layout: layout, desks: hall.desks, myUserId: app.user?.id, camera: camera, clock: app.time.clock)
                     .padding(.trailing, 16)
             }
             .safeAreaBar(edge: .bottom) {
                 if let desk = hall.myDesk {
                     FocusDeckView(
                         desk: desk,
-                        cycle: hall.cycle,
-                        clock: hall.clock,
+                        clock: app.time.clock,
                         isExpanded: $isDeckExpanded,
-                        onToggleBreak: { Task { await hall.toggleBreak() } },
-                        onStand: { Task { await hall.stand() } }
+                        onChangeTimer: { action in Task { await app.seat.changeTimer(action) } },
+                        onFinish: { Task { await app.seat.stand() } }
                     )
                     .transition(.move(edge: .bottom).combined(with: .blurReplace))
                 }
             }
             .animation(.spring(duration: 0.55, bounce: 0.25), value: hall.myDesk?.deskId)
-        } else if app.connection == .offline {
-            ContentUnavailableView {
-                Label("Bağlantı yok", systemImage: "wifi.slash")
-            } description: {
-                Text("Salona bağlanılamadı. Tekrar deneniyor.")
-            } actions: {
-                Button("Şimdi Dene") { app.ensureConnected() }
-                    .buttonStyle(.glass)
-            }
         } else {
-            ProgressView("Salona giriliyor…")
+            ProgressView("Odaya giriliyor…")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button("Kapat", systemImage: "xmark", role: .close) { dismiss() }
+        }
         // The map is not a scroll view, so the title gets its own glass to stay legible over the pixels.
         ToolbarItem(placement: .principal) {
-            VStack(spacing: 1) {
-                Text(app.hall.title)
-                    .font(.headline)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .contentTransition(.numericText())
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .glassEffect(.regular, in: .capsule)
-            .animation(.smooth, value: subtitle)
-        }
-        ToolbarItem(placement: .topBarLeading) {
-            Button("Masama Git", systemImage: "scope", action: focusOnMyDesk)
-                .disabled(app.hall.myDesk == nil)
-        }
-        if let code = app.hall.room?.code, app.hall.room?.type == .private {
-            ToolbarItem(placement: .topBarTrailing) {
-                ShareLink(
-                    item: "PomoLive'da benimle çalış! Özel salon kodu: \(code)",
-                    subject: Text("PomoLive salon kodu")
-                ) {
-                    Label("Kodu Paylaş", systemImage: "square.and.arrow.up")
+            if let room = app.hall.room {
+                VStack(spacing: 1) {
+                    Text("\(room.emoji) \(room.name)")
+                        .font(.headline)
+                        .lineLimit(1)
+                    Text(subtitle(for: room))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .glassEffect(.regular, in: .capsule)
+                .animation(.smooth, value: subtitle(for: room))
             }
         }
         ToolbarItem(placement: .topBarTrailing) {
+            Button("Masama Git", systemImage: "scope", action: focusOnMyDesk)
+                .disabled(app.hall.myDesk == nil)
+        }
+        ToolbarItem(placement: .topBarTrailing) {
             Menu("Diğer", systemImage: "ellipsis") {
-                if let code = app.hall.room?.code, app.hall.room?.type == .private {
-                    Text("Salon kodu: \(code)")
+                if let room = app.hall.room, let code = room.code {
+                    ShareLink(
+                        item: "PomoLive'da \(room.emoji) \(room.name) odasına gel! Oda kodu: \(code)",
+                        subject: Text("PomoLive oda kodu")
+                    ) {
+                        Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
+                    }
                 }
-                Button("Salon Değiştir", systemImage: "door.left.hand.open") { activeSheet = .hallSwitcher }
-                Button("Profil", systemImage: "person.crop.circle") { activeSheet = .profile }
+                if app.hall.isOwner {
+                    Button("Odayı Sil", systemImage: "trash", role: .destructive) { confirmsDelete = true }
+                }
             }
+            .disabled(app.hall.room?.code == nil && !app.hall.isOwner)
         }
     }
 
-    private var subtitle: String {
+    private func subtitle(for room: RoomState) -> String {
         switch app.connection {
-        case .online:
-            guard let room = app.hall.room else { return "" }
-            return "\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa dolu"
-        case .connecting: return "Bağlanıyor…"
-        case .offline: return "Çevrimdışı"
+        case .online: "\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa dolu"
+        case .connecting: "Bağlanıyor…"
+        case .offline: "Çevrimdışı"
         }
     }
 

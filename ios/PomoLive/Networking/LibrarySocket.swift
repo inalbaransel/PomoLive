@@ -118,11 +118,15 @@ actor LibrarySocket {
             try? decoder.decode(PushFrame<Payload>.self, from: data).data
         }
         switch event {
-        case "desk:occupied": return payload(DeskPayload.self).map { .deskOccupied($0.desk) }
-        case "desk:updated": return payload(DeskPayload.self).map { .deskUpdated($0.desk) }
-        case "desk:vacated": return payload(VacatedPayload.self).map { .deskVacated(deskId: $0.deskId, userId: $0.userId) }
+        case "desk:occupied": return payload(DeskPayload.self).map { .deskOccupied(roomId: $0.roomId, desk: $0.desk) }
+        case "desk:updated": return payload(DeskPayload.self).map { .deskUpdated(roomId: $0.roomId, desk: $0.desk) }
+        case "desk:vacated":
+            return payload(VacatedPayload.self).map { .deskVacated(roomId: $0.roomId, deskId: $0.deskId, userId: $0.userId) }
         case "room:presence":
-            return payload(PresencePayload.self).map { .presence(presenceCount: $0.presenceCount, occupiedCount: $0.occupiedCount) }
+            return payload(PresencePayload.self).map {
+                .presence(roomId: $0.roomId, presenceCount: $0.presenceCount, occupiedCount: $0.occupiedCount)
+            }
+        case "room:closed": return payload(RoomPayload.self).map { .roomClosed(roomId: $0.roomId) }
         default: return nil
         }
     }
@@ -186,6 +190,7 @@ private struct PushFrame<Payload: Decodable>: Decodable {
     let data: Payload
 }
 
-private struct DeskPayload: Decodable { let desk: DeskRecord }
-private struct VacatedPayload: Decodable { let deskId: String; let userId: String }
-private struct PresencePayload: Decodable { let presenceCount: Int; let occupiedCount: Int }
+private struct DeskPayload: Decodable { let roomId: String; let desk: DeskRecord }
+private struct VacatedPayload: Decodable { let roomId: String; let deskId: String; let userId: String }
+private struct PresencePayload: Decodable { let roomId: String; let presenceCount: Int; let occupiedCount: Int }
+private struct RoomPayload: Decodable { let roomId: String }
