@@ -16,7 +16,8 @@ struct FocusDeckView: View {
     @GestureState private var dragOffset: CGFloat = 0
     @State private var confirmsFinish = false
 
-    private static let fold = Animation.spring(duration: 0.5, bounce: 0.18)
+    /// The one spring every fold and unfold runs on, shared with the controls above the deck.
+    static let fold = Animation.spring(duration: 0.5, bounce: 0.15)
     private static let foldDistance: CGFloat = 60
 
     var body: some View {
@@ -47,7 +48,6 @@ struct FocusDeckView: View {
         .padding(.bottom, 8)
         .contentShape(.rect)
         .gesture(foldGesture)
-        .animation(Self.fold, value: isExpanded)
         .animation(.interactiveSpring, value: dragOffset)
         .sensoryFeedback(.impact(weight: .light), trigger: isExpanded)
         .confirmationDialog("Oturum bitsin mi?", isPresented: $confirmsFinish, titleVisibility: .visible) {
@@ -68,9 +68,13 @@ struct FocusDeckView: View {
             .updating($dragOffset) { value, offset, _ in offset = value.translation.height }
             .onEnded { value in
                 let travel = value.predictedEndTranslation.height
-                if isExpanded, travel > Self.foldDistance { isExpanded = false }
-                if !isExpanded, travel < -Self.foldDistance / 2 { isExpanded = true }
+                if isExpanded, travel > Self.foldDistance { setExpanded(false) }
+                if !isExpanded, travel < -Self.foldDistance / 2 { setExpanded(true) }
             }
+    }
+
+    private func setExpanded(_ expanded: Bool) {
+        withAnimation(Self.fold) { isExpanded = expanded }
     }
 
     // MARK: - Header
@@ -114,7 +118,7 @@ struct FocusDeckView: View {
             }
 
             Button {
-                if isExpanded { isExpanded = false } else { onChangeTimer(action.command) }
+                if isExpanded { setExpanded(false) } else { onChangeTimer(action.command) }
             } label: {
                 Image(systemName: isExpanded ? "chevron.down" : action.symbol)
                     .contentTransition(.symbolEffect(.replace))
@@ -125,8 +129,8 @@ struct FocusDeckView: View {
             .accessibilityLabel(isExpanded ? Text("Küçült") : Text(action.title))
         }
         .contentShape(.rect)
-        .onTapGesture { if !isExpanded { isExpanded = true } }
-        .accessibilityAction(named: Text("Odak panelini aç")) { isExpanded = true }
+        .onTapGesture { if !isExpanded { setExpanded(true) } }
+        .accessibilityAction(named: Text("Odak panelini aç")) { setExpanded(true) }
     }
 
     // MARK: - Actions
