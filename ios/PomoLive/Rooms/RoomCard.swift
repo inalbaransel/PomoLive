@@ -15,7 +15,7 @@ struct RoomCard: View {
                 GlyphIcon(symbol: room.symbol, color: room.color, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 5) {
-                        Text(room.name)
+                        Text(room.displayName)
                             .font(.headline)
                             .lineLimit(1)
                         if room.kind == .private {

@@ -14,9 +14,9 @@ struct SeatAccessoryView: View {
                     GlyphIcon(symbol: desk.category.symbol, color: desk.category.color, size: 28)
                     if placement != .inline {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(desk.category.name)
+                            Text(desk.category.displayName)
                                 .font(.subheadline.weight(.semibold))
-                            Text(app.seat.room?.name ?? "")
+                            Text(app.seat.room?.displayName ?? "")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

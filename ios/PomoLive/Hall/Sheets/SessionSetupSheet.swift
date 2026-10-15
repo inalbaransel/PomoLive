@@ -132,7 +132,7 @@ struct CategoryChip: View {
             HStack(spacing: 8) {
                 Image(systemName: category.symbol)
                     .foregroundStyle(category.color.color)
-                Text(category.name)
+                Text(category.displayName)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)

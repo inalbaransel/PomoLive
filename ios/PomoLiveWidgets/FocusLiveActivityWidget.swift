@@ -47,10 +47,10 @@ struct FocusLiveActivityWidget: Widget {
 
 private func phaseTitle(_ context: ActivityViewContext<FocusActivityAttributes>) -> String {
     switch (context.attributes.isPomodoro, context.state.phase) {
-    case (true, .focus): "Odak"
-    case (true, .rest): "Mola"
-    case (false, .focus): "Çalışıyor"
-    case (false, .rest): "Duraklatıldı"
+    case (true, .focus): String(localized: "Odak")
+    case (true, .rest): String(localized: "Mola")
+    case (false, .focus): String(localized: "Çalışıyor")
+    case (false, .rest): String(localized: "Duraklatıldı")
     }
 }
 

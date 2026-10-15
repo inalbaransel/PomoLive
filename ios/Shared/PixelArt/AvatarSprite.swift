@@ -25,12 +25,12 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
 
     var displayName: String {
         switch self {
-        case .scholar: "Akademisyen"
-        case .wizard: "Kod Büyücüsü"
-        case .knight: "Şövalye"
-        case .ranger: "Gezgin"
-        case .bard: "Ozan"
-        case .robot: "Robot"
+        case .scholar: String(localized: "Akademisyen")
+        case .wizard: String(localized: "Kod Büyücüsü")
+        case .knight: String(localized: "Şövalye")
+        case .ranger: String(localized: "Gezgin")
+        case .bard: String(localized: "Ozan")
+        case .robot: String(localized: "Robot")
         }
     }
 

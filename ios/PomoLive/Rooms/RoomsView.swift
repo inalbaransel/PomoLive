@@ -83,7 +83,7 @@ struct RoomsView: View {
                 }
             }
             .confirmationDialog(
-                "\(roomToDelete?.name ?? "Oda") silinsin mi?",
+                "\(roomToDelete?.displayName ?? String(localized: "Oda")) silinsin mi?",
                 isPresented: Binding(get: { roomToDelete != nil }, set: { if !$0 { roomToDelete = nil } }),
                 titleVisibility: .visible
             ) {
@@ -116,7 +116,7 @@ struct RoomsView: View {
     @ViewBuilder
     private func menu(for room: RoomSummary) -> some View {
         if let code = room.code {
-            ShareLink(item: "PomoLive'da \(room.name) odasına gel! Oda kodu: \(code)") {
+            ShareLink(item: String(localized: "PomoLive'da \(room.displayName) odasına gel! Oda kodu: \(code)")) {
                 Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
             }
         }

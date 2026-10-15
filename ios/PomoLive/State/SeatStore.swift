@@ -117,7 +117,7 @@ final class SeatStore {
     private func syncSystemSurfaces() {
         let defaults = UserDefaults.standard
         let notificationsEnabled = defaults.object(forKey: Preferences.phaseNotifications) as? Bool ?? true
-        notifications.schedule(for: desk?.timer, categoryName: desk?.category.name ?? "", clock: time.clock, enabled: notificationsEnabled)
+        notifications.schedule(for: desk?.timer, categoryName: desk?.category.displayName ?? "", clock: time.clock, enabled: notificationsEnabled)
 
         guard let desk, let reading = reading(at: time.clock.now) else {
             liveActivity.end()
@@ -127,8 +127,8 @@ final class SeatStore {
             attributes: FocusActivityAttributes(
                 categorySymbol: desk.category.symbol,
                 categoryColor: desk.category.color,
-                categoryName: desk.category.name,
-                roomName: room?.name ?? "PomoLive",
+                categoryName: desk.category.displayName,
+                roomName: room?.displayName ?? "PomoLive",
                 avatarSpriteId: desk.avatarSpriteId,
                 isPomodoro: desk.timer.mode == .pomodoro
             ),

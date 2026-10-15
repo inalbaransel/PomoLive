@@ -29,8 +29,9 @@ struct PixelDeskNodeView: View {
     }
 
     private var accessibilityLabel: String {
-        guard let occupant else { return "Masa \(desk.number), boş" }
-        let state = phase == .focus ? "odaklanıyor" : "molada"
-        return "Masa \(desk.number), \(occupant.userName) \(state), \(occupant.category.name)"
+        guard let occupant else { return String(localized: "Masa \(desk.number), boş") }
+        return phase == .focus
+            ? String(localized: "Masa \(desk.number), \(occupant.userName) odaklanıyor, \(occupant.category.displayName)")
+            : String(localized: "Masa \(desk.number), \(occupant.userName) molada, \(occupant.category.displayName)")
     }
 }

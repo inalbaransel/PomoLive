@@ -73,7 +73,7 @@ struct DiscoverRoomsView: View {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         return result.rooms.filter { room in
             (topicKey == nil || room.topic?.key == topicKey)
-                && (trimmed.isEmpty || room.name.localizedStandardContains(trimmed))
+                && (trimmed.isEmpty || room.displayName.localizedStandardContains(trimmed))
         }
     }
 
@@ -90,9 +90,9 @@ struct DiscoverRoomsView: View {
     private func topicFilter(_ result: DiscoverResult) -> some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
-                chip("Tümü", symbol: nil, color: nil, isSelected: topicKey == nil) { topicKey = nil }
+                chip(Text("Tümü"), symbol: nil, color: nil, isSelected: topicKey == nil) { topicKey = nil }
                 ForEach(topics(in: result)) { topic in
-                    chip(topic.name, symbol: topic.symbol, color: topic.color, isSelected: topicKey == topic.key) {
+                    chip(Text(topic.displayName), symbol: topic.symbol, color: topic.color, isSelected: topicKey == topic.key) {
                         topicKey = topicKey == topic.key ? nil : topic.key
                     }
                 }
@@ -103,14 +103,14 @@ struct DiscoverRoomsView: View {
         .padding(.horizontal, -16)
     }
 
-    private func chip(_ title: String, symbol: String?, color: GlyphColor?, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func chip(_ title: Text, symbol: String?, color: GlyphColor?, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if let symbol, let color {
                     Image(systemName: symbol)
                         .foregroundStyle(isSelected ? .white : color.color)
                 }
-                Text(title)
+                title
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(isSelected ? .white : .primary)
@@ -123,7 +123,7 @@ struct DiscoverRoomsView: View {
     }
 
     @ViewBuilder
-    private func section(_ title: String, rooms: [DiscoverRoom], result: DiscoverResult) -> some View {
+    private func section(_ title: LocalizedStringKey, rooms: [DiscoverRoom], result: DiscoverResult) -> some View {
         if !rooms.isEmpty {
             SectionTitle(title)
                 .padding(.top, 10)
@@ -144,10 +144,10 @@ struct DiscoverRoomsView: View {
     /// "Yazılım ağırlıklı · bu hafta 12 sa · 8 üye"
     private func detail(for room: DiscoverRoom) -> String? {
         var parts: [String] = []
-        if let topic = room.topic { parts.append("\(topic.name) ağırlıklı") }
-        if room.weeklyFocusMs >= 60 * 60_000 { parts.append("bu hafta \(formattedFocus(room.weeklyFocusMs))") }
-        if room.memberCount > 1 { parts.append("\(room.memberCount) üye") }
-        if parts.isEmpty, isNew(room) { parts.append("Yeni açıldı") }
+        if let topic = room.topic { parts.append(String(localized: "\(topic.displayName) ağırlıklı")) }
+        if room.weeklyFocusMs >= 60 * 60_000 { parts.append(String(localized: "bu hafta \(formattedFocus(room.weeklyFocusMs))")) }
+        if room.memberCount > 1 { parts.append(String(localized: "\(room.memberCount) üye")) }
+        if parts.isEmpty, isNew(room) { parts.append(String(localized: "Yeni açıldı")) }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
@@ -199,10 +199,10 @@ private struct QuickStartCard: View {
 
 /// A grouped-style section heading for card lists.
 struct SectionTitle: View {
-    let title: String
-    let detail: String?
+    let title: LocalizedStringKey
+    let detail: LocalizedStringKey?
 
-    init(_ title: String, detail: String? = nil) {
+    init(_ title: LocalizedStringKey, detail: LocalizedStringKey? = nil) {
         self.title = title
         self.detail = detail
     }

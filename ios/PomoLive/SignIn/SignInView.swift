@@ -78,7 +78,7 @@ struct SignInView: View {
         .multilineTextAlignment(.center)
     }
 
-    private func feature(_ symbol: String, title: String, text: String) -> some View {
+    private func feature(_ symbol: String, title: LocalizedStringKey, text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: symbol)
                 .font(.title2)

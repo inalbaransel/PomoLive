@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var app
+    @AppStorage(Preferences.appearance) private var appearance = Appearance.system
 
     var body: some View {
         Group {
@@ -11,5 +12,6 @@ struct RootView: View {
             }
         }
         .animation(.smooth, value: app.phase)
+        .preferredColorScheme(appearance.colorScheme)
     }
 }

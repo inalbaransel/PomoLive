@@ -109,7 +109,7 @@ struct HallScreen: View {
             if let room = app.hall.room {
                 VStack(spacing: 1) {
                     Label {
-                        Text(room.name)
+                        Text(room.displayName)
                     } icon: {
                         Image(systemName: room.symbol)
                             .foregroundStyle(room.color.color)
@@ -135,7 +135,7 @@ struct HallScreen: View {
             Menu("Diğer", systemImage: "ellipsis") {
                 if let room = app.hall.room, let code = room.code {
                     ShareLink(
-                        item: "PomoLive'da \(room.name) odasına gel! Oda kodu: \(code)",
+                        item: String(localized: "PomoLive'da \(room.displayName) odasına gel! Oda kodu: \(code)"),
                         subject: Text("PomoLive oda kodu")
                     ) {
                         Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
@@ -151,9 +151,9 @@ struct HallScreen: View {
 
     private func subtitle(for room: RoomState) -> String {
         switch app.connection {
-        case .online: "\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa dolu"
-        case .connecting: "Bağlanıyor…"
-        case .offline: "Çevrimdışı"
+        case .online: String(localized: "\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa dolu")
+        case .connecting: String(localized: "Bağlanıyor…")
+        case .offline: String(localized: "Çevrimdışı")
         }
     }
 

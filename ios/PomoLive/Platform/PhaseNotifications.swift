@@ -20,10 +20,10 @@ final class PhaseNotifications {
             guard (try? await center.requestAuthorization(options: [.alert, .sound])) == true else { return }
             for (index, change) in changes.enumerated() {
                 let content = UNMutableNotificationContent()
-                content.title = change.phase == .rest ? "Mola zamanı" : "Odak zamanı"
+                content.title = change.phase == .rest ? String(localized: "Mola zamanı") : String(localized: "Odak zamanı")
                 content.body = change.phase == .rest
-                    ? "Biraz dinlen, masan seni bekliyor."
-                    : "Mola bitti. \(categoryName) çalışmana kaldığın yerden devam."
+                    ? String(localized: "Biraz dinlen, masan seni bekliyor.")
+                    : String(localized: "Mola bitti. \(categoryName) çalışmana kaldığın yerden devam.")
                 content.sound = .default
                 content.interruptionLevel = .timeSensitive
                 let delay = max(1, clock.localDate(change.at).timeIntervalSinceNow)

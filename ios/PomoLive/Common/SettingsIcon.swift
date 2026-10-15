@@ -17,7 +17,7 @@ struct SettingsIcon: View {
 
 /// A settings row: colored icon and title.
 struct SettingsLabel: View {
-    let title: String
+    let title: LocalizedStringKey
     let systemName: String
     let color: Color
 

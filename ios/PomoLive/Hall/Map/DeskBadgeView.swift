@@ -22,7 +22,7 @@ struct DeskBadgeView: View {
                 }
                 .font(.system(size: 11, weight: .semibold))
                 if isExpanded {
-                    Text([desk.category.name, desk.note, "\(desk.sessionNumber). Seans"].compactMap(\.self).joined(separator: " • "))
+                    Text([desk.category.displayName, desk.note, String(localized: "\(desk.sessionNumber). Seans")].compactMap(\.self).joined(separator: " • "))
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.secondary)
                         .transition(.blurReplace)

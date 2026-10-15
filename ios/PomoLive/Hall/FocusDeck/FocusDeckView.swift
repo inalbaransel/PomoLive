@@ -62,13 +62,13 @@ struct FocusDeckView: View {
                 .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Label {
-                    Text(desk.category.name)
+                    Text(desk.category.displayName)
                 } icon: {
                     Image(systemName: desk.category.symbol)
                         .foregroundStyle(desk.category.color.color)
                 }
                 .font(.headline)
-                Text(desk.note ?? "Masa \(desk.number) · \(desk.sessionNumber). seans")
+                Text(desk.note ?? String(localized: "Masa \(desk.number) · \(desk.sessionNumber). seans"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -82,7 +82,7 @@ struct FocusDeckView: View {
     }
 
     private func actions(for reading: TimerReading) -> some View {
-        let (title, symbol, action): (String, String, ChangeTimerCommand.Action) = switch (desk.timer.mode, reading.phase) {
+        let (title, symbol, action): (LocalizedStringKey, String, ChangeTimerCommand.Action) = switch (desk.timer.mode, reading.phase) {
         case (.pomodoro, .focus): ("Molaya Geç", "cup.and.saucer.fill", .rest)
         case (.pomodoro, .rest): ("Molayı Atla", "forward.fill", .resume)
         case (.stopwatch, .focus): ("Duraklat", "pause.fill", .rest)
@@ -118,7 +118,7 @@ struct FocusDeckView: View {
                     .foregroundStyle(desk.category.color.color)
                 TimerText(timer: desk.timer, clock: clock)
                     .font(.system(.headline, design: .rounded))
-                Text(desk.category.name)
+                Text(desk.category.displayName)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -148,7 +148,7 @@ private struct ProgressRing: View {
 
     private var tint: Color { reading.phase == .focus ? .accentColor : .mint }
 
-    private var phaseTitle: String {
+    private var phaseTitle: LocalizedStringKey {
         switch (timer.mode, reading.phase) {
         case (.pomodoro, .focus): "Odak"
         case (.pomodoro, .rest): "Mola"

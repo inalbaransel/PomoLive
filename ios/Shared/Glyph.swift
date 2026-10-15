@@ -6,6 +6,23 @@ enum GlyphColor: String, CaseIterable, Codable, Hashable, Sendable, Identifiable
 
     var id: String { rawValue }
 
+    var accessibilityName: String {
+        switch self {
+        case .red: String(localized: "Kırmızı")
+        case .orange: String(localized: "Turuncu")
+        case .yellow: String(localized: "Sarı")
+        case .green: String(localized: "Yeşil")
+        case .mint: String(localized: "Nane")
+        case .teal: String(localized: "Turkuaz")
+        case .blue: String(localized: "Mavi")
+        case .indigo: String(localized: "Çivit")
+        case .purple: String(localized: "Mor")
+        case .pink: String(localized: "Pembe")
+        case .brown: String(localized: "Kahverengi")
+        case .gray: String(localized: "Gri")
+        }
+    }
+
     var color: Color {
         switch self {
         case .red: .red

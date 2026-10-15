@@ -8,6 +8,8 @@ struct ProfileView: View {
     @AppStorage(Preferences.pomodoroBreakMinutes) private var breakMinutes = 5
     @AppStorage(Preferences.phaseNotifications) private var phaseNotifications = true
     @AppStorage(Preferences.haptics) private var haptics = true
+    @AppStorage(Preferences.appearance) private var appearance = Appearance.system
+    @Environment(\.openURL) private var openURL
     @State private var confirmsSignOut = false
     @State private var isDeletingAccount = false
 
@@ -77,6 +79,30 @@ struct ProfileView: View {
                     Text("Masaya otururken bunlar hazır seçili gelir; her oturumda değiştirebilirsin.")
                 }
 
+                Section {
+                    Picker(selection: $appearance) {
+                        ForEach(Appearance.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
+                    } label: {
+                        SettingsLabel(title: "Görünüm", systemName: "circle.lefthalf.filled", color: .gray)
+                    }
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                    } label: {
+                        LabeledContent {
+                            Text(currentLanguageName)
+                        } label: {
+                            SettingsLabel(title: "Dil", systemName: "globe", color: .blue)
+                        }
+                    }
+                    .tint(.primary)
+                } header: {
+                    Text("Görünüm ve Dil")
+                } footer: {
+                    Text("Dil, iPhone Ayarlar'ında PomoLive için seçilir.")
+                }
+
                 Section("Bildirimler") {
                     Toggle(isOn: $phaseNotifications) {
                         SettingsLabel(title: "Mola ve Odak Hatırlatmaları", systemName: "bell.badge.fill", color: .red)
@@ -114,6 +140,12 @@ struct ProfileView: View {
 }
 
 extension ProfileView {
+    /// "Türkçe" / "English": the language the app is actually running in.
+    fileprivate var currentLanguageName: String {
+        let code = Bundle.main.preferredLocalizations.first ?? "tr"
+        return Locale(identifier: code).localizedString(forLanguageCode: code)?.localizedCapitalized ?? code
+    }
+
     /// Preset choices plus the current value, so a custom duration picked elsewhere still shows.
     fileprivate static func options(_ presets: [Int], including value: Int) -> [Int] {
         Array(Set(presets + [value])).sorted()

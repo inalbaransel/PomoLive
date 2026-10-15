@@ -21,7 +21,7 @@ struct GlyphPicker: View {
                             }
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(option.rawValue)
+                    .accessibilityLabel(option.accessibilityName)
                     .accessibilityAddTraits(option == color ? .isSelected : [])
                 }
             }

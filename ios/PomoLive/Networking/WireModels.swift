@@ -213,6 +213,8 @@ struct StatsSummary: Decodable, Sendable {
 
 struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {
     var id: String
+    /// Missing from servers older than the localization release.
+    var roomId: String?
     var roomName: String
     var mode: TimerMode
     var category: FocusCategory

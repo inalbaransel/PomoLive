@@ -32,6 +32,7 @@ export interface StatsSummary {
 
 export interface HistoryEntry {
   id: string;
+  roomId: string;
   roomName: string;
   mode: 'POMODORO' | 'STOPWATCH';
   category: CategoryInfo;
@@ -146,6 +147,7 @@ export class StatsService {
     });
     const entries = rows.slice(0, limit).map((row) => ({
       id: row.id,
+      roomId: row.roomId,
       roomName: row.roomName,
       mode: row.mode,
       category: {

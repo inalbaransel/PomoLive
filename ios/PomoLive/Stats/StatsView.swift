@@ -94,16 +94,16 @@ private struct Headline: View {
             HStack(alignment: .top) {
                 column("Bu Hafta", value: formattedFocus(summary.weekMs))
                 Divider()
-                column("Seri", value: "\(summary.streakDays) gün")
+                column("Seri", value: String(localized: "\(summary.streakDays) gün"))
                 Divider()
-                column("Toplam", value: formattedFocus(summary.totalMs), detail: "\(summary.sessionCount) seans")
+                column("Toplam", value: formattedFocus(summary.totalMs), detail: String(localized: "\(summary.sessionCount) seans"))
             }
             .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 6)
     }
 
-    private func column(_ title: String, value: String, detail: String? = nil) -> some View {
+    private func column(_ title: LocalizedStringKey, value: String, detail: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.caption.weight(.semibold))
@@ -190,7 +190,7 @@ private struct CategoryRow: View {
             GlyphIcon(symbol: category.symbol, color: category.color, size: 34)
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text(category.name)
+                    Text(category.displayName)
                     Spacer()
                     Text(formattedFocus(category.ms))
                         .foregroundStyle(.secondary)
@@ -221,9 +221,9 @@ struct HistoryRow: View {
         HStack(spacing: 12) {
             GlyphIcon(symbol: entry.category.symbol, color: entry.category.color, size: 36)
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.note ?? entry.category.name)
+                Text(entry.note ?? entry.category.displayName)
                     .lineLimit(1)
-                Text("\(entry.roomName) · \(entry.mode == .pomodoro ? "Pomodoro" : "Kronometre")")
+                Text("\(entry.roomDisplayName) · \(entry.mode.displayName)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -245,7 +245,7 @@ struct HistoryRow: View {
     private static func when(_ date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) { return date.formatted(date: .omitted, time: .shortened) }
-        if calendar.isDateInYesterday(date) { return "Dün" }
+        if calendar.isDateInYesterday(date) { return String(localized: "Dün") }
         return date.formatted(.dateTime.day().month(.abbreviated))
     }
 }
