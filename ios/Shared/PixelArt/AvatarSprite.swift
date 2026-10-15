@@ -8,6 +8,15 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
     case ranger = "ranger_01"
     case bard = "bard_01"
     case robot = "robot_01"
+    case student = "student_f_01"
+    case coder = "coder_m_01"
+    case artist = "artist_f_01"
+    case athlete = "athlete_m_01"
+    case doctor = "doctor_f_01"
+    case gamer = "gamer_m_01"
+    case scientist = "scientist_f_01"
+    case hijabi = "hijab_f_01"
+    case cat = "cat_01"
 
     enum Pose: Hashable, Sendable {
         case idle
@@ -31,6 +40,15 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
         case .ranger: String(localized: "Gezgin")
         case .bard: String(localized: "Ozan")
         case .robot: String(localized: "Robot")
+        case .student: String(localized: "Öğrenci")
+        case .coder: String(localized: "Yazılımcı")
+        case .artist: String(localized: "Ressam")
+        case .athlete: String(localized: "Sporcu")
+        case .doctor: String(localized: "Doktor")
+        case .gamer: String(localized: "Oyuncu")
+        case .scientist: String(localized: "Bilim İnsanı")
+        case .hijabi: String(localized: "Kitap Kurdu")
+        case .cat: String(localized: "Kedi")
         }
     }
 
@@ -112,6 +130,96 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
             "....MMMMMMMM....",
             "....MMDDDDMM....",
             ".....MMMMMM.....",
+        ]
+        case .student: [
+            "................",
+            ".....HHHHHH.....",
+            "....HHHHHHHH....",
+            "...HHSSSSSSHH...",
+            "...HSSESSESSH...",
+            "...HSSSSSSSSH...",
+            "...HHSSPPSSHH...",
+            "...HH.SSSS.HH...",
+        ]
+        case .coder: [
+            "................",
+            "....HHHHHHH.....",
+            "....HHHHHHHH....",
+            "....HSSSSSSS....",
+            "....GEGSSGEG....",
+            "....SSSSSSSS....",
+            ".....SSSSSS.....",
+            "................",
+        ]
+        case .artist: [
+            ".........B......",
+            "....BBBBBBB.....",
+            "...BBBBBBBBB....",
+            "...HHSSSSSSHH...",
+            "...HSSESSESSH...",
+            "...HSSSSSSSSH...",
+            "....HSSPPSSH....",
+            "....HH....HH....",
+        ]
+        case .athlete: [
+            "................",
+            ".....HHHHHH.....",
+            "....HHHHHHHH....",
+            "....RRRRRRRR....",
+            "....SSESSESS....",
+            "....SSSSSSSS....",
+            ".....SSSSSS.....",
+            "................",
+        ]
+        case .doctor: [
+            "......HHHH......",
+            "......HHHH......",
+            ".....HHHHHH.....",
+            "....HHSSSSHH....",
+            "....SSESSESS....",
+            "....SSSSSSSS....",
+            ".....SSPPSS.....",
+            "................",
+        ]
+        case .gamer: [
+            "................",
+            ".....KKKKKK.....",
+            "....K.HHHH.K....",
+            "...KKHHHHHHKK...",
+            "...RKSESSESKR...",
+            "...RKSSSSSSKR...",
+            "....SSSSSSSS....",
+            ".....SSSSSS.....",
+        ]
+        case .scientist: [
+            "....HHH.HHH.....",
+            "...HHHHHHHHHH...",
+            "...HHHHHHHHHH...",
+            "...HHSSSSSSHH...",
+            "...HGEGSSGEGH...",
+            "...HSSSSSSSSH...",
+            "...HHSSPPSSHH...",
+            "....HH....HH....",
+        ]
+        case .hijabi: [
+            "................",
+            ".....WWWWWW.....",
+            "....WWWWWWWW....",
+            "...WWSSSSSSWW...",
+            "...WSSESSESSW...",
+            "...WSSSSSSSSW...",
+            "...WWSSPPSSWW...",
+            "....WWWWWWWW....",
+        ]
+        case .cat: [
+            "...K........K...",
+            "...KK......KK...",
+            "...KKKKKKKKKK...",
+            "...KKKKKKKKKK...",
+            "...KKGKKKKGKK...",
+            "...KKKKPPKKKK...",
+            "....KKKKKKKK....",
+            ".....KKKKKK.....",
         ]
         }
     }
@@ -215,6 +323,61 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
             colors["A"] = PixelColor(0xE74C_3CFF)
             colors["C"] = PixelColor(0x5D70_80FF)
             colors["S"] = PixelColor(0x8FA3_B3FF)
+        case .student:
+            colors["H"] = PixelColor(0x5A3825FF)
+            colors["P"] = PixelColor(0xD9747CFF)
+            colors["C"] = PixelColor(0x3F7FD9FF)
+            colors["A"] = PixelColor(0xF4EE_E0FF)
+        case .coder:
+            colors["S"] = PixelColor(0xD9A066FF)
+            colors["H"] = PixelColor(0x1F1A1CFF)
+            colors["G"] = PixelColor(0x8FA3_B3FF)
+            colors["C"] = PixelColor(0x3A3F4BFF)
+            colors["A"] = PixelColor(0x4DE1_F2FF)
+        case .artist:
+            colors["B"] = PixelColor(0x2B2D42FF)
+            colors["H"] = PixelColor(0xC2452DFF)
+            colors["P"] = PixelColor(0xD9747CFF)
+            colors["C"] = PixelColor(0xF2D16BFF)
+            colors["A"] = PixelColor(0xE86A8AFF)
+        case .athlete:
+            colors["S"] = PixelColor(0x8D5524FF)
+            colors["H"] = PixelColor(0x1F1A1CFF)
+            colors["R"] = PixelColor(0xE2534AFF)
+            colors["C"] = PixelColor(0xE2534AFF)
+            colors["A"] = PixelColor(0xF4EE_E0FF)
+        case .doctor:
+            colors["H"] = PixelColor(0xE8C46AFF)
+            colors["P"] = PixelColor(0xD9747CFF)
+            colors["C"] = PixelColor(0xF4F6F8FF)
+            colors["A"] = PixelColor(0x3EC1B5FF)
+        case .gamer:
+            colors["S"] = PixelColor(0xC68642FF)
+            colors["H"] = PixelColor(0x3B2A1EFF)
+            colors["K"] = PixelColor(0x222428FF)
+            colors["R"] = PixelColor(0x8E44_ADFF)
+            colors["C"] = PixelColor(0x8E44_ADFF)
+            colors["A"] = PixelColor(0x2ECC71FF)
+        case .scientist:
+            colors["S"] = PixelColor(0x8D5524FF)
+            colors["H"] = PixelColor(0x1F1A1CFF)
+            colors["G"] = PixelColor(0xC0C6CFFF)
+            colors["P"] = PixelColor(0xA8505AFF)
+            colors["C"] = PixelColor(0xF4F6F8FF)
+            colors["A"] = PixelColor(0x6A3F_B5FF)
+        case .hijabi:
+            colors["S"] = PixelColor(0xD9A066FF)
+            colors["W"] = PixelColor(0x2E8B7AFF)
+            colors["P"] = PixelColor(0xB5606AFF)
+            colors["C"] = PixelColor(0x2E8B7AFF)
+            colors["A"] = PixelColor(0xF2D16BFF)
+        case .cat:
+            colors["K"] = PixelColor(0xE89A4AFF)
+            colors["G"] = PixelColor(0x3DBE5AFF)
+            colors["P"] = PixelColor(0xF29BB0FF)
+            colors["S"] = PixelColor(0xE89A4AFF)
+            colors["C"] = PixelColor(0xE89A4AFF)
+            colors["A"] = PixelColor(0xF7F3EAFF)
         }
         return colors
     }

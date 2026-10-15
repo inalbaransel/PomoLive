@@ -6,6 +6,15 @@ export const AVATAR_SPRITE_IDS = [
   'ranger_01',
   'bard_01',
   'robot_01',
+  'student_f_01',
+  'coder_m_01',
+  'artist_f_01',
+  'athlete_m_01',
+  'doctor_f_01',
+  'gamer_m_01',
+  'scientist_f_01',
+  'hijab_f_01',
+  'cat_01',
 ] as const;
 
 export type AvatarSpriteId = (typeof AVATAR_SPRITE_IDS)[number];

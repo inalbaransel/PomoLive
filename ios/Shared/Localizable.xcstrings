@@ -596,6 +596,16 @@
         }
       }
     },
+    "Bilim İnsanı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scientist"
+          }
+        }
+      }
+    },
     "Bir odada masaya oturup en az bir dakika odaklandığında burada görünür." : {
       "localizations" : {
         "en" : {
@@ -912,6 +922,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Other"
+          }
+        }
+      }
+    },
+    "Doktor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doctor"
           }
         }
       }
@@ -1474,6 +1494,16 @@
         }
       }
     },
+    "Kedi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cat"
+          }
+        }
+      }
+    },
     "Keşfet" : {
       "localizations" : {
         "en" : {
@@ -1500,6 +1530,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sit down in a room from Discover, or open your own with friends."
+          }
+        }
+      }
+    },
+    "Kitap Kurdu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bookworm"
           }
         }
       }
@@ -2422,6 +2462,16 @@
         }
       }
     },
+    "Oyuncu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gamer"
+          }
+        }
+      }
+    },
     "Ozan" : {
       "localizations" : {
         "en" : {
@@ -2566,6 +2616,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color"
+          }
+        }
+      }
+    },
+    "Ressam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artist"
           }
         }
       }
@@ -2747,6 +2807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Results"
+          }
+        }
+      }
+    },
+    "Sporcu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athlete"
           }
         }
       }
@@ -3011,6 +3081,16 @@
         }
       }
     },
+    "Yazılımcı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer"
+          }
+        }
+      }
+    },
     "Yeni" : {
       "localizations" : {
         "en" : {
@@ -3247,6 +3327,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Private"
+          }
+        }
+      }
+    },
+    "Öğrenci" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Student"
           }
         }
       }
