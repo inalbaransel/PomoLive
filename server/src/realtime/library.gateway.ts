@@ -232,7 +232,7 @@ export class LibraryGateway
     @ConnectedSocket() socket: WebSocket,
     @MessageBody() data: Payload,
   ) {
-    const { name, symbol, color, visibility } = parsePayload(
+    const { name, symbol, color, visibility, theme } = parsePayload(
       createRoomSchema,
       data,
     );
@@ -242,6 +242,7 @@ export class LibraryGateway
       name,
       { symbol, color },
       visibility,
+      theme,
     );
     return reply(data, await this.library.enter(session, room));
   }

@@ -25,6 +25,7 @@ export interface RoomSummary {
   name: string;
   symbol: string;
   color: string;
+  theme: string;
   code: string | null;
   ownerId: string | null;
   capacity: number;
@@ -192,6 +193,7 @@ export class RoomsService {
     name: string,
     glyph: Glyph,
     visibility: RoomVisibility,
+    theme: string = 'classic',
   ): Promise<RoomIdentity> {
     if ((await this.rooms.countOwned(ownerId)) >= MAX_OWNED_ROOMS) {
       ProtocolError.throw(
@@ -200,7 +202,7 @@ export class RoomsService {
       );
     }
     return RoomsService.identity(
-      await this.rooms.create(ownerId, name, glyph, visibility),
+      await this.rooms.create(ownerId, name, glyph, visibility, theme),
     );
   }
 
@@ -233,12 +235,12 @@ export class RoomsService {
     return RoomDirectory.hallIdentity(await this.directory.assignHall(now));
   }
 
-  /** Applies the owner's edits to name, icon or visibility. */
+  /** Applies the owner's edits to name, icon, visibility or theme. */
   async update(
     ownerId: string,
     roomId: string,
     changes: Partial<
-      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility'>
+      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility' | 'theme'>
     >,
   ): Promise<RoomIdentity> {
     await this.owned(ownerId, roomId);
@@ -319,6 +321,7 @@ export class RoomsService {
       name: room.name,
       symbol: room.symbol,
       color: room.color,
+      theme: room.theme,
       code: room.code,
       ownerId: room.ownerId,
     };

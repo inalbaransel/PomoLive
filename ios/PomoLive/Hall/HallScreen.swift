@@ -14,6 +14,9 @@ struct HallScreen: View {
     @State private var confirmsDelete = false
     @State private var wasRemoved = false
     @State private var entryError: LibraryError?
+    @State private var showsMiniMap = true
+    @State private var showsChatToast = false
+    @State private var cameraTrigger = 0
 
     private enum Sheet: Identifiable {
         case sit(LayoutDesk)
@@ -62,7 +65,7 @@ struct HallScreen: View {
                         .presentationDetents([.medium, .large])
                     case .editRoom(let room):
                         RoomEditorSheet(room: room) { draft in
-                            try await hall.update(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility)
+                            try await hall.update(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility, theme: draft.theme)
                         }
                     }
                 }
@@ -93,6 +96,14 @@ struct HallScreen: View {
                 try await app.hall.enter(target)
             } catch {
                 entryError = LibraryError(error)
+            }
+        }
+        .task(id: showsChatToast) {
+            if showsChatToast {
+                try? await Task.sleep(for: .seconds(2.5))
+                withAnimation(.easeOut(duration: 0.3)) {
+                    showsChatToast = false
+                }
             }
         }
         .onChange(of: app.hall.exit) { _, exit in
@@ -132,8 +143,11 @@ struct HallScreen: View {
             )
             .ignoresSafeArea()
             .safeAreaBar(edge: .top, alignment: .trailing) {
-                MiniMapView(layout: layout, desks: hall.desks, myUserId: app.user?.id, camera: camera, clock: app.time.clock)
-                    .padding(.trailing, 16)
+                if showsMiniMap {
+                    MiniMapView(layout: layout, desks: hall.desks, myUserId: app.user?.id, camera: camera, clock: app.time.clock)
+                        .padding(.trailing, 16)
+                        .transition(.scale(scale: 0.85).combined(with: .opacity))
+                }
             }
             .safeAreaBar(edge: .bottom) {
                 if let desk = hall.myDesk {
@@ -147,6 +161,17 @@ struct HallScreen: View {
                     .transition(.move(edge: .bottom).combined(with: .blurReplace))
                 }
             }
+            .overlay(alignment: .bottomTrailing) {
+                floatingControls
+                    .padding(.trailing, 16)
+                    .padding(.bottom, bottomControlsPadding)
+                    .animation(.spring(duration: 0.45, bounce: 0.12), value: isDeckExpanded)
+                    .animation(.spring(duration: 0.55, bounce: 0.25), value: hall.myDesk?.deskId)
+            }
+            .overlay(alignment: .top) {
+                chatToastView
+                    .padding(.top, 8)
+            }
             .animation(.spring(duration: 0.55, bounce: 0.25), value: hall.myDesk?.deskId)
         } else {
             ProgressView("Odaya giriliyor…")
@@ -154,32 +179,99 @@ struct HallScreen: View {
         }
     }
 
+    // MARK: - Floating Controls (Bottom Right)
+
+    private var floatingControls: some View {
+        VStack(spacing: 12) {
+            // Chat button
+            Button {
+                withAnimation(.spring(duration: 0.35, bounce: 0.2)) {
+                    showsChatToast = true
+                }
+            } label: {
+                Image(systemName: "bubble.left.and.bubble.right.fill")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 48, height: 48)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .circle)
+            .sensoryFeedback(.impact(weight: .light), trigger: showsChatToast)
+            .accessibilityLabel("Sohbet")
+
+            // Camera recenter / focus on desk button
+            Button {
+                handleCameraRecenter()
+            } label: {
+                Image(systemName: app.hall.myDesk != nil ? "scope" : "viewfinder")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(app.hall.myDesk != nil ? (app.hall.room?.color.color ?? .accentColor) : .primary)
+                    .frame(width: 48, height: 48)
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .circle)
+            .sensoryFeedback(.impact(weight: .light), trigger: cameraTrigger)
+            .accessibilityLabel(app.hall.myDesk != nil ? "Masama Odaklan" : "Salonu Ortala")
+        }
+    }
+
+    private var bottomControlsPadding: CGFloat {
+        if app.hall.myDesk != nil {
+            return isDeckExpanded ? 330 : 110
+        } else {
+            return 50
+        }
+    }
+
+    @ViewBuilder
+    private var chatToastView: some View {
+        if showsChatToast {
+            HStack(spacing: 8) {
+                Image(systemName: "bubble.left.and.bubble.right.fill")
+                    .foregroundStyle(app.hall.room?.color.color ?? .accentColor)
+                Text("Sohbet çok yakında!")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .glassEffect(.regular, in: .capsule)
+            .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
+            .transition(.move(edge: .top).combined(with: .opacity))
+        }
+    }
+
+    // MARK: - Toolbar
+
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button("Kapat", systemImage: "xmark", role: .close) { dismiss() }
         }
-        // The map is not a scroll view, so the title gets its own glass to stay legible over the pixels.
-        // Like a group chat's header, tapping it shows who is in the room.
+
+        // Prominent, centered room pill: icon + name + live count. Tapping it opens room members & details.
         ToolbarItem(placement: .principal) {
             if let room = app.hall.room {
                 Button { sheet = .people } label: {
-                    title(for: room)
+                    roomHeader(for: room)
                 }
                 .buttonStyle(.plain)
                 .accessibilityHint("Odadaki kişileri gösterir")
             }
         }
-        ToolbarItem(placement: .topBarTrailing) {
-            Button("Kişiler", systemImage: "person.2.fill") { sheet = .people }
-                .disabled(app.hall.room == nil)
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Button("Masama Git", systemImage: "scope", action: focusOnMyDesk)
-                .disabled(app.hall.myDesk == nil)
-        }
+
         ToolbarItem(placement: .topBarTrailing) {
             Menu("Diğer", systemImage: "ellipsis") {
+                Toggle(isOn: $showsMiniMap.animation(.spring(duration: 0.4, bounce: 0.2))) {
+                    Label("Mini Harita", systemImage: "map")
+                }
+
+                Button {
+                    sheet = .people
+                } label: {
+                    Label("Odadaki Kişiler", systemImage: "person.2")
+                }
+
                 if let room = app.hall.room, let code = room.code {
                     ShareLink(
                         item: String(localized: "PomoLive'da \(room.displayName) odasına gel! Oda kodu: \(code)"),
@@ -188,34 +280,57 @@ struct HallScreen: View {
                         Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
                     }
                 }
+
                 if app.hall.isOwner, let room = app.hall.room {
+                    Divider()
                     Button("Odayı Düzenle", systemImage: "pencil") { sheet = .editRoom(room) }
                     Button("Odayı Sil", systemImage: "trash", role: .destructive) { confirmsDelete = true }
                 }
             }
-            .disabled(app.hall.room?.code == nil && !app.hall.isOwner)
         }
     }
 
-    private func title(for room: RoomState) -> some View {
-        VStack(spacing: 1) {
-            Label {
-                Text(room.displayName)
-            } icon: {
+    private func roomHeader(for room: RoomState) -> some View {
+        HStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(room.color.color.opacity(0.2))
                 Image(systemName: room.symbol)
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(room.color.color)
             }
-            .font(.headline)
-            .lineLimit(1)
-            Text(subtitle(for: room))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .contentTransition(.numericText())
+            .frame(width: 32, height: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(room.displayName)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(app.connection == .online ? Color.green : Color.orange)
+                        .frame(width: 5, height: 5)
+                    Text(subtitle(for: room))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
+        .padding(.leading, 6)
+        .padding(.trailing, 14)
+        .padding(.vertical, 5)
         .glassEffect(.regular.interactive(), in: .capsule)
         .animation(.smooth, value: subtitle(for: room))
+        .accessibilityLabel("\(room.displayName), \(subtitle(for: room))")
+        .accessibilityHint("Odadaki kişileri ve detayları açar")
     }
 
     private func subtitle(for room: RoomState) -> String {
@@ -223,6 +338,23 @@ struct HallScreen: View {
         case .online: String(localized: "\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa dolu")
         case .connecting: String(localized: "Bağlanıyor…")
         case .offline: String(localized: "Çevrimdışı")
+        }
+    }
+
+    private func handleCameraRecenter() {
+        cameraTrigger += 1
+        if let desk = app.hall.myDesk {
+            isDeckExpanded = true
+            withAnimation(.spring(duration: 0.7, bounce: 0.22)) {
+                camera.focus(onTile: CGPoint(x: desk.tileX + 1, y: desk.tileY + 1), zoom: max(camera.zoom, 3))
+            }
+        } else if let layout = app.hall.layout {
+            withAnimation(.spring(duration: 0.7, bounce: 0.22)) {
+                camera.focus(
+                    onTile: CGPoint(x: CGFloat(layout.width) / 2, y: CGFloat(layout.height) / 2),
+                    zoom: 1.4
+                )
+            }
         }
     }
 

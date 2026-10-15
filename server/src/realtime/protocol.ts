@@ -125,6 +125,7 @@ export const createRoomSchema = z.object({
   name: label(2, 32),
   ...glyph,
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
+  theme: z.enum(['classic', 'coffee_shop']).default('classic').optional(),
 });
 
 export const deleteRoomSchema = z.object({ roomId: uuid });
@@ -136,6 +137,7 @@ export const updateRoomSchema = z
     symbol: glyph.symbol.optional(),
     color: glyph.color.optional(),
     visibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
+    theme: z.enum(['classic', 'coffee_shop']).optional(),
   })
   .refine((changes) => Object.keys(changes).length > 1, {
     message: 'Nothing to change',

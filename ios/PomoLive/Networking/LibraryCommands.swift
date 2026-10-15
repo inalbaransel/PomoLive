@@ -90,6 +90,7 @@ struct CreateRoomCommand: LibraryCommand {
     var symbol: String
     var color: GlyphColor
     var visibility: RoomKind
+    var theme: String?
 }
 
 struct DeleteRoomCommand: LibraryCommand {
@@ -111,6 +112,7 @@ struct UpdateRoomCommand: LibraryCommand {
     var symbol: String?
     var color: GlyphColor?
     var visibility: RoomKind?
+    var theme: String?
 }
 
 struct RoomMembersCommand: LibraryCommand {

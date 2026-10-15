@@ -29,6 +29,7 @@ export interface RoomState {
   name: string;
   symbol: string;
   color: string;
+  theme: string;
   /** Share code of a user-created room; `null` for system halls. */
   code: string | null;
   ownerId: string | null;

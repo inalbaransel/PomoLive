@@ -58,9 +58,9 @@ final class HallStore {
         apply(try await timed { try await self.socket.send(command) })
     }
 
-    func create(name: String, symbol: String, color: GlyphColor, visibility: RoomKind) async throws {
+    func create(name: String, symbol: String, color: GlyphColor, visibility: RoomKind, theme: RoomTheme = .classic) async throws {
         visit += 1
-        apply(try await timed { try await self.socket.send(CreateRoomCommand(name: name, symbol: symbol, color: color, visibility: visibility)) })
+        apply(try await timed { try await self.socket.send(CreateRoomCommand(name: name, symbol: symbol, color: color, visibility: visibility, theme: theme.rawValue)) })
     }
 
     /// After a reconnect the server has forgotten what this connection looked at.
@@ -76,9 +76,9 @@ final class HallStore {
         _ = try? await socket.send(LeaveRoomCommand())
     }
 
-    func update(name: String, symbol: String, color: GlyphColor, visibility: RoomKind) async throws {
+    func update(name: String, symbol: String, color: GlyphColor, visibility: RoomKind, theme: RoomTheme = .classic) async throws {
         guard let room else { return }
-        _ = try await socket.send(UpdateRoomCommand(roomId: room.id, name: name, symbol: symbol, color: color, visibility: visibility))
+        _ = try await socket.send(UpdateRoomCommand(roomId: room.id, name: name, symbol: symbol, color: color, visibility: visibility, theme: theme.rawValue))
     }
 
     func members() async throws -> RoomMembers {

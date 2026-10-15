@@ -3,7 +3,16 @@
  * Coordinates are tiles; the client decides pixel size. Rows `y < WALL_HEIGHT` are the back wall.
  */
 export type PropKind =
-  'window' | 'clock' | 'bookshelf' | 'plant' | 'coffeeMachine' | 'rug' | 'door';
+  | 'window'
+  | 'clock'
+  | 'bookshelf'
+  | 'plant'
+  | 'coffeeMachine'
+  | 'rug'
+  | 'door'
+  | 'neonSign'
+  | 'chalkboard'
+  | 'coffeeBar';
 
 export interface LayoutDesk {
   deskId: string;
@@ -21,6 +30,7 @@ export interface LayoutProp {
 
 export interface LibraryLayout {
   version: number;
+  theme: string;
   width: number;
   height: number;
   wallHeight: number;
@@ -48,13 +58,17 @@ const prop = (
   height,
 });
 
-function buildLayout(): LibraryLayout {
-  const desks = DESK_ROWS.flatMap((tileY) =>
+function buildDesks(): LayoutDesk[] {
+  return DESK_ROWS.flatMap((tileY) =>
     DESK_COLUMNS.map((tileX) => ({ tileX, tileY })),
   ).map((position, index) => ({
     deskId: `desk_${index}`,
     ...position,
   }));
+}
+
+function buildLibraryLayout(): LibraryLayout {
+  const desks = buildDesks();
 
   const props: LayoutProp[] = [
     prop('rug', 16, 4, 6, 25),
@@ -77,6 +91,7 @@ function buildLayout(): LibraryLayout {
 
   return {
     version: 1,
+    theme: 'classic',
     width: WIDTH,
     height: HEIGHT,
     wallHeight: WALL_HEIGHT,
@@ -85,7 +100,61 @@ function buildLayout(): LibraryLayout {
   };
 }
 
-export const LIBRARY_LAYOUT: LibraryLayout = buildLayout();
+function buildCoffeeShopLayout(): LibraryLayout {
+  const desks = buildDesks();
+
+  const props: LayoutProp[] = [
+    // Warm cafe runner rug in the center aisle
+    prop('rug', 16, 4, 6, 25),
+    // Glowing neon sign at center top of the brick wall
+    prop('neonSign', 17, 0, 4, 2),
+    // Cozy nighttime cafe windows
+    ...[6, 30].map((x) => prop('window', x, 0, 2, 2)),
+    // Vintage cafe clock
+    prop('clock', 12, 0, 2, 2),
+    // Chalkboard menu on the back brick wall
+    prop('chalkboard', 24, 0, 3, 2),
+    // Side bookshelves holding vinyls, books and mugs
+    ...[8, 14, 20].flatMap((y) => [
+      prop('bookshelf', 1, y, 2, 2),
+      prop('bookshelf', 35, y, 2, 2),
+    ]),
+    // Coffee bar counter and espresso machine
+    prop('coffeeBar', 1, 25, 4, 3),
+    prop('coffeeMachine', 3, 26, 1, 2),
+    // Cozy indoor plants
+    ...[
+      [14, 4],
+      [23, 4],
+      [1, 5],
+      [35, 5],
+      [2, 27],
+      [35, 27],
+    ].map(([x, y]) => prop('plant', x, y, 1, 1)),
+    // Entrance doors
+    prop('door', 18, 29, 2, 1),
+  ];
+
+  return {
+    version: 1,
+    theme: 'coffee_shop',
+    width: WIDTH,
+    height: HEIGHT,
+    wallHeight: WALL_HEIGHT,
+    desks,
+    props,
+  };
+}
+
+export const LIBRARY_LAYOUT: LibraryLayout = buildLibraryLayout();
+export const COFFEE_SHOP_LAYOUT: LibraryLayout = buildCoffeeShopLayout();
+
+export function getLayoutForTheme(theme?: string): LibraryLayout {
+  if (theme === 'coffee_shop') {
+    return COFFEE_SHOP_LAYOUT;
+  }
+  return LIBRARY_LAYOUT;
+}
 
 const desksById = new Map(
   LIBRARY_LAYOUT.desks.map((desk) => [desk.deskId, desk]),

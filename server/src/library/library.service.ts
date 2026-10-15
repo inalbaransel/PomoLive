@@ -12,8 +12,8 @@ import { DeskTimer, resumeFocus, startBreak } from './desk-timer.js';
 import { FocusSessionsRepository } from './focus-sessions.repository.js';
 import {
   findLayoutDesk,
-  LIBRARY_LAYOUT,
   LibraryLayout,
+  getLayoutForTheme,
 } from './layout/library-layout.js';
 import { DeskRecord, RoomState, VacateReason } from './library.types.js';
 import { startOfLocalDay } from './local-day.js';
@@ -311,7 +311,8 @@ export class LibraryService {
       this.desks.list(roomId),
     ]);
     if (!room) ProtocolError.throw('ROOM_NOT_FOUND', 'This room has closed');
-    return { room, layout: LIBRARY_LAYOUT, desks, serverTime: now };
+    const layout = getLayoutForTheme(room.theme);
+    return { room, layout, desks, serverTime: now };
   }
 
   private async publishPresence(roomId: string): Promise<void> {

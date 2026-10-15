@@ -89,6 +89,42 @@ enum RoomKind: String, Codable, Sendable {
     case `private` = "PRIVATE"
 }
 
+/// Available room environments.
+enum RoomTheme: String, Codable, CaseIterable, Identifiable, Sendable {
+    case classic = "classic"
+    case coffeeShop = "coffee_shop"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .classic: String(localized: "Klasik Kütüphane")
+        case .coffeeShop: String(localized: "Gece Kafesi")
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .classic: String(localized: "Yeşil duvarlar, ahşap parkeler, sessiz salon")
+        case .coffeeShop: String(localized: "Sıcak tuğla, espresso barı ve neon ışıklar")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .classic: "books.vertical.fill"
+        case .coffeeShop: "cup.and.saucer.fill"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .classic: String(localized: "Geleneksel kütüphane atmosferi: kitaplıklar, saksı bitkileri ve klasik kırmızı halı.")
+        case .coffeeShop: String(localized: "Sıcak bir kafe atmosferi: tuğla duvarlar, neon tabela, kahve barı ve lo-fi çalışma ortamı.")
+        }
+    }
+}
+
 /// A room as listed and as entered: identity plus live counts.
 struct RoomState: Codable, Hashable, Sendable, Identifiable {
     var id: String
@@ -96,11 +132,14 @@ struct RoomState: Codable, Hashable, Sendable, Identifiable {
     var name: String
     var symbol: String
     var color: GlyphColor
+    var theme: String?
     var code: String?
     var ownerId: String?
     var capacity: Int
     var occupiedCount: Int
     var presenceCount: Int
+
+    var roomTheme: RoomTheme { RoomTheme(rawValue: theme ?? "") ?? .classic }
 }
 
 /// Someone at a desk, as shown on a room's preview card.
@@ -118,12 +157,15 @@ struct RoomSummary: Decodable, Hashable, Sendable, Identifiable {
     var name: String
     var symbol: String
     var color: GlyphColor
+    var theme: String?
     var code: String?
     var ownerId: String?
     var capacity: Int
     var occupiedCount: Int
     var presenceCount: Int
     var occupants: [RoomOccupant]
+
+    var roomTheme: RoomTheme { RoomTheme(rawValue: theme ?? "") ?? .classic }
 }
 
 struct RoomsOverview: Decodable, Sendable {
@@ -214,7 +256,9 @@ private func deskNumber(_ deskId: String) -> Int {
 
 struct LayoutProp: Codable, Hashable, Sendable {
     enum Kind: String, Codable, Sendable {
-        case window, clock, bookshelf, plant, coffeeMachine, rug, door, unknown
+        case window, clock, bookshelf, plant, coffeeMachine, rug, door
+        case neonSign, chalkboard, coffeeBar
+        case unknown
 
         init(from decoder: any Decoder) throws {
             self = Kind(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .unknown
@@ -230,11 +274,14 @@ struct LayoutProp: Codable, Hashable, Sendable {
 
 struct LibraryLayout: Codable, Hashable, Sendable {
     var version: Int
+    var theme: String?
     var width: Int
     var height: Int
     var wallHeight: Int
     var desks: [LayoutDesk]
     var props: [LayoutProp]
+
+    var roomTheme: RoomTheme { RoomTheme(rawValue: theme ?? "") ?? .classic }
 }
 
 struct RoomSnapshot: Decodable, Sendable {

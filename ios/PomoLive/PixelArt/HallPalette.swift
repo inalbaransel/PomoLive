@@ -42,4 +42,49 @@ enum HallPalette {
         PixelColor(0x3E8E_5EFF), PixelColor(0x8E44_ADFF), PixelColor(0xE06A_2BFF),
         PixelColor(0xF4EE_E0FF),
     ]
+
+    // MARK: - Coffee Shop Palette (Gece Kafesi)
+
+    // Brick Wall
+    static let cafeWallTop = PixelColor(0x3A21_1DFF)
+    static let cafeBrickMain = PixelColor(0x823E_32FF)
+    static let cafeBrickDark = PixelColor(0x6D31_27FF)
+    static let cafeBrickLight = PixelColor(0x994D_3FFF)
+    static let cafeBrickMortar = PixelColor(0x4220_1BFF)
+    static let cafeWainscot = PixelColor(0x4424_17FF)
+    static let cafeWainscotHighlight = PixelColor(0x5E34_22FF)
+
+    // Espresso Wood Floor
+    static let cafeFloorLight = PixelColor(0x6140_2EFF)
+    static let cafeFloorMid = PixelColor(0x4E32_23FF)
+    static let cafeFloorDark = PixelColor(0x3D25_19FF)
+    static let cafeFloorSeam = PixelColor(0x2B18_0FFF)
+
+    // Cafe Runner Rug
+    static let cafeRug = PixelColor(0x9E4B_2CFF)
+    static let cafeRugBorder = PixelColor(0xDBA0_53FF)
+    static let cafeRugPattern = PixelColor(0xB85D_34FF)
+
+    // Glowing Neon Sign
+    static let neonTube = PixelColor(0xFF8DAFFF)
+    static let neonMain = PixelColor(0xFF33_77FF)
+    static let neonGlow = PixelColor(0xFF33_7744)
+    static let neonWarmGold = PixelColor(0xFFBA_42FF)
+    static let neonWarmGlow = PixelColor(0xFFBA_4244)
+
+    // Chalkboard
+    static let slateBlack = PixelColor(0x2226_2BFF)
+    static let chalkboardFrame = PixelColor(0x4E30_1EFF)
+    static let chalkWhite = PixelColor(0xF0ECE1FF)
+    static let chalkYellow = PixelColor(0xF5CF_6CFF)
+    static let chalkOrange = PixelColor(0xF08A_4BFF)
+
+    // Night Window
+    static let nightGlass = PixelColor(0x1B24_33FF)
+    static let nightShine = PixelColor(0x5671_9CFF)
+
+    // Coffee Counter & Pastry Case
+    static let marbleTop = PixelColor(0xEAE4_DAFF)
+    static let marbleVein = PixelColor(0xBFB6_A8FF)
+    static let pastryGold = PixelColor(0xD991_3CFF)
 }

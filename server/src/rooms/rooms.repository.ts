@@ -14,6 +14,7 @@ export interface RoomRecord {
   symbol: string;
   color: string;
   visibility: RoomVisibility;
+  theme: string;
   ownerId: string;
   createdAt: Date;
 }
@@ -25,6 +26,7 @@ const roomSelect = {
   symbol: true,
   color: true,
   visibility: true,
+  theme: true,
   ownerId: true,
   createdAt: true,
 } as const;
@@ -47,6 +49,7 @@ export class RoomsRepository {
     name: string,
     glyph: Glyph,
     visibility: RoomVisibility,
+    theme: string = 'classic',
   ): Promise<RoomRecord> {
     for (;;) {
       const code = Array.from(
@@ -60,6 +63,7 @@ export class RoomsRepository {
             name,
             ...glyph,
             visibility,
+            theme: theme || 'classic',
             ownerId,
             memberships: { create: { userId: ownerId } },
           },
@@ -77,7 +81,7 @@ export class RoomsRepository {
   update(
     id: string,
     changes: Partial<
-      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility'>
+      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility' | 'theme'>
     >,
   ): Promise<RoomRecord> {
     return this.prisma.room.update({

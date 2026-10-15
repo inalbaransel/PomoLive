@@ -109,6 +109,16 @@
         }
       }
     },
+    "%@, %@" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
     "%lld" : {
       "localizations" : {
         "en" : {
@@ -1447,6 +1457,7 @@
       }
     },
     "Masama Git" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1455,6 +1466,9 @@
           }
         }
       }
+    },
+    "Masama Odaklan" : {
+
     },
     "Masan burada" : {
       "localizations" : {
@@ -1518,6 +1532,9 @@
           }
         }
       }
+    },
+    "Mini Harita" : {
+
     },
     "Mod" : {
       "localizations" : {
@@ -1721,10 +1738,16 @@
         }
       }
     },
+    "Odadaki Kişiler" : {
+
+    },
     "Odadaki kişiler ve profiline bakanlar haftalık süreni, serini ve kategorilerini görebilir." : {
 
     },
     "Odadaki kişileri gösterir" : {
+
+    },
+    "Odadaki kişileri ve detayları açar" : {
 
     },
     "Odadan Çıkar" : {
@@ -2132,6 +2155,9 @@
     "Salondaki diğer okurlar seni bu adla görür. Boş bırakırsan kullanıcı adın kullanılır." : {
 
     },
+    "Salonu Ortala" : {
+
+    },
     "Sarı" : {
       "localizations" : {
         "en" : {
@@ -2244,6 +2270,12 @@
           }
         }
       }
+    },
+    "Sohbet" : {
+
+    },
+    "Sohbet çok yakında!" : {
+
     },
     "Son 7 Gün" : {
       "localizations" : {
