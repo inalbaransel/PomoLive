@@ -526,6 +526,16 @@
         }
       }
     },
+    "Atkuyruklu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponytail"
+          }
+        }
+      }
+    },
     "Açık" : {
       "localizations" : {
         "en" : {
@@ -2492,6 +2502,16 @@
         }
       }
     },
+    "Pembe Topuz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pink Buns"
+          }
+        }
+      }
+    },
     "Piksel Salon %lld" : {
       "localizations" : {
         "en" : {
@@ -2687,6 +2707,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yellow"
+          }
+        }
+      }
+    },
+    "Sarışın" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blonde"
           }
         }
       }
@@ -3247,6 +3277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indigo"
+          }
+        }
+      }
+    },
+    "Çiçekli" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flower Girl"
           }
         }
       }

@@ -17,6 +17,10 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
     case scientist = "scientist_f_01"
     case hijabi = "hijab_f_01"
     case cat = "cat_01"
+    case blonde = "blonde_f_01"
+    case ponytail = "ponytail_f_01"
+    case flower = "flower_f_01"
+    case pinkBuns = "pink_buns_f_01"
 
     enum Pose: Hashable, Sendable {
         case idle
@@ -49,6 +53,10 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
         case .scientist: String(localized: "Bilim İnsanı")
         case .hijabi: String(localized: "Kitap Kurdu")
         case .cat: String(localized: "Kedi")
+        case .blonde: String(localized: "Sarışın")
+        case .ponytail: String(localized: "Atkuyruklu")
+        case .flower: String(localized: "Çiçekli")
+        case .pinkBuns: String(localized: "Pembe Topuz")
         }
     }
 
@@ -221,6 +229,46 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
             "....KKKKKKKK....",
             ".....KKKKKK.....",
         ]
+        case .blonde: [
+            "................",
+            ".....HHHHHH.....",
+            "....HHHHHHHH....",
+            "...HHHHSSHHHH...",
+            "...HSSESSESSH...",
+            "...HSSSSSSSSH...",
+            "...HHSSPPSSHH...",
+            "...HH.SSSS.HH...",
+        ]
+        case .ponytail: [
+            "..........RR....",
+            ".....HHHHHRR....",
+            "....HHHHHHHHH...",
+            "...HHSSSSSSHHH..",
+            "...HSSESSESSHH..",
+            "....SSSSSSSS.H..",
+            ".....SSPPSS.....",
+            "................",
+        ]
+        case .flower: [
+            "................",
+            "....HHHHHHHF....",
+            "...HHHHHHHFYF...",
+            "...HHSSSSSSFH...",
+            "...HSSESSESSH...",
+            "...HSSSSSSSSH...",
+            "...HHSSPPSSHH...",
+            "...HHH....HHH...",
+        ]
+        case .pinkBuns: [
+            "...HH......HH...",
+            "..HHHHHHHHHHHH..",
+            "....HHHHHHHH....",
+            "....HSSSSSSH....",
+            "....SSESSESS....",
+            "....SSSSSSSS....",
+            ".....SSPPSS.....",
+            "................",
+        ]
         }
     }
 
@@ -377,6 +425,31 @@ enum AvatarSprite: String, CaseIterable, Identifiable, Sendable {
             colors["P"] = PixelColor(0xF29BB0FF)
             colors["S"] = PixelColor(0xE89A4AFF)
             colors["C"] = PixelColor(0xE89A4AFF)
+            colors["A"] = PixelColor(0xF7F3EAFF)
+        case .blonde:
+            colors["H"] = PixelColor(0xF2D16BFF)
+            colors["P"] = PixelColor(0xE0707EFF)
+            colors["C"] = PixelColor(0xF29BB0FF)
+            colors["A"] = PixelColor(0xF7F3EAFF)
+        case .ponytail:
+            colors["S"] = PixelColor(0xE8B88AFF)
+            colors["H"] = PixelColor(0x6B3E26FF)
+            colors["R"] = PixelColor(0xE2534AFF)
+            colors["P"] = PixelColor(0xD9606EFF)
+            colors["C"] = PixelColor(0xF7F3EAFF)
+            colors["A"] = PixelColor(0xE2534AFF)
+        case .flower:
+            colors["S"] = PixelColor(0xD9A066FF)
+            colors["H"] = PixelColor(0x1F1A1CFF)
+            colors["F"] = PixelColor(0xF4A6C0FF)
+            colors["Y"] = PixelColor(0xF6D44AFF)
+            colors["P"] = PixelColor(0xC2505EFF)
+            colors["C"] = PixelColor(0x6CC3EAFF)
+            colors["A"] = PixelColor(0xF7F3EAFF)
+        case .pinkBuns:
+            colors["H"] = PixelColor(0xF29BC8FF)
+            colors["P"] = PixelColor(0xE0707EFF)
+            colors["C"] = PixelColor(0x9B8BE8FF)
             colors["A"] = PixelColor(0xF7F3EAFF)
         }
         return colors
