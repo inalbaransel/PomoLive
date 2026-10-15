@@ -19,8 +19,9 @@ struct AuthenticateCommand: LibraryCommand {
     static let event = "auth"
 
     enum Credential: Sendable {
-        case register(email: String, password: String, displayName: String?)
-        case password(email: String, password: String)
+        case register(email: String, password: String, username: String, displayName: String?)
+        /// `login` is the e-mail address or the username.
+        case password(login: String, password: String)
         case session(token: String)
     }
 
@@ -28,27 +29,40 @@ struct AuthenticateCommand: LibraryCommand {
     var timeZone = TimeZone.current.identifier
 
     private enum CodingKeys: String, CodingKey {
-        case method, email, password, displayName, sessionToken, timeZone
+        case method, email, login, password, username, displayName, sessionToken, timeZone
     }
 
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(timeZone, forKey: .timeZone)
         switch credential {
-        case .register(let email, let password, let displayName):
+        case .register(let email, let password, let username, let displayName):
             try container.encode("register", forKey: .method)
             try container.encode(email, forKey: .email)
             try container.encode(password, forKey: .password)
+            try container.encode(username, forKey: .username)
             try container.encodeIfPresent(displayName, forKey: .displayName)
-        case .password(let email, let password):
+        case .password(let login, let password):
             try container.encode("password", forKey: .method)
-            try container.encode(email, forKey: .email)
+            try container.encode(login, forKey: .login)
             try container.encode(password, forKey: .password)
         case .session(let token):
             try container.encode("session", forKey: .method)
             try container.encode(token, forKey: .sessionToken)
         }
     }
+}
+
+struct UsernameAvailability: Decodable, Sendable {
+    var username: String
+    var available: Bool
+}
+
+/// Works before sign-in, so the registration form can check a handle while it is typed.
+struct CheckUsernameCommand: LibraryCommand {
+    typealias Result = UsernameAvailability
+    static let event = "username:check"
+    var username: String
 }
 
 struct ListRoomsCommand: LibraryCommand {
@@ -82,6 +96,42 @@ struct DeleteRoomCommand: LibraryCommand {
     typealias Result = NoResult
     static let event = "room:delete"
     var roomId: String
+}
+
+struct RoomStateResult: Decodable, Sendable {
+    var room: RoomState
+}
+
+/// The owner's edits; `nil` fields stay as they are.
+struct UpdateRoomCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "room:update"
+    var roomId: String
+    var name: String?
+    var symbol: String?
+    var color: GlyphColor?
+    var visibility: RoomKind?
+}
+
+struct RoomMembersCommand: LibraryCommand {
+    typealias Result = RoomMembers
+    static let event = "room:members"
+    var roomId: String
+}
+
+/// Owner only: frees the reader's desk here and keeps them out until unbanned.
+struct RemoveMemberCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "room:remove"
+    var roomId: String
+    var userId: String
+}
+
+struct UnbanMemberCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "room:unban"
+    var roomId: String
+    var userId: String
 }
 
 /// Removes a room from "Odalarım" (not for owners, who delete instead).
@@ -154,11 +204,25 @@ struct ProfileResult: Decodable, Sendable {
     var user: UserProfile
 }
 
+/// `nil` fields stay as they are; an empty `bio` clears it.
 struct UpdateProfileCommand: LibraryCommand {
     typealias Result = ProfileResult
     static let event = "profile:update"
+    var username: String?
     var displayName: String?
     var avatarSpriteId: String?
+    var bio: String?
+    var statsVisible: Bool?
+}
+
+struct PublicProfileResult: Decodable, Sendable {
+    var profile: PublicProfile
+}
+
+struct UserProfileCommand: LibraryCommand {
+    typealias Result = PublicProfileResult
+    static let event = "user:profile"
+    var userId: String
 }
 
 struct CategoriesResult: Decodable, Sendable {

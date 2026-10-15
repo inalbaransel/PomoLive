@@ -6,6 +6,13 @@ import Observation
 @MainActor
 @Observable
 final class HallStore {
+    enum Exit {
+        /// The owner deleted the room.
+        case closed
+        /// The owner removed this reader from the room.
+        case removed
+    }
+
     enum Target: Hashable {
         /// The room where the reader holds a desk, otherwise a hall with space.
         case automatic
@@ -16,8 +23,8 @@ final class HallStore {
     private(set) var room: RoomState?
     private(set) var layout: LibraryLayout?
     private(set) var desks: [String: DeskRecord] = [:]
-    /// Set when the owner deleted the room while the reader was inside.
-    private(set) var wasClosed = false
+    /// Why the reader was put out of the room they were looking at.
+    private(set) var exit: Exit?
     var userId: String?
     var error: LibraryError?
 
@@ -69,6 +76,26 @@ final class HallStore {
         _ = try? await socket.send(LeaveRoomCommand())
     }
 
+    func update(name: String, symbol: String, color: GlyphColor, visibility: RoomKind) async throws {
+        guard let room else { return }
+        _ = try await socket.send(UpdateRoomCommand(roomId: room.id, name: name, symbol: symbol, color: color, visibility: visibility))
+    }
+
+    func members() async throws -> RoomMembers {
+        guard let room else { throw LibraryError.server(code: "NOT_IN_ROOM", message: "") }
+        return try await socket.send(RoomMembersCommand(roomId: room.id))
+    }
+
+    func remove(_ userId: String) async throws {
+        guard let room else { return }
+        _ = try await socket.send(RemoveMemberCommand(roomId: room.id, userId: userId))
+    }
+
+    func unban(_ userId: String) async throws {
+        guard let room else { return }
+        _ = try await socket.send(UnbanMemberCommand(roomId: room.id, userId: userId))
+    }
+
     func deleteRoom() async {
         guard let room else { return }
         do {
@@ -108,7 +135,14 @@ final class HallStore {
         case .roomClosed(let roomId):
             guard roomId == room?.id else { return }
             reset()
-            wasClosed = true
+            exit = .closed
+        case .roomUpdated(let state):
+            guard state.id == room?.id else { return }
+            room = state
+        case .memberRemoved(let roomId, let removedId):
+            guard roomId == room?.id, removedId == userId else { return }
+            reset()
+            exit = .removed
         }
     }
 
@@ -116,14 +150,14 @@ final class HallStore {
         room = nil
         layout = nil
         desks = [:]
-        wasClosed = false
+        exit = nil
     }
 
     private func apply(_ snapshot: RoomSnapshot) {
         room = snapshot.room
         layout = snapshot.layout
         desks = Dictionary(uniqueKeysWithValues: snapshot.desks.map { ($0.deskId, $0) })
-        wasClosed = false
+        exit = nil
         if let mine = myDesk { seat.adopt(mine, in: snapshot.room) }
     }
 

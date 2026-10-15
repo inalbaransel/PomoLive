@@ -9,10 +9,27 @@ struct HallScreen: View {
     @Environment(\.dismiss) private var dismiss
     @State private var camera = MapCamera()
     @State private var selectedDeskId: String?
-    @State private var deskToSit: LayoutDesk?
+    @State private var sheet: Sheet?
     @State private var isDeckExpanded = true
     @State private var confirmsDelete = false
+    @State private var wasRemoved = false
     @State private var entryError: LibraryError?
+
+    private enum Sheet: Identifiable {
+        case sit(LayoutDesk)
+        case people
+        case profile(userId: String)
+        case editRoom(RoomState)
+
+        var id: String {
+            switch self {
+            case .sit(let desk): "sit-\(desk.deskId)"
+            case .people: "people"
+            case .profile(let userId): "profile-\(userId)"
+            case .editRoom: "edit"
+            }
+        }
+    }
 
     var body: some View {
         @Bindable var hall = app.hall
@@ -21,13 +38,33 @@ struct HallScreen: View {
             content
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbar }
-                .sheet(item: $deskToSit) { desk in
-                    SessionSetupSheet(desk: desk) { timer, category, note in
-                        let didSit = await hall.sit(at: desk, timer: timer, categoryKey: category.key, note: note)
-                        if didSit { focusOnMyDesk() }
-                        return didSit
+                .sheet(item: $sheet, onDismiss: { selectedDeskId = nil }) { sheet in
+                    switch sheet {
+                    case .sit(let desk):
+                        SessionSetupSheet(desk: desk) { timer, category, note in
+                            let didSit = await hall.sit(at: desk, timer: timer, categoryKey: category.key, note: note)
+                            if didSit { focusOnMyDesk() }
+                            return didSit
+                        }
+                        .presentationDetents([.large])
+                    case .people:
+                        RoomPeopleSheet()
+                            .presentationDetents([.medium, .large])
+                    case .profile(let userId):
+                        NavigationStack {
+                            UserProfileView(userId: userId)
+                                .toolbar {
+                                    ToolbarItem(placement: .topBarLeading) {
+                                        Button("Kapat", systemImage: "xmark", role: .close) { self.sheet = nil }
+                                    }
+                                }
+                        }
+                        .presentationDetents([.medium, .large])
+                    case .editRoom(let room):
+                        RoomEditorSheet(room: room) { draft in
+                            try await hall.update(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility)
+                        }
                     }
-                    .presentationDetents([.large])
                 }
                 .confirmationDialog("Oda silinsin mi?", isPresented: $confirmsDelete, titleVisibility: .visible) {
                     Button("Odayı Sil", role: .destructive) {
@@ -40,6 +77,11 @@ struct HallScreen: View {
                     Text("İçerideki herkesin oturumu biter ve oda listeden kalkar.")
                 }
                 .errorAlert($hall.error)
+                .alert("Odadan çıkarıldın", isPresented: $wasRemoved) {
+                    Button("Tamam", role: .cancel) { dismiss() }
+                } message: {
+                    Text("Oda sahibi seni bu odadan çıkardı. Masan boşaltıldı, odak süren geçmişine kaydedildi.")
+                }
                 .alert("Odaya girilemedi", isPresented: Binding(get: { entryError != nil }, set: { if !$0 { dismiss() } })) {
                     Button("Tamam", role: .cancel) {}
                 } message: {
@@ -53,8 +95,14 @@ struct HallScreen: View {
                 entryError = LibraryError(error)
             }
         }
-        .onChange(of: app.hall.wasClosed) { _, wasClosed in
-            if wasClosed { dismiss() }
+        .onChange(of: app.hall.exit) { _, exit in
+            switch exit {
+            case .closed: dismiss()
+            case .removed:
+                sheet = nil
+                wasRemoved = true
+            case nil: break
+            }
         }
         .onDisappear {
             let visit = app.hall.visit
@@ -73,7 +121,14 @@ struct HallScreen: View {
                 clock: app.time.clock,
                 camera: camera,
                 selectedDeskId: $selectedDeskId,
-                onEmptyDeskTap: { deskToSit = $0 }
+                onEmptyDeskTap: { sheet = .sit($0) },
+                onOccupiedDeskTap: { desk in
+                    if desk.userId == app.user?.id {
+                        isDeckExpanded = true
+                    } else {
+                        sheet = .profile(userId: desk.userId)
+                    }
+                }
             )
             .ignoresSafeArea()
             .safeAreaBar(edge: .top, alignment: .trailing) {
@@ -105,27 +160,19 @@ struct HallScreen: View {
             Button("Kapat", systemImage: "xmark", role: .close) { dismiss() }
         }
         // The map is not a scroll view, so the title gets its own glass to stay legible over the pixels.
+        // Like a group chat's header, tapping it shows who is in the room.
         ToolbarItem(placement: .principal) {
             if let room = app.hall.room {
-                VStack(spacing: 1) {
-                    Label {
-                        Text(room.displayName)
-                    } icon: {
-                        Image(systemName: room.symbol)
-                            .foregroundStyle(room.color.color)
-                    }
-                    .font(.headline)
-                    .lineLimit(1)
-                    Text(subtitle(for: room))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText())
+                Button { sheet = .people } label: {
+                    title(for: room)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-                .glassEffect(.regular, in: .capsule)
-                .animation(.smooth, value: subtitle(for: room))
+                .buttonStyle(.plain)
+                .accessibilityHint("Odadaki kişileri gösterir")
             }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Kişiler", systemImage: "person.2.fill") { sheet = .people }
+                .disabled(app.hall.room == nil)
         }
         ToolbarItem(placement: .topBarTrailing) {
             Button("Masama Git", systemImage: "scope", action: focusOnMyDesk)
@@ -141,12 +188,34 @@ struct HallScreen: View {
                         Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
                     }
                 }
-                if app.hall.isOwner {
+                if app.hall.isOwner, let room = app.hall.room {
+                    Button("Odayı Düzenle", systemImage: "pencil") { sheet = .editRoom(room) }
                     Button("Odayı Sil", systemImage: "trash", role: .destructive) { confirmsDelete = true }
                 }
             }
             .disabled(app.hall.room?.code == nil && !app.hall.isOwner)
         }
+    }
+
+    private func title(for room: RoomState) -> some View {
+        VStack(spacing: 1) {
+            Label {
+                Text(room.displayName)
+            } icon: {
+                Image(systemName: room.symbol)
+                    .foregroundStyle(room.color.color)
+            }
+            .font(.headline)
+            .lineLimit(1)
+            Text(subtitle(for: room))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .glassEffect(.regular.interactive(), in: .capsule)
+        .animation(.smooth, value: subtitle(for: room))
     }
 
     private func subtitle(for room: RoomState) -> String {

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// E-mail and password sign-in or registration. Uses the system password AutoFill content types.
+/// Registration with a username, e-mail and password, or sign-in with e-mail or username.
+/// Uses the system password AutoFill content types.
 struct AccountSheet: View {
     enum Mode: String, Identifiable {
         case signIn, register
@@ -13,12 +14,14 @@ struct AccountSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var email = ""
     @State private var password = ""
+    @State private var username = ""
+    @State private var usernameStatus = UsernameStatus.invalid
     @State private var displayName = ""
     @State private var error: LibraryError?
     @FocusState private var focusedField: Field?
 
     private enum Field {
-        case displayName, email, password
+        case username, displayName, email, password
     }
 
     private static let minimumPasswordLength = 8
@@ -32,15 +35,30 @@ struct AccountSheet: View {
     }
 
     private var canSubmit: Bool {
-        isEmailValid
-            && password.count >= Self.minimumPasswordLength
-            && (mode == .signIn || trimmedName.isEmpty || trimmedName.count >= 2)
+        guard password.count >= Self.minimumPasswordLength else { return false }
+        switch mode {
+        case .signIn:
+            return trimmedEmail.count >= UsernameField.lengthRange.lowerBound
+        case .register:
+            return isEmailValid && usernameStatus.allowsSubmit && (trimmedName.isEmpty || trimmedName.count >= 2)
+        }
     }
 
     var body: some View {
         NavigationStack {
             Form {
                 if mode == .register {
+                    Section {
+                        UsernameField(username: $username, status: $usernameStatus)
+                            .focused($focusedField, equals: .username)
+                            .submitLabel(.next)
+                            .onSubmit { focusedField = .displayName }
+                    } header: {
+                        Text("Kullanıcı Adı")
+                    } footer: {
+                        UsernameFooter(status: usernameStatus, username: username)
+                    }
+
                     Section {
                         TextField("Görünen ad (isteğe bağlı)", text: $displayName)
                             .textContentType(.nickname)
@@ -49,12 +67,12 @@ struct AccountSheet: View {
                             .onSubmit { focusedField = .email }
                             .onChange(of: displayName) { displayName = String(displayName.prefix(24)) }
                     } footer: {
-                        Text("Salondaki diğer okurlar seni bu adla görür.")
+                        Text("Salondaki diğer okurlar seni bu adla görür. Boş bırakırsan kullanıcı adın kullanılır.")
                     }
                 }
 
                 Section {
-                    TextField("E-posta", text: $email)
+                    TextField(mode == .register ? "E-posta" : "E-posta veya kullanıcı adı", text: $email)
                         .keyboardType(.emailAddress)
                         .textContentType(.username)
                         .textInputAutocapitalization(.never)
@@ -93,14 +111,14 @@ struct AccountSheet: View {
             }
             .errorAlert($error)
         }
-        .onAppear { focusedField = mode == .register ? .displayName : .email }
+        .onAppear { focusedField = mode == .register ? .username : .email }
     }
 
     private func submit() {
         guard canSubmit, !app.isSigningIn else { return }
         let credential: AuthenticateCommand.Credential = mode == .register
-            ? .register(email: trimmedEmail, password: password, displayName: trimmedName.isEmpty ? nil : trimmedName)
-            : .password(email: trimmedEmail, password: password)
+            ? .register(email: trimmedEmail, password: password, username: username, displayName: trimmedName.isEmpty ? nil : trimmedName)
+            : .password(login: trimmedEmail, password: password)
         Task {
             do {
                 try await app.signIn(with: credential)

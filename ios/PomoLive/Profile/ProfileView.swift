@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Profil tab: who you are, your categories, session defaults and account actions.
+/// The Profil tab: who you are, your categories, privacy, session defaults and account actions.
 struct ProfileView: View {
     @Environment(AppModel.self) private var app
     @AppStorage(Preferences.defaultMode) private var modeRawValue = TimerMode.pomodoro.rawValue
@@ -34,14 +34,26 @@ struct ProfileView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(user.displayName)
                                         .font(.title3.weight(.semibold))
-                                    Text("Karakter ve görünen ad")
+                                    Text(verbatim: "@\(user.username)")
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
+                                    if let bio = user.bio {
+                                        Text(bio)
+                                            .font(.subheadline)
+                                            .lineLimit(2)
+                                    }
                                 }
                             }
                             .padding(.vertical, 4)
                         }
+                        NavigationLink {
+                            UserProfileView(userId: user.id)
+                        } label: {
+                            SettingsLabel(title: "Profilimi Gör", systemName: "person.crop.circle.fill", color: .indigo)
+                        }
                     }
+
+                    PrivacySection(user: user)
                 }
 
                 Section {
@@ -149,6 +161,47 @@ extension ProfileView {
     /// Preset choices plus the current value, so a custom duration picked elsewhere still shows.
     fileprivate static func options(_ presets: [Int], including value: Int) -> [Int] {
         Array(Set(presets + [value])).sorted()
+    }
+}
+
+/// Whether other readers see this reader's focus time, saved on the server.
+private struct PrivacySection: View {
+    let user: UserProfile
+
+    @Environment(AppModel.self) private var app
+    @State private var statsVisible: Bool
+    @State private var error: LibraryError?
+
+    init(user: UserProfile) {
+        self.user = user
+        _statsVisible = State(initialValue: user.statsVisible)
+    }
+
+    var body: some View {
+        Section {
+            Toggle(isOn: $statsVisible) {
+                SettingsLabel(title: "Odak Sürelerimi Göster", systemName: "chart.bar.fill", color: .green)
+            }
+        } header: {
+            Text("Gizlilik")
+        } footer: {
+            Text(statsVisible
+                ? "Odadaki kişiler ve profiline bakanlar haftalık süreni, serini ve kategorilerini görebilir."
+                : "Süren ve istatistiklerin yalnızca sende görünür. Adın ve karakterin yine görünür.")
+        }
+        .onChange(of: statsVisible) { _, isVisible in
+            guard isVisible != user.statsVisible else { return }
+            Task {
+                do {
+                    try await app.updateProfile(UpdateProfileCommand(statsVisible: isVisible))
+                } catch {
+                    statsVisible = user.statsVisible
+                    self.error = LibraryError(error)
+                }
+            }
+        }
+        .onChange(of: user.statsVisible) { _, saved in statsVisible = saved }
+        .errorAlert($error)
     }
 }
 

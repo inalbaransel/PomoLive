@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
 import { Glyph } from '../common/glyph.js';
 import { PrismaService } from '../infra/prisma.service.js';
+import { PublicUser } from '../users/user.js';
 
 export type RoomVisibility = 'PUBLIC' | 'PRIVATE';
 
@@ -27,6 +28,13 @@ const roomSelect = {
   ownerId: true,
   createdAt: true,
 } as const;
+const publicUserSelect = {
+  id: true,
+  username: true,
+  displayName: true,
+  avatarSpriteId: true,
+} as const;
+const MAX_LISTED_MEMBERS = 200;
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 /** Durable data of user-created rooms. Who is inside right now lives in Redis (`RoomDirectory`). */
@@ -64,6 +72,19 @@ export class RoomsRepository {
         if (!isCodeClash) throw error;
       }
     }
+  }
+
+  update(
+    id: string,
+    changes: Partial<
+      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility'>
+    >,
+  ): Promise<RoomRecord> {
+    return this.prisma.room.update({
+      where: { id },
+      data: changes,
+      select: roomSelect,
+    });
   }
 
   findById(id: string): Promise<RoomRecord | null> {
@@ -127,6 +148,56 @@ export class RoomsRepository {
       _count: { _all: true },
     });
     return new Map(groups.map((group) => [group.roomId, group._count._all]));
+  }
+
+  /** Member ids, most recently active first. */
+  async memberIds(roomId: string): Promise<string[]> {
+    const memberships = await this.prisma.roomMembership.findMany({
+      where: { roomId },
+      orderBy: { lastVisitedAt: 'desc' },
+      take: MAX_LISTED_MEMBERS,
+      select: { userId: true },
+    });
+    return memberships.map((membership) => membership.userId);
+  }
+
+  /** Removes the reader from the room's members and keeps them out until unbanned. */
+  async ban(userId: string, roomId: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.roomMembership.deleteMany({ where: { userId, roomId } }),
+      this.prisma.roomBan.upsert({
+        where: { roomId_userId: { roomId, userId } },
+        update: {},
+        create: { roomId, userId },
+      }),
+    ]);
+  }
+
+  async unban(userId: string, roomId: string): Promise<void> {
+    await this.prisma.roomBan.deleteMany({ where: { userId, roomId } });
+  }
+
+  async isBanned(userId: string, roomId: string): Promise<boolean> {
+    return (await this.prisma.roomBan.count({ where: { userId, roomId } })) > 0;
+  }
+
+  /** Readers banned from the room, most recent first. */
+  async banned(roomId: string): Promise<PublicUser[]> {
+    const bans = await this.prisma.roomBan.findMany({
+      where: { roomId },
+      orderBy: { createdAt: 'desc' },
+      select: { user: { select: publicUserSelect } },
+    });
+    return bans.map((ban) => ban.user);
+  }
+
+  /** Rooms the reader may not enter, so Keşfet can leave them out. */
+  async bannedRoomIds(userId: string): Promise<Set<string>> {
+    const bans = await this.prisma.roomBan.findMany({
+      where: { userId },
+      select: { roomId: true },
+    });
+    return new Set(bans.map((ban) => ban.roomId));
   }
 
   async removeMembership(userId: string, roomId: string): Promise<void> {

@@ -12,13 +12,19 @@ model User {
   email          String           @unique
   /// scrypt hash, see `src/auth/passwords.ts`.
   passwordHash   String
+  /// Unique public handle, lowercase; see `username` in `src/realtime/protocol.ts`.
+  username       String           @unique @db.VarChar(20)
   displayName    String           @db.VarChar(24)
   avatarSpriteId String           @default("scholar_01") @db.VarChar(32)
+  bio            String?          @db.VarChar(80)
+  /// Whether other readers may see this reader's focus time.
+  statsVisible   Boolean          @default(true)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   focusSessions  FocusSession[]
   ownedRooms     Room[]
   memberships    RoomMembership[]
+  roomBans       RoomBan[]
   categories     Category[]
 }
 
@@ -39,8 +45,20 @@ model Room {
   owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt   DateTime         @default(now())
   memberships RoomMembership[]
+  bans        RoomBan[]
 
   @@index([visibility, createdAt])
+}
+
+/// Readers the owner removed from a room; they cannot enter it again until unbanned.
+model RoomBan {
+  roomId    String   @db.Uuid
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([roomId, userId])
 }
 
 /// Rooms a reader created or entered, for the "Odalarım" list.

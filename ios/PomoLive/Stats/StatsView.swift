@@ -13,7 +13,7 @@ struct StatsView: View {
             List {
                 if let summary = app.stats.summary {
                     Section {
-                        Headline(summary: summary)
+                        StatsHeadline(summary: summary)
                     }
 
                     Section("Son 7 Gün") {
@@ -23,7 +23,7 @@ struct StatsView: View {
                     if !summary.categories.isEmpty {
                         Section {
                             ForEach(summary.categories.prefix(6)) { category in
-                                CategoryRow(category: category, share: share(of: category, in: summary.categories))
+                                CategoryRow(category: category, share: CategoryRow.share(of: category, in: summary.categories))
                             }
                         } header: {
                             Text("Kategoriler")
@@ -69,15 +69,10 @@ struct StatsView: View {
             }
         }
     }
-
-    private func share(of category: CategoryTotal, in all: [CategoryTotal]) -> Double {
-        let longest = all.map(\.ms).max() ?? 0
-        return longest > 0 ? Double(category.ms) / Double(longest) : 0
-    }
 }
 
 /// Today in large rounded numerals, with the week, streak and lifetime total beneath.
-private struct Headline: View {
+struct StatsHeadline: View {
     let summary: StatsSummary
 
     var body: some View {
@@ -124,7 +119,7 @@ private struct Headline: View {
 }
 
 /// Focus minutes per day with the week's daily average as a dashed rule.
-private struct WeekChart: View {
+struct WeekChart: View {
     let days: [DayTotal]
 
     private static let parser: DateFormatter = {
@@ -181,9 +176,15 @@ private struct WeekChart: View {
 }
 
 /// Screen Time style: icon, name and duration over a bar scaled to the top category.
-private struct CategoryRow: View {
+struct CategoryRow: View {
     let category: CategoryTotal
     let share: Double
+
+    /// `category`'s length relative to the largest one in `all`.
+    static func share(of category: CategoryTotal, in all: [CategoryTotal]) -> Double {
+        let longest = all.map(\.ms).max() ?? 0
+        return longest > 0 ? Double(category.ms) / Double(longest) : 0
+    }
 
     var body: some View {
         HStack(spacing: 12) {

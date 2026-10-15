@@ -43,9 +43,9 @@ final class AppModel {
         stats = StatsStore(socket: socket)
         categories = CategoryStore(socket: socket)
 
-        let restored = sessionStore.token != nil ? sessionStore.profile : nil
-        phase = restored == nil ? .signedOut : .signedIn
-        if let restored { adopt(restored) }
+        // A profile cached by an older version may not decode; the session token alone is enough to reconnect.
+        phase = sessionStore.token == nil ? .signedOut : .signedIn
+        if phase == .signedIn, let restored = sessionStore.profile { adopt(restored) }
 
         Task { [weak self, events = socket.events] in
             for await event in events { self?.handle(event) }
@@ -75,10 +75,20 @@ final class AppModel {
         endSession()
     }
 
-    func updateProfile(displayName: String?, avatar: AvatarSprite?) async throws {
-        let result = try await socket.send(UpdateProfileCommand(displayName: displayName, avatarSpriteId: avatar?.rawValue))
+    func updateProfile(_ changes: UpdateProfileCommand) async throws {
+        let result = try await socket.send(changes)
         adopt(result.user)
         sessionStore.save(profile: result.user)
+    }
+
+    func profile(of userId: String) async throws -> PublicProfile {
+        try await socket.send(UserProfileCommand(userId: userId)).profile
+    }
+
+    /// Opens a connection without signing in if needed: the server answers this before authentication.
+    func isUsernameAvailable(_ username: String) async throws -> Bool {
+        if await !socket.isConnected { try await socket.connect() }
+        return try await socket.send(CheckUsernameCommand(username: username)).available
     }
 
     func scenePhaseChanged(to scenePhase: ScenePhase) {

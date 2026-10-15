@@ -127,6 +127,9 @@ actor LibrarySocket {
                 .presence(roomId: $0.roomId, presenceCount: $0.presenceCount, occupiedCount: $0.occupiedCount)
             }
         case "room:closed": return payload(RoomPayload.self).map { .roomClosed(roomId: $0.roomId) }
+        case "room:updated": return payload(RoomUpdatedPayload.self).map { .roomUpdated(room: $0.room) }
+        case "room:removed":
+            return payload(MemberRemovedPayload.self).map { .memberRemoved(roomId: $0.roomId, userId: $0.userId) }
         default: return nil
         }
     }
@@ -194,3 +197,5 @@ private struct DeskPayload: Decodable { let roomId: String; let desk: DeskRecord
 private struct VacatedPayload: Decodable { let roomId: String; let deskId: String; let userId: String }
 private struct PresencePayload: Decodable { let roomId: String; let presenceCount: Int; let occupiedCount: Int }
 private struct RoomPayload: Decodable { let roomId: String }
+private struct RoomUpdatedPayload: Decodable { let room: RoomState }
+private struct MemberRemovedPayload: Decodable { let roomId: String; let userId: String }

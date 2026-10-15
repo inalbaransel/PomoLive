@@ -2,7 +2,8 @@ import { CategoryInfo } from '../categories/built-in-categories.js';
 import { DeskTimer } from './desk-timer.js';
 
 export type RoomKind = 'HALL' | 'PUBLIC' | 'PRIVATE';
-export type VacateReason = 'STOOD_UP' | 'LEASE_EXPIRED' | 'ROOM_CLOSED';
+export type VacateReason =
+  'STOOD_UP' | 'LEASE_EXPIRED' | 'ROOM_CLOSED' | 'REMOVED';
 
 /** One occupied desk, stored as JSON in `room:{roomId}:desks` and sent over the wire as-is. */
 export interface DeskRecord {

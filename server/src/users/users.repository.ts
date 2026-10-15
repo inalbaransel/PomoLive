@@ -3,13 +3,26 @@ import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../infra/prisma.service.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import { DEFAULT_AVATAR_SPRITE_ID } from './avatar-catalog.js';
-import { UserProfile } from './user.js';
+import { ProfileChanges, PublicUser, UserProfile } from './user.js';
 
-const profileSelect = {
+const publicSelect = {
   id: true,
+  username: true,
   displayName: true,
   avatarSpriteId: true,
 } as const;
+
+const profileSelect = {
+  ...publicSelect,
+  bio: true,
+  statsVisible: true,
+} as const;
+
+export interface UserCard extends PublicUser {
+  bio: string | null;
+  statsVisible: boolean;
+  createdAt: Date;
+}
 
 @Injectable()
 export class UsersRepository {
@@ -18,6 +31,7 @@ export class UsersRepository {
   async create(
     email: string,
     passwordHash: string,
+    username: string,
     displayName: string | undefined,
   ): Promise<UserProfile> {
     try {
@@ -25,32 +39,29 @@ export class UsersRepository {
         data: {
           email,
           passwordHash,
-          displayName: displayName ?? UsersRepository.nameFromEmail(email),
+          username,
+          displayName: displayName ?? username,
           avatarSpriteId: DEFAULT_AVATAR_SPRITE_ID,
         },
         select: profileSelect,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        ProtocolError.throw(
-          'EMAIL_TAKEN',
-          'An account with this e-mail already exists',
-        );
-      }
-      throw error;
+      UsersRepository.rethrowUniqueClash(error);
     }
   }
 
+  /** Signs in with either the e-mail address or the username. */
   findCredentials(
-    email: string,
+    login: string,
   ): Promise<(UserProfile & { passwordHash: string }) | null> {
     return this.prisma.user.findUnique({
-      where: { email },
+      where: login.includes('@') ? { email: login } : { username: login },
       select: { ...profileSelect, passwordHash: true },
     });
+  }
+
+  async isUsernameTaken(username: string): Promise<boolean> {
+    return (await this.prisma.user.count({ where: { username } })) > 0;
   }
 
   async passwordHash(id: string): Promise<string | null> {
@@ -73,21 +84,50 @@ export class UsersRepository {
     });
   }
 
-  update(
-    id: string,
-    changes: Partial<Omit<UserProfile, 'id'>>,
-  ): Promise<UserProfile> {
-    return this.prisma.user.update({
+  /** A reader as shown on their profile page. */
+  findCard(id: string): Promise<UserCard | null> {
+    return this.prisma.user.findUnique({
       where: { id },
-      data: changes,
-      select: profileSelect,
+      select: { ...profileSelect, createdAt: true },
     });
   }
 
-  /** `baransel@…` → "Baransel". */
-  private static nameFromEmail(email: string): string {
-    const localPart = email.split('@')[0].replace(/[^\p{L}\p{N}]/gu, '');
-    if (localPart.length < 2) return 'Okur';
-    return localPart.charAt(0).toLocaleUpperCase('tr') + localPart.slice(1, 24);
+  /** Public data and the stats setting of several readers at once. */
+  async findMany(
+    ids: string[],
+  ): Promise<Map<string, PublicUser & { statsVisible: boolean }>> {
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: { ...publicSelect, statsVisible: true },
+    });
+    return new Map(users.map((user) => [user.id, user]));
+  }
+
+  async update(id: string, changes: ProfileChanges): Promise<UserProfile> {
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: changes,
+        select: profileSelect,
+      });
+    } catch (error) {
+      UsersRepository.rethrowUniqueClash(error);
+    }
+  }
+
+  private static rethrowUniqueClash(error: unknown): never {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      const fields = JSON.stringify(error.meta ?? {});
+      if (fields.includes('username'))
+        ProtocolError.throw('USERNAME_TAKEN', 'This username is taken');
+      ProtocolError.throw(
+        'EMAIL_TAKEN',
+        'An account with this e-mail already exists',
+      );
+    }
+    throw error;
   }
 }

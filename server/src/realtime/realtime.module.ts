@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { AccountModule } from '../account/account.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CategoriesModule } from '../categories/categories.module.js';
+import { CommunityModule } from '../community/community.module.js';
 import { LibraryModule } from '../library/library.module.js';
 import { StatsModule } from '../stats/stats.module.js';
+import { UsersModule } from '../users/users.module.js';
 import { LibraryGateway } from './library.gateway.js';
 
 @Module({
@@ -12,7 +14,9 @@ import { LibraryGateway } from './library.gateway.js';
     AccountModule,
     LibraryModule,
     CategoriesModule,
+    CommunityModule,
     StatsModule,
+    UsersModule,
   ],
   providers: [LibraryGateway],
 })

@@ -88,6 +88,26 @@ export class RoomDirectory {
       await this.redis.zadd(RedisKeys.liveRooms, now, room.id);
   }
 
+  /** Rewrites a live room's name, icon and kind after the owner edited it. No-op if it is not live. */
+  async updateIdentity(room: RoomIdentity): Promise<void> {
+    if (!(await this.exists(room.id))) return;
+    await this.redis.hset(RedisKeys.roomState(room.id), {
+      kind: room.kind,
+      name: room.name,
+      symbol: room.symbol,
+      color: room.color,
+    });
+  }
+
+  /** Readers looking at the room right now. */
+  presentUserIds(roomId: string, now: number): Promise<string[]> {
+    return this.redis.zrangebyscore(
+      RedisKeys.roomPresence(roomId),
+      now - PRESENCE_TTL_MS,
+      '+inf',
+    );
+  }
+
   async exists(roomId: string): Promise<boolean> {
     return (await this.redis.exists(RedisKeys.roomState(roomId))) === 1;
   }

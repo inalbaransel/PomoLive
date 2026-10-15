@@ -35,35 +35,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		35A387858A11C5567CE708A6 /* PomoLiveWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PomoLiveWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		74C19D228FEA22096753F4E5 /* PomoLive.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PomoLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		35A387858A11C5567CE708A6 /* PomoLiveWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PomoLiveWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		74C19D228FEA22096753F4E5 /* PomoLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PomoLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0CDE536F016C08599F322308 /* PomoLive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = PomoLive;
 			sourceTree = "<group>";
 		};
 		80576E7920CD76F230F1D782 /* PomoLiveWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = PomoLiveWidgets;
 			sourceTree = "<group>";
 		};
 		EA427FFBF83BD91B7C9F0D5D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
@@ -146,14 +134,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					5A7E0C0962B86FF521CF572E = {
-						DevelopmentTeam = "";
-					};
-					AC327E516EA4844079D8D61A = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = 2FC3AF749C28EF1C9C6727EB /* Build configuration list for PBXProject "PomoLive" */;
 			developmentRegion = tr;
@@ -296,6 +276,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = KD4P6PGZRN;
 				INFOPLIST_FILE = "Config/PomoLive-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -313,6 +294,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = KD4P6PGZRN;
 				INFOPLIST_FILE = "Config/PomoLive-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -392,6 +374,7 @@
 		366FB196FABDA1A2AC45F90C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = KD4P6PGZRN;
 				INFOPLIST_FILE = "Config/PomoLiveWidgets-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -407,6 +390,7 @@
 		9BB29A4A8CC6EF6D79DF5330 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = KD4P6PGZRN;
 				INFOPLIST_FILE = "Config/PomoLiveWidgets-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

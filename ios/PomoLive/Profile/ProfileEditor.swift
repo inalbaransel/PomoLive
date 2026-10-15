@@ -1,24 +1,44 @@
 import SwiftUI
 
-/// Name and pixel character shown to other readers.
+/// Pixel character, username, name and bio: everything other readers see on the profile.
 struct ProfileEditor: View {
     let user: UserProfile
 
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
+    @State private var username: String
+    @State private var usernameStatus = UsernameStatus.unchanged
     @State private var displayName: String
+    @State private var bio: String
     @State private var avatar: AvatarSprite
     @State private var isSaving = false
     @State private var error: LibraryError?
 
+    private static let bioLimit = 80
+
     init(user: UserProfile) {
         self.user = user
+        _username = State(initialValue: user.username)
         _displayName = State(initialValue: user.displayName)
+        _bio = State(initialValue: user.bio ?? "")
         _avatar = State(initialValue: AvatarSprite(id: user.avatarSpriteId))
     }
 
     private var trimmedName: String { displayName.trimmingCharacters(in: .whitespaces) }
-    private var hasChanges: Bool { trimmedName != user.displayName || avatar.rawValue != user.avatarSpriteId }
+    private var trimmedBio: String { bio.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    private var changes: UpdateProfileCommand {
+        UpdateProfileCommand(
+            username: username == user.username ? nil : username,
+            displayName: trimmedName == user.displayName ? nil : trimmedName,
+            avatarSpriteId: avatar.rawValue == user.avatarSpriteId ? nil : avatar.rawValue,
+            bio: trimmedBio == (user.bio ?? "") ? nil : trimmedBio
+        )
+    }
+
+    private var hasChanges: Bool {
+        changes.username != nil || changes.displayName != nil || changes.avatarSpriteId != nil || changes.bio != nil
+    }
 
     var body: some View {
         Form {
@@ -47,10 +67,29 @@ struct ProfileEditor: View {
                 .animation(.spring(duration: 0.35), value: avatar)
             }
 
+            Section {
+                UsernameField(username: $username, status: $usernameStatus, current: user.username)
+            } header: {
+                Text("Kullanıcı Adı")
+            } footer: {
+                UsernameFooter(status: usernameStatus, username: username)
+            }
+
             Section("Görünen ad") {
                 TextField("Adın", text: $displayName)
                     .textContentType(.nickname)
                     .onChange(of: displayName) { displayName = String(displayName.prefix(24)) }
+            }
+
+            Section {
+                TextField("Ne üzerinde çalışıyorsun?", text: $bio, axis: .vertical)
+                    .lineLimit(2...4)
+                    .onChange(of: bio) { bio = String(bio.prefix(Self.bioLimit)) }
+            } header: {
+                Text("Hakkında")
+            } footer: {
+                Text("\(bio.count)/\(Self.bioLimit)")
+                    .monospacedDigit()
             }
         }
         .navigationTitle("Profili Düzenle")
@@ -61,7 +100,7 @@ struct ProfileEditor: View {
                     ProgressView()
                 } else {
                     Button("Kaydet", systemImage: "checkmark", action: save)
-                        .disabled(!hasChanges || trimmedName.count < 2)
+                        .disabled(!hasChanges || trimmedName.count < 2 || !usernameStatus.allowsSubmit)
                 }
             }
         }
@@ -73,10 +112,7 @@ struct ProfileEditor: View {
         Task {
             defer { isSaving = false }
             do {
-                try await app.updateProfile(
-                    displayName: trimmedName == user.displayName ? nil : trimmedName,
-                    avatar: avatar.rawValue == user.avatarSpriteId ? nil : avatar
-                )
+                try await app.updateProfile(changes)
                 dismiss()
             } catch {
                 self.error = LibraryError(error)

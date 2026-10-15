@@ -10,6 +10,7 @@ import { ProtocolError } from './protocol-error.js';
  */
 export const ClientEvent = {
   auth: 'auth',
+  checkUsername: 'username:check',
   listRooms: 'room:list',
   discoverRooms: 'room:discover',
   joinRoom: 'room:join',
@@ -23,6 +24,11 @@ export const ClientEvent = {
   mySeat: 'desk:mine',
   heartbeat: 'presence:heartbeat',
   updateProfile: 'profile:update',
+  userProfile: 'user:profile',
+  roomMembers: 'room:members',
+  updateRoom: 'room:update',
+  removeMember: 'room:remove',
+  unbanMember: 'room:unban',
   listCategories: 'category:list',
   createCategory: 'category:create',
   deleteCategory: 'category:delete',
@@ -38,9 +44,17 @@ export const ServerEvent = {
   deskVacated: 'desk:vacated',
   presence: 'room:presence',
   roomClosed: 'room:closed',
+  roomUpdated: 'room:updated',
+  memberRemoved: 'room:removed',
 } as const;
 
 const displayName = z.string().trim().min(2).max(24);
+/** Lowercase letters, digits, `_` and `.`; no leading, trailing or doubled dot. */
+const username = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^(?!\.)(?!.*\.\.)[a-z0-9._]{3,20}(?<!\.)$/);
 const timeZone = z
   .string()
   .refine(
@@ -81,10 +95,16 @@ export const authCommandSchema = z.discriminatedUnion('method', [
     method: z.literal('register'),
     email,
     password,
+    username,
     displayName: displayName.optional(),
     timeZone,
   }),
-  z.object({ method: z.literal('password'), email, password, timeZone }),
+  z.object({
+    method: z.literal('password'),
+    login: z.string().trim().toLowerCase().min(3).max(254),
+    password,
+    timeZone,
+  }),
   z.object({
     method: z.literal('session'),
     sessionToken: z.string().min(1),
@@ -109,6 +129,24 @@ export const createRoomSchema = z.object({
 
 export const deleteRoomSchema = z.object({ roomId: uuid });
 
+export const updateRoomSchema = z
+  .object({
+    roomId: uuid,
+    name: label(2, 32).optional(),
+    symbol: glyph.symbol.optional(),
+    color: glyph.color.optional(),
+    visibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
+  })
+  .refine((changes) => Object.keys(changes).length > 1, {
+    message: 'Nothing to change',
+  });
+
+export const roomMembersSchema = z.object({
+  roomId: z.union([z.string().regex(/^pixel-hall-\d+$/), uuid]),
+});
+
+export const roomMemberSchema = z.object({ roomId: uuid, userId: uuid });
+
 export const sitSchema = z.object({
   deskId: z.string().regex(/^desk_\d{1,3}$/),
   timer: z.discriminatedUnion('mode', [
@@ -131,15 +169,28 @@ export const heartbeatSchema = z.object({
   background: z.boolean().default(false),
 });
 
+export const checkUsernameSchema = z.object({ username });
+
 export const updateProfileSchema = z
   .object({
+    username: username.optional(),
     displayName: displayName.optional(),
     avatarSpriteId: z.enum(AVATAR_SPRITE_IDS).optional(),
+    /** An empty string clears the bio. */
+    bio: z
+      .string()
+      .trim()
+      .max(80)
+      .regex(/^[^\p{Cc}\p{Cf}]*$/u)
+      .transform((bio) => bio || null)
+      .optional(),
+    statsVisible: z.boolean().optional(),
   })
-  .refine(
-    (changes) =>
-      changes.displayName !== undefined || changes.avatarSpriteId !== undefined,
-  );
+  .refine((changes) => Object.keys(changes).length > 0, {
+    message: 'Nothing to change',
+  });
+
+export const userProfileSchema = z.object({ userId: uuid });
 
 export const createCategorySchema = z.object({ name: label(2, 24), ...glyph });
 

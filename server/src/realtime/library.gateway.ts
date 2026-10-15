@@ -17,14 +17,18 @@ import { AccountService } from '../account/account.service.js';
 import { AuthService } from '../auth/auth.service.js';
 import { BUILT_IN_CATEGORIES } from '../categories/built-in-categories.js';
 import { CategoriesRepository } from '../categories/categories.repository.js';
+import { ProfilesService } from '../community/profiles.service.js';
+import { RoomMembersService } from '../community/room-members.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { StatsService } from '../stats/stats.service.js';
+import { UsersRepository } from '../users/users.repository.js';
 import { ProtocolError } from './protocol-error.js';
 import { ProtocolErrorFilter } from './protocol-error.filter.js';
 import {
   authCommandSchema,
   changeTimerSchema,
+  checkUsernameSchema,
   ClientEvent,
   createCategorySchema,
   createRoomSchema,
@@ -36,9 +40,13 @@ import {
   joinRoomSchema,
   parsePayload,
   refSchema,
+  roomMemberSchema,
+  roomMembersSchema,
   ServerEvent,
   sitSchema,
   updateProfileSchema,
+  updateRoomSchema,
+  userProfileSchema,
 } from './protocol.js';
 import { Frame, RoomEventBus } from './room-event-bus.js';
 
@@ -75,6 +83,9 @@ export class LibraryGateway
     private readonly rooms: RoomsService,
     private readonly categories: CategoriesRepository,
     private readonly stats: StatsService,
+    private readonly users: UsersRepository,
+    private readonly members: RoomMembersService,
+    private readonly profiles: ProfilesService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -131,6 +142,27 @@ export class LibraryGateway
       user,
       sessionToken: session.token,
       sessionExpiresAt: session.expiresAt,
+    });
+  }
+
+  /** Answered before sign-in too, so the registration form can check a handle as it is typed. */
+  @SubscribeMessage(ClientEvent.checkUsername)
+  async onCheckUsername(@MessageBody() data: Payload) {
+    const { username } = parsePayload(checkUsernameSchema, data);
+    return reply(data, {
+      username,
+      available: !(await this.users.isUsernameTaken(username)),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.userProfile)
+  async onUserProfile(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { userId } = parsePayload(userProfileSchema, data);
+    return reply(data, {
+      profile: await this.profiles.profile(this.sessionOf(socket), userId),
     });
   }
 
@@ -223,6 +255,54 @@ export class LibraryGateway
     const room = await this.rooms.owned(this.sessionOf(socket).user.id, roomId);
     await this.library.closeRoom(room.id);
     await this.rooms.delete(room.id);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.updateRoom)
+  async onUpdateRoom(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId, ...changes } = parsePayload(updateRoomSchema, data);
+    const room = await this.rooms.update(
+      this.sessionOf(socket).user.id,
+      roomId,
+      changes,
+    );
+    await this.library.refreshRoom(room);
+    return reply(data, { room });
+  }
+
+  @SubscribeMessage(ClientEvent.roomMembers)
+  async onRoomMembers(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId } = parsePayload(roomMembersSchema, data);
+    return reply(
+      data,
+      await this.members.list(this.sessionOf(socket), roomId, Date.now()),
+    );
+  }
+
+  @SubscribeMessage(ClientEvent.removeMember)
+  async onRemoveMember(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId, userId } = parsePayload(roomMemberSchema, data);
+    await this.rooms.ban(this.sessionOf(socket).user.id, roomId, userId);
+    await this.library.removeReader(roomId, userId);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.unbanMember)
+  async onUnbanMember(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId, userId } = parsePayload(roomMemberSchema, data);
+    await this.rooms.unban(this.sessionOf(socket).user.id, roomId, userId);
     return reply(data, {});
   }
 
@@ -385,8 +465,11 @@ export class LibraryGateway
       if (!session || socket.readyState !== WebSocket.OPEN) continue;
       if (session.roomId === roomId || session.user.id === deskOwner)
         socket.send(message);
-      if (frame.event === ServerEvent.roomClosed && session.roomId === roomId)
-        session.roomId = null;
+      const isShutOut =
+        frame.event === ServerEvent.roomClosed ||
+        (frame.event === ServerEvent.memberRemoved &&
+          session.user.id === deskOwner);
+      if (isShutOut && session.roomId === roomId) session.roomId = null;
     }
   }
 

@@ -1,7 +1,11 @@
 import SwiftUI
 
 /// The reader's control panel while seated: a Clock-style progress ring, the phase and its actions.
-/// Swipe down to melt it into a capsule so the hall can be explored full-screen.
+/// Swipe down to fold it into a slim bar so the hall can be explored; swipe up or tap to unfold.
+///
+/// Both states share one glass surface that changes height, while the avatar and category glide
+/// between their places, so folding reads as a single liquid motion. During a drag the panel
+/// follows the finger with resistance and settles with the gesture's velocity.
 struct FocusDeckView: View {
     let desk: DeskRecord
     let clock: ServerClock
@@ -9,31 +13,34 @@ struct FocusDeckView: View {
     let onChangeTimer: (ChangeTimerCommand.Action) -> Void
     let onFinish: () -> Void
 
-    @Namespace private var glassNamespace
+    @Namespace private var deck
+    @GestureState private var dragOffset: CGFloat = 0
     @State private var confirmsFinish = false
 
+    private static let fold = Animation.spring(duration: 0.45, bounce: 0.12)
+    private static let foldDistance: CGFloat = 70
+
+    private var cornerRadius: CGFloat { isExpanded ? 34 : 29 }
+
     var body: some View {
-        GlassEffectContainer(spacing: 24) {
+        VStack(spacing: 0) {
             if isExpanded {
                 expandedDeck
-                    .glassEffect(.regular, in: .rect(cornerRadius: 34))
-                    .glassEffectID("deck", in: glassNamespace)
+                    .transition(.blurReplace)
             } else {
-                compactCapsule
-                    .glassEffect(.regular.interactive(), in: .capsule)
-                    .glassEffectID("deck", in: glassNamespace)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                compactBar
+                    .transition(.blurReplace)
             }
         }
+        .frame(maxWidth: .infinity)
+        .clipShape(.rect(cornerRadius: cornerRadius))
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+        .offset(y: resisted(dragOffset))
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
-        .gesture(
-            DragGesture(minimumDistance: 12).onEnded { value in
-                if value.translation.height > 30 { isExpanded = false }
-                if value.translation.height < -30 { isExpanded = true }
-            }
-        )
-        .animation(.spring(duration: 0.5, bounce: 0.28), value: isExpanded)
+        .gesture(foldGesture)
+        .animation(Self.fold, value: isExpanded)
+        .animation(.interactiveSpring, value: dragOffset)
         .sensoryFeedback(.impact(weight: .light), trigger: isExpanded)
         .confirmationDialog("Oturum bitsin mi?", isPresented: $confirmsFinish, titleVisibility: .visible) {
             Button("Oturumu Bitir", role: .destructive, action: onFinish)
@@ -41,6 +48,25 @@ struct FocusDeckView: View {
             Text("Masadan kalkarsın; odak süren geçmişine kaydedilir.")
         }
     }
+
+    /// Follows the finger toward the fold direction and resists the other way.
+    private func resisted(_ offset: CGFloat) -> CGFloat {
+        let towardFold = isExpanded ? offset > 0 : offset < 0
+        guard towardFold else { return offset * 0.15 }
+        return offset * 0.55
+    }
+
+    private var foldGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .updating($dragOffset) { value, offset, _ in offset = value.translation.height }
+            .onEnded { value in
+                let travel = value.predictedEndTranslation.height
+                if isExpanded, travel > Self.foldDistance { isExpanded = false }
+                if !isExpanded, travel < -Self.foldDistance / 2 { isExpanded = true }
+            }
+    }
+
+    // MARK: - Expanded
 
     private var expandedDeck: some View {
         TimelineView(.periodic(from: .now, by: 1)) { _ in
@@ -56,18 +82,10 @@ struct FocusDeckView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: desk.avatarSpriteId)), scale: 1)
-                .resizable()
-                .interpolation(.none)
-                .frame(width: 44, height: 44)
+            avatar(size: 44)
             VStack(alignment: .leading, spacing: 2) {
-                Label {
-                    Text(desk.category.displayName)
-                } icon: {
-                    Image(systemName: desk.category.symbol)
-                        .foregroundStyle(desk.category.color.color)
-                }
-                .font(.headline)
+                categoryLabel
+                    .font(.headline)
                 Text(desk.note ?? String(localized: "Masa \(desk.number) · \(desk.sessionNumber). seans"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -78,19 +96,15 @@ struct FocusDeckView: View {
                 .labelStyle(.iconOnly)
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
+                .matchedGeometryEffect(id: "control", in: deck)
         }
     }
 
     private func actions(for reading: TimerReading) -> some View {
-        let (title, symbol, action): (LocalizedStringKey, String, ChangeTimerCommand.Action) = switch (desk.timer.mode, reading.phase) {
-        case (.pomodoro, .focus): ("Molaya Geç", "cup.and.saucer.fill", .rest)
-        case (.pomodoro, .rest): ("Molayı Atla", "forward.fill", .resume)
-        case (.stopwatch, .focus): ("Duraklat", "pause.fill", .rest)
-        case (.stopwatch, .rest): ("Devam Et", "play.fill", .resume)
-        }
+        let action = Self.primaryAction(mode: desk.timer.mode, phase: reading.phase)
         return HStack(spacing: 12) {
-            Button { onChangeTimer(action) } label: {
-                Label(title, systemImage: symbol)
+            Button { onChangeTimer(action.command) } label: {
+                Label(action.title, systemImage: action.symbol)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.glassProminent)
@@ -107,27 +121,67 @@ struct FocusDeckView: View {
         .controlSize(.large)
     }
 
-    private var compactCapsule: some View {
-        Button { isExpanded = true } label: {
-            HStack(spacing: 10) {
-                Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: desk.avatarSpriteId)), scale: 1)
-                    .resizable()
-                    .interpolation(.none)
-                    .frame(width: 26, height: 26)
-                Image(systemName: desk.category.symbol)
-                    .foregroundStyle(desk.category.color.color)
+    // MARK: - Compact
+
+    private var compactBar: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { _ in
+            let action = Self.primaryAction(mode: desk.timer.mode, phase: desk.timer.reading(at: clock.now).phase)
+            HStack(spacing: 12) {
+                avatar(size: 30)
+                categoryLabel
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                Spacer(minLength: 4)
                 TimerText(timer: desk.timer, clock: clock)
                     .font(.system(.headline, design: .rounded))
-                Text(desk.category.displayName)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                Button(action.title, systemImage: action.symbol) { onChangeTimer(action.command) }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .contentTransition(.symbolEffect(.replace))
+                    .matchedGeometryEffect(id: "control", in: deck)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.leading, 14)
+            .padding(.trailing, 8)
+            .padding(.vertical, 8)
         }
-        .buttonStyle(.plain)
-        .accessibilityHint("Odak panelini açar")
+        .contentShape(.rect)
+        .onTapGesture { isExpanded = true }
+        .accessibilityElement(children: .contain)
+        .accessibilityAction(named: Text("Odak panelini aç")) { isExpanded = true }
+    }
+
+    // MARK: - Shared pieces
+
+    /// The same avatar in both states, so it glides between them.
+    private func avatar(size: CGFloat) -> some View {
+        Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: desk.avatarSpriteId)), scale: 1)
+            .resizable()
+            .interpolation(.none)
+            .matchedGeometryEffect(id: "avatar", in: deck)
+            .frame(width: size, height: size)
+    }
+
+    private var categoryLabel: some View {
+        Label {
+            Text(desk.category.displayName)
+        } icon: {
+            Image(systemName: desk.category.symbol)
+                .foregroundStyle(desk.category.color.color)
+        }
+        .matchedGeometryEffect(id: "category", in: deck)
+    }
+
+    private static func primaryAction(
+        mode: TimerMode,
+        phase: TimerPhase
+    ) -> (title: LocalizedStringKey, symbol: String, command: ChangeTimerCommand.Action) {
+        switch (mode, phase) {
+        case (.pomodoro, .focus): ("Molaya Geç", "cup.and.saucer.fill", .rest)
+        case (.pomodoro, .rest): ("Molayı Atla", "forward.fill", .resume)
+        case (.stopwatch, .focus): ("Duraklat", "pause.fill", .rest)
+        case (.stopwatch, .rest): ("Devam Et", "play.fill", .resume)
+        }
     }
 }
 

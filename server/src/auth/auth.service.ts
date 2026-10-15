@@ -49,10 +49,11 @@ export class AuthService {
         return this.users.create(
           command.email,
           await hashPassword(command.password),
+          command.username,
           command.displayName,
         );
       case 'password':
-        return this.logIn(command.email, command.password);
+        return this.logIn(command.login, command.password);
       case 'session': {
         const userId = await this.sessions
           .verify(command.sessionToken)
@@ -65,14 +66,14 @@ export class AuthService {
     }
   }
 
-  /** Same error for unknown e-mail and wrong password; repeated failures lock the address for a while. */
-  private async logIn(email: string, password: string): Promise<UserProfile> {
-    const failuresKey = `auth:failed-logins:${email}`;
+  /** Same error for an unknown login and a wrong password; repeated failures lock the login for a while. */
+  private async logIn(login: string, password: string): Promise<UserProfile> {
+    const failuresKey = `auth:failed-logins:${login}`;
     const failures = Number(await this.redis.client.get(failuresKey));
     if (failures >= MAX_FAILED_LOGINS)
       ProtocolError.throw('RATE_LIMITED', 'Too many attempts, try again later');
 
-    const account = await this.users.findCredentials(email);
+    const account = await this.users.findCredentials(login);
     const matches = await verifyPassword(
       password,
       account?.passwordHash ?? DECOY_PASSWORD_HASH,
@@ -83,7 +84,7 @@ export class AuthService {
         .incr(failuresKey)
         .expire(failuresKey, FAILED_LOGIN_WINDOW_SECONDS)
         .exec();
-      ProtocolError.throw('INVALID_CREDENTIALS', 'E-mail or password is wrong');
+      ProtocolError.throw('INVALID_CREDENTIALS', 'Login or password is wrong');
     }
 
     await this.redis.client.del(failuresKey);

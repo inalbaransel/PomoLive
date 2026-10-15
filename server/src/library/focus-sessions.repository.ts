@@ -38,6 +38,22 @@ export class FocusSessionsRepository {
     });
   }
 
+  /** Recorded focus per reader in one room since `since`. */
+  async focusByUser(
+    roomId: string,
+    userIds: string[],
+    since: Date,
+  ): Promise<Map<string, number>> {
+    const groups = await this.prisma.focusSession.groupBy({
+      by: ['userId'],
+      where: { roomId, userId: { in: userIds }, startedAt: { gte: since } },
+      _sum: { focusedMs: true },
+    });
+    return new Map(
+      groups.map((group) => [group.userId, group._sum.focusedMs ?? 0]),
+    );
+  }
+
   countSince(userId: string, since: Date): Promise<number> {
     return this.prisma.focusSession.count({
       where: { userId, startedAt: { gte: since } },

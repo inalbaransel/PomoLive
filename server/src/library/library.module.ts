@@ -24,6 +24,14 @@ import { RoomDirectory } from './room-directory.js';
     RoomsService,
     RoomActivityRepository,
   ],
-  exports: [LibraryService, RoomsService, RoomEventBus],
+  exports: [
+    LibraryService,
+    RoomsService,
+    RoomEventBus,
+    RoomDirectory,
+    DeskStore,
+    FocusSessionsRepository,
+    RoomsRepository,
+  ],
 })
 export class LibraryModule {}

@@ -104,11 +104,13 @@ export class RoomsService {
   }
 
   async discover(userId: string, now: number): Promise<DiscoverResult> {
-    const [hallIds, publicRooms, seat] = await Promise.all([
+    const [hallIds, listed, seat, bannedIds] = await Promise.all([
       this.directory.hallIds(),
       this.rooms.listPublic(),
       this.desks.seatOf(userId),
+      this.rooms.bannedRoomIds(userId),
     ]);
+    const publicRooms = listed.filter((room) => !bannedIds.has(room.id));
     const roomIds = publicRooms.map((room) => room.id);
     const [summaries, hallCounts, activity, members] = await Promise.all([
       this.summaries(
@@ -215,6 +217,7 @@ export class RoomsService {
       const room =
         (await this.rooms.findByCode(target.code)) ??
         ProtocolError.throw('ROOM_NOT_FOUND', 'No room with this code');
+      await this.ensureNotBanned(userId, room.id);
       await this.rooms.touchMembership(userId, room.id);
       return RoomsService.identity(room);
     }
@@ -228,6 +231,31 @@ export class RoomsService {
       if (seatRoom) return seatRoom;
     }
     return RoomDirectory.hallIdentity(await this.directory.assignHall(now));
+  }
+
+  /** Applies the owner's edits to name, icon or visibility. */
+  async update(
+    ownerId: string,
+    roomId: string,
+    changes: Partial<
+      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility'>
+    >,
+  ): Promise<RoomIdentity> {
+    await this.owned(ownerId, roomId);
+    return RoomsService.identity(await this.rooms.update(roomId, changes));
+  }
+
+  /** Removes a reader from the owner's room and keeps them out. */
+  async ban(ownerId: string, roomId: string, userId: string): Promise<void> {
+    await this.owned(ownerId, roomId);
+    if (userId === ownerId)
+      ProtocolError.throw('FORBIDDEN', 'Owners cannot remove themselves');
+    await this.rooms.ban(userId, roomId);
+  }
+
+  async unban(ownerId: string, roomId: string, userId: string): Promise<void> {
+    await this.owned(ownerId, roomId);
+    await this.rooms.unban(userId, roomId);
   }
 
   /** Removes a room from the reader's "Odalarım". Owners delete their rooms instead. */
@@ -269,6 +297,7 @@ export class RoomsService {
     const room =
       (await this.rooms.findById(roomId)) ??
       ProtocolError.throw('ROOM_NOT_FOUND', 'Room no longer exists');
+    await this.ensureNotBanned(userId, room.id);
     const isMember = await this.rooms.isMember(userId, room.id);
     if (room.visibility === 'PRIVATE' && !isMember) {
       ProtocolError.throw('FORBIDDEN', 'Join this room with its code');
@@ -276,6 +305,11 @@ export class RoomsService {
     // Only browsing a public room does not add it to "Odalarım"; sitting down there does.
     if (isMember) await this.rooms.touchMembership(userId, room.id);
     return RoomsService.identity(room);
+  }
+
+  private async ensureNotBanned(userId: string, roomId: string): Promise<void> {
+    if (await this.rooms.isBanned(userId, roomId))
+      ProtocolError.throw('BANNED', 'The owner removed you from this room');
   }
 
   private static identity(room: RoomRecord): RoomIdentity {

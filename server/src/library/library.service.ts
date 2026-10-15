@@ -5,7 +5,7 @@ import { ProtocolError } from '../realtime/protocol-error.js';
 import { ServerEvent } from '../realtime/protocol.js';
 import { RoomEventBus } from '../realtime/room-event-bus.js';
 import { RoomsRepository } from '../rooms/rooms.repository.js';
-import { UserProfile } from '../users/user.js';
+import { ProfileChanges, UserProfile } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { DeskStore, LeaseRef } from './desk-store.js';
 import { DeskTimer, resumeFocus, startBreak } from './desk-timer.js';
@@ -212,7 +212,7 @@ export class LibraryService {
 
   async updateProfile(
     session: ReaderSession,
-    changes: Partial<Omit<UserProfile, 'id'>>,
+    changes: ProfileChanges,
   ): Promise<UserProfile> {
     session.user = await this.users.update(session.user.id, changes);
     const seat = await this.desks.seatOf(session.user.id);
@@ -243,6 +243,27 @@ export class LibraryService {
     }
     await this.bus.publish(roomId, ServerEvent.roomClosed, {});
     await this.rooms.close(roomId);
+  }
+
+  /**
+   * Takes a reader out of a room the owner removed them from: their desk there is freed and
+   * everyone, including the reader wherever they are, learns about it.
+   */
+  async removeReader(roomId: string, userId: string): Promise<void> {
+    const seat = await this.desks.seatOf(userId);
+    if (seat?.roomId === roomId)
+      await this.vacate({ ...seat, userId }, 'REMOVED');
+    await this.rooms.removePresence(roomId, userId);
+    await this.bus.publish(roomId, ServerEvent.memberRemoved, { userId });
+    await this.publishPresence(roomId);
+  }
+
+  /** Pushes a room's new name, icon or visibility to everyone looking at it. */
+  async refreshRoom(room: RoomIdentity): Promise<void> {
+    await this.rooms.updateIdentity(room);
+    const state = await this.rooms.roomState(room.id, Date.now());
+    if (state)
+      await this.bus.publish(room.id, ServerEvent.roomUpdated, { room: state });
   }
 
   async standUp(userId: string): Promise<void> {

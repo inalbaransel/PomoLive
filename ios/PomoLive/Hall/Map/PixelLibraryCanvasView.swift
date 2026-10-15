@@ -10,6 +10,7 @@ struct PixelLibraryCanvasView: View {
     let camera: MapCamera
     @Binding var selectedDeskId: String?
     let onEmptyDeskTap: (LayoutDesk) -> Void
+    let onOccupiedDeskTap: (DeskRecord) -> Void
 
     @State private var dragOrigin: CGSize?
     @State private var pinchOrigin: (zoom: CGFloat, offset: CGSize)?
@@ -55,8 +56,9 @@ struct PixelLibraryCanvasView: View {
     }
 
     private func tap(_ desk: LayoutDesk) {
-        if desks[desk.deskId] != nil {
-            selectedDeskId = selectedDeskId == desk.deskId ? nil : desk.deskId
+        if let occupant = desks[desk.deskId] {
+            selectedDeskId = desk.deskId
+            onOccupiedDeskTap(occupant)
         } else {
             selectedDeskId = nil
             onEmptyDeskTap(desk)

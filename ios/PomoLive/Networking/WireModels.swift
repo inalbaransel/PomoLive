@@ -3,10 +3,72 @@ import Foundation
 // Mirrors the server's wire contract (`server/src/realtime/protocol.ts`, `library.types.ts`).
 // Timestamps are milliseconds since the Unix epoch on the server's clock; convert with `ServerClock`.
 
+/// The signed-in reader's own account, with their settings.
 struct UserProfile: Codable, Hashable, Sendable {
     var id: String
+    var username: String
     var displayName: String
     var avatarSpriteId: String
+    var bio: String?
+    var statsVisible: Bool
+
+    var publicUser: PublicUser {
+        PublicUser(id: id, username: username, displayName: displayName, avatarSpriteId: avatarSpriteId)
+    }
+}
+
+/// What other readers see of someone.
+struct PublicUser: Codable, Hashable, Sendable, Identifiable {
+    var id: String
+    var username: String
+    var displayName: String
+    var avatarSpriteId: String
+}
+
+/// A reader's profile page. `stats` and `focusingOn` are empty when they hide their focus time.
+struct PublicProfile: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var username: String
+    var displayName: String
+    var avatarSpriteId: String
+    var bio: String?
+    var joinedAt: Int64
+    var isSelf: Bool
+    var statsVisible: Bool
+    var focusingOn: FocusCategory?
+    var stats: StatsSummary?
+}
+
+/// Someone who belongs to or is inside a room, as listed in its people sheet.
+struct RoomPerson: Decodable, Hashable, Sendable, Identifiable {
+    enum Role: String, Decodable, Sendable {
+        case owner = "OWNER"
+        case member = "MEMBER"
+        case guest = "GUEST"
+    }
+
+    struct Desk: Decodable, Hashable, Sendable {
+        var deskId: String
+        var category: FocusCategory
+        var resting: Bool
+    }
+
+    var user: PublicUser
+    var role: Role
+    /// Looking at the room or holding a desk in it.
+    var isHere: Bool
+    var desk: Desk?
+    /// Focus here over the last 7 days; `nil` when the reader hides it.
+    var weekFocusMs: Int64?
+
+    var id: String { user.id }
+}
+
+struct RoomMembers: Decodable, Sendable {
+    /// Most focused first.
+    var people: [RoomPerson]
+    /// Only sent to the room's owner.
+    var banned: [PublicUser]?
 }
 
 /// A focus category: one of the built-in ones or a reader's own (`custom:<id>` keys).
@@ -201,7 +263,7 @@ struct DayTotal: Decodable, Hashable, Sendable, Identifiable {
     var id: String { date }
 }
 
-struct StatsSummary: Decodable, Sendable {
+struct StatsSummary: Decodable, Hashable, Sendable {
     var todayMs: Int64
     var weekMs: Int64
     var totalMs: Int64
@@ -231,4 +293,8 @@ enum LibraryEvent: Sendable {
     case deskVacated(roomId: String, deskId: String, userId: String)
     case presence(roomId: String, presenceCount: Int, occupiedCount: Int)
     case roomClosed(roomId: String)
+    /// The owner renamed the room or changed its icon or visibility.
+    case roomUpdated(room: RoomState)
+    /// The owner removed `userId` from the room.
+    case memberRemoved(roomId: String, userId: String)
 }

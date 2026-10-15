@@ -83,29 +83,42 @@ describe('Library realtime protocol (e2e)', () => {
 
   const password = 'kütüphane-2026';
 
+  /** A fresh handle like `alp_3f9c1a`, unique across test runs. */
+  const handle = (name: string) =>
+    `${name.toLowerCase()}_${randomUUID().slice(0, 6)}`;
+
   function register(
     client: TestClient,
     email: string,
     displayName?: string,
+    username = handle('okur'),
   ): Promise<any> {
     return client.send('auth', {
       method: 'register',
       email,
       password,
+      username,
       displayName,
       timeZone: 'Europe/Istanbul',
     });
   }
 
-  async function signedIn(name: string): Promise<TestClient> {
+  async function signedInWithId(
+    name: string,
+  ): Promise<{ client: TestClient; userId: string }> {
     const client = await TestClient.connect(url);
     const reply = await register(
       client,
       `${name.toLowerCase()}-${randomUUID()}@example.com`,
       name,
+      handle(name),
     );
     expect(reply.ok).toBe(true);
-    return client;
+    return { client, userId: reply.result.user.id };
+  }
+
+  async function signedIn(name: string): Promise<TestClient> {
+    return (await signedInWithId(name)).client;
   }
 
   const pomodoro = { mode: 'POMODORO', focusMinutes: 25, breakMinutes: 5 };
@@ -122,9 +135,15 @@ describe('Library realtime protocol (e2e)', () => {
     const client = await TestClient.connect(url);
     const email = `Kayit-${randomUUID()}@Example.com`;
 
-    const created = await register(client, email);
+    const username = handle('Kayit');
+    const created = await register(client, email, undefined, username);
     expect(created.ok).toBe(true);
-    expect(created.result.user.displayName).toMatch(/^Kayit/);
+    expect(created.result.user).toMatchObject({
+      username,
+      displayName: username,
+      bio: null,
+      statsVisible: true,
+    });
     expect(await register(client, email.toLowerCase())).toMatchObject({
       ok: false,
       error: { code: 'EMAIL_TAKEN' },
@@ -132,7 +151,7 @@ describe('Library realtime protocol (e2e)', () => {
 
     const wrong = await client.send('auth', {
       method: 'password',
-      email,
+      login: email,
       password: 'yanlis-sifre',
     });
     expect(wrong).toMatchObject({
@@ -141,11 +160,180 @@ describe('Library realtime protocol (e2e)', () => {
     });
     const loggedIn = await client.send('auth', {
       method: 'password',
-      email,
+      login: email,
       password,
     });
     expect(loggedIn.result.user.id).toBe(created.result.user.id);
+    const byUsername = await client.send('auth', {
+      method: 'password',
+      login: username.toUpperCase(),
+      password,
+    });
+    expect(byUsername.result.user.id).toBe(created.result.user.id);
     client.close();
+  });
+
+  it('keeps usernames unique and checks them before sign-up', async () => {
+    const client = await TestClient.connect(url);
+    const username = handle('Tekil');
+    expect((await client.send('username:check', { username })).result).toEqual({
+      username,
+      available: true,
+    });
+    expect(
+      await client.send('username:check', { username: '.kotu..ad' }),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_PAYLOAD' } });
+
+    await register(client, `${username}@example.com`, undefined, username);
+    expect(
+      (await client.send('username:check', { username })).result.available,
+    ).toBe(false);
+    const other = await TestClient.connect(url);
+    expect(
+      await register(
+        other,
+        `baska-${randomUUID()}@example.com`,
+        'Başka',
+        username,
+      ),
+    ).toMatchObject({ ok: false, error: { code: 'USERNAME_TAKEN' } });
+    await register(other, `baska-${randomUUID()}@example.com`);
+    expect(await other.send('profile:update', { username })).toMatchObject({
+      ok: false,
+      error: { code: 'USERNAME_TAKEN' },
+    });
+    client.close();
+    other.close();
+  });
+
+  it('ranks the people of a room by weekly focus and honours hidden stats', async () => {
+    const { client: owner, userId: ownerId } = await signedInWithId('Ada');
+    const { client: shy, userId: shyId } = await signedInWithId('Utangac');
+    const { result } = await owner.send('room:create', {
+      name: 'Topluluk',
+      symbol: 'books.vertical.fill',
+      color: 'teal',
+      visibility: 'PRIVATE',
+    });
+    await owner.send('desk:sit', {
+      deskId: 'desk_4',
+      timer: stopwatch,
+      categoryKey: 'software',
+    });
+    await shy.send('room:join', { code: result.room.code });
+    expect(
+      (await shy.send('profile:update', { statsVisible: false, bio: 'Selam' }))
+        .result.user,
+    ).toMatchObject({ statsVisible: false, bio: 'Selam' });
+
+    const { result: members } = await owner.send('room:members', {
+      roomId: result.room.id,
+    });
+    expect(members.banned).toEqual([]);
+    expect(members.people).toHaveLength(2);
+    expect(members.people[0]).toMatchObject({
+      user: { id: ownerId },
+      role: 'OWNER',
+      isHere: true,
+      desk: { deskId: 'desk_4', category: { key: 'software' } },
+    });
+    expect(members.people[0].weekFocusMs).toBeGreaterThanOrEqual(0);
+    expect(members.people[1]).toMatchObject({
+      user: { id: shyId },
+      role: 'MEMBER',
+      weekFocusMs: null,
+    });
+    expect(members.people[1].user).not.toHaveProperty('statsVisible');
+    expect(
+      (await shy.send('room:members', { roomId: result.room.id })).result
+        .banned,
+    ).toBeNull();
+
+    const hidden = (await owner.send('user:profile', { userId: shyId })).result
+      .profile;
+    expect(hidden).toMatchObject({
+      bio: 'Selam',
+      statsVisible: false,
+      stats: null,
+      isSelf: false,
+    });
+    const open = (await shy.send('user:profile', { userId: ownerId })).result
+      .profile;
+    expect(open).toMatchObject({
+      isSelf: false,
+      focusingOn: { key: 'software' },
+      stats: { sessionCount: 0 },
+    });
+    expect(
+      (await shy.send('user:profile', { userId: shyId })).result.profile.stats,
+    ).not.toBeNull();
+    owner.close();
+    shy.close();
+  });
+
+  it('lets the owner remove someone, who cannot come back until unbanned', async () => {
+    const { client: owner } = await signedInWithId('Sahip');
+    const { client: guest, userId: guestId } = await signedInWithId('Misafir');
+    const { result } = await owner.send('room:create', {
+      name: 'Sessiz Oda',
+      symbol: 'moon.stars.fill',
+      color: 'indigo',
+      visibility: 'PUBLIC',
+    });
+    const roomId = result.room.id;
+    await guest.send('room:join', { roomId });
+    await guest.send('desk:sit', {
+      deskId: 'desk_6',
+      timer: stopwatch,
+      categoryKey: 'study',
+    });
+
+    expect(
+      await guest.send('room:remove', { roomId, userId: guestId }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    expect(
+      (await owner.send('room:remove', { roomId, userId: guestId })).ok,
+    ).toBe(true);
+    await guest.next(
+      (frame) =>
+        frame.event === 'desk:vacated' && frame.data.userId === guestId,
+    );
+    const removed = await guest.next((frame) => frame.event === 'room:removed');
+    expect(removed.data).toMatchObject({ roomId, userId: guestId });
+    expect((await guest.send('desk:mine')).result.desk).toBeNull();
+    expect(
+      (await guest.send('room:discover')).result.rooms.map(
+        (room: { id: string }) => room.id,
+      ),
+    ).not.toContain(roomId);
+    expect(await guest.send('room:join', { roomId })).toMatchObject({
+      ok: false,
+      error: { code: 'BANNED' },
+    });
+    expect(
+      (await owner.send('room:members', { roomId })).result.banned,
+    ).toMatchObject([{ id: guestId }]);
+
+    const renamed = await owner.send('room:update', {
+      roomId,
+      name: 'Yeni Ad',
+      visibility: 'PRIVATE',
+    });
+    expect(renamed.result.room).toMatchObject({
+      name: 'Yeni Ad',
+      kind: 'PRIVATE',
+    });
+    const updated = await owner.next((frame) => frame.event === 'room:updated');
+    expect(updated.data.room).toMatchObject({ id: roomId, name: 'Yeni Ad' });
+
+    expect(
+      (await owner.send('room:unban', { roomId, userId: guestId })).ok,
+    ).toBe(true);
+    expect(
+      await guest.send('room:join', { code: result.room.code }),
+    ).toMatchObject({ ok: true });
+    owner.close();
+    guest.close();
   });
 
   it('shares a private room by code and broadcasts sit, pomodoro break and stand', async () => {
@@ -504,7 +692,7 @@ describe('Library realtime protocol (e2e)', () => {
 
     const again = await TestClient.connect(url);
     expect(
-      await again.send('auth', { method: 'password', email, password }),
+      await again.send('auth', { method: 'password', login: email, password }),
     ).toMatchObject({ ok: false, error: { code: 'INVALID_CREDENTIALS' } });
     again.close();
   });

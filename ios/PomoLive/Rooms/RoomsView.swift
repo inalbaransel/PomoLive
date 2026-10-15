@@ -74,8 +74,8 @@ struct RoomsView: View {
             .sheet(item: $sheet, onDismiss: openPendingRoom) { sheet in
                 switch sheet {
                 case .create:
-                    CreateRoomSheet { name, symbol, color, visibility in
-                        pendingRoom = .room(id: try await createRoom(name: name, symbol: symbol, color: color, visibility: visibility))
+                    RoomEditorSheet { draft in
+                        pendingRoom = .room(id: try await createRoom(draft))
                     }
                 case .joinByCode:
                     JoinByCodeSheet { code in pendingRoom = .code(code) }
@@ -136,8 +136,8 @@ struct RoomsView: View {
     }
 
     /// Creating a room also enters it on the server; the room screen re-joins by id.
-    private func createRoom(name: String, symbol: String, color: GlyphColor, visibility: RoomKind) async throws -> String {
-        try await app.hall.create(name: name, symbol: symbol, color: color, visibility: visibility)
+    private func createRoom(_ draft: RoomEditorSheet.Draft) async throws -> String {
+        try await app.hall.create(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility)
         return app.hall.room?.id ?? ""
     }
 }
