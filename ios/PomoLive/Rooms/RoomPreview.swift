@@ -15,6 +15,7 @@ struct RoomPreview: View {
         let desks = layout.desks.map { desk in
             let occupant = seated[desk.deskId]
             let key = DeskSprite.Key(
+                theme: layout.roomTheme,
                 avatar: occupant.map { AvatarSprite(id: $0.avatarSpriteId) },
                 phase: occupant?.resting == true ? .rest : .focus,
                 frame: 0

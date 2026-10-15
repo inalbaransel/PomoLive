@@ -3,6 +3,7 @@ import SwiftUI
 /// One desk on the map. Occupied desks loop a two-frame typing (focus) or sipping (break) animation.
 struct PixelDeskNodeView: View {
     let desk: LayoutDesk
+    let theme: RoomTheme
     let occupant: DeskRecord?
     let clock: ServerClock
 
@@ -22,10 +23,10 @@ struct PixelDeskNodeView: View {
     }
 
     private func spriteKey(at date: Date) -> DeskSprite.Key {
-        guard let occupant else { return DeskSprite.Key(avatar: nil, phase: .focus, frame: 0) }
+        guard let occupant else { return DeskSprite.Key(theme: theme, avatar: nil, phase: .focus, frame: 0) }
         let speed = phase == .focus ? 0.45 : 1.35
         let frame = Int(date.timeIntervalSinceReferenceDate / speed) % 2
-        return DeskSprite.Key(avatar: AvatarSprite(id: occupant.avatarSpriteId), phase: phase, frame: frame)
+        return DeskSprite.Key(theme: theme, avatar: AvatarSprite(id: occupant.avatarSpriteId), phase: phase, frame: frame)
     }
 
     private var accessibilityLabel: String {

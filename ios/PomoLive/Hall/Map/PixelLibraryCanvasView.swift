@@ -30,7 +30,7 @@ struct PixelLibraryCanvasView: View {
                 .accessibilityHidden(true)
 
             ForEach(layout.desks) { desk in
-                PixelDeskNodeView(desk: desk, occupant: desks[desk.deskId], clock: clock)
+                PixelDeskNodeView(desk: desk, theme: layout.roomTheme, occupant: desks[desk.deskId], clock: clock)
                     .frame(width: tile * 2, height: tile * 2)
                     .contentShape(.rect)
                     .onTapGesture { tap(desk) }
