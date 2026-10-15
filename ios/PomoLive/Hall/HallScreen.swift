@@ -125,34 +125,36 @@ struct HallScreen: View {
     private var content: some View {
         let hall = app.hall
         if let layout = hall.layout {
-            PixelLibraryCanvasView(
-                layout: layout,
-                desks: hall.desks,
-                myUserId: app.user?.id,
-                clock: app.time.clock,
-                camera: camera,
-                selectedDeskId: $selectedDeskId,
-                onEmptyDeskTap: { sheet = .sit($0) },
-                onOccupiedDeskTap: { desk in
-                    if desk.userId == app.user?.id {
-                        isDeckExpanded = true
-                    } else {
-                        sheet = .profile(userId: desk.userId)
+            // The map fills the screen; the controls and the deck stay inside the safe area above it.
+            ZStack(alignment: .bottom) {
+                PixelLibraryCanvasView(
+                    layout: layout,
+                    desks: hall.desks,
+                    myUserId: app.user?.id,
+                    clock: app.time.clock,
+                    camera: camera,
+                    selectedDeskId: $selectedDeskId,
+                    onEmptyDeskTap: { sheet = .sit($0) },
+                    onOccupiedDeskTap: { desk in
+                        if desk.userId == app.user?.id {
+                            isDeckExpanded = true
+                        } else {
+                            sheet = .profile(userId: desk.userId)
+                        }
+                    }
+                )
+                .ignoresSafeArea()
+                .safeAreaBar(edge: .top, alignment: .trailing) {
+                    if showsMiniMap {
+                        MiniMapView(layout: layout, desks: hall.desks, myUserId: app.user?.id, camera: camera, clock: app.time.clock)
+                            .padding(.trailing, 16)
+                            .transition(.scale(scale: 0.85).combined(with: .opacity))
                     }
                 }
-            )
-            .ignoresSafeArea()
-            .safeAreaBar(edge: .top, alignment: .trailing) {
-                if showsMiniMap {
-                    MiniMapView(layout: layout, desks: hall.desks, myUserId: app.user?.id, camera: camera, clock: app.time.clock)
-                        .padding(.trailing, 16)
-                        .transition(.scale(scale: 0.85).combined(with: .opacity))
-                }
-            }
-            // The map controls ride on top of the focus deck, so they move with it as it folds. A
-            // bottom-anchored overlay (not a safe-area bar, which resizes without animating) lets the
-            // deck grow upward from the bottom edge in one spring.
-            .overlay(alignment: .bottom) {
+
+                // The map controls ride on top of the focus deck, so they move with it as it folds.
+                // A plain layer (not a safe-area bar, which resizes without animating) lets the deck
+                // grow upward from the bottom edge in one spring.
                 VStack(alignment: .trailing, spacing: 12) {
                     floatingControls
                         .padding(.trailing, 16)
