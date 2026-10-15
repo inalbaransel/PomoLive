@@ -149,24 +149,23 @@ struct HallScreen: View {
                         .transition(.scale(scale: 0.85).combined(with: .opacity))
                 }
             }
+            // The map controls ride on top of the focus deck, so they move with it as it folds.
             .safeAreaBar(edge: .bottom) {
-                if let desk = hall.myDesk {
-                    FocusDeckView(
-                        desk: desk,
-                        clock: app.time.clock,
-                        isExpanded: $isDeckExpanded,
-                        onChangeTimer: { action in Task { await app.seat.changeTimer(action) } },
-                        onFinish: { Task { await app.seat.stand() } }
-                    )
-                    .transition(.move(edge: .bottom).combined(with: .blurReplace))
+                VStack(alignment: .trailing, spacing: 12) {
+                    floatingControls
+                        .padding(.trailing, 16)
+                        .padding(.bottom, hall.myDesk == nil ? 16 : 0)
+                    if let desk = hall.myDesk {
+                        FocusDeckView(
+                            desk: desk,
+                            clock: app.time.clock,
+                            isExpanded: $isDeckExpanded,
+                            onChangeTimer: { action in Task { await app.seat.changeTimer(action) } },
+                            onFinish: { Task { await app.seat.stand() } }
+                        )
+                        .transition(.move(edge: .bottom).combined(with: .blurReplace))
+                    }
                 }
-            }
-            .overlay(alignment: .bottomTrailing) {
-                floatingControls
-                    .padding(.trailing, 16)
-                    .padding(.bottom, bottomControlsPadding)
-                    .animation(.spring(duration: 0.45, bounce: 0.12), value: isDeckExpanded)
-                    .animation(.spring(duration: 0.55, bounce: 0.25), value: hall.myDesk?.deskId)
             }
             .overlay(alignment: .top) {
                 chatToastView
@@ -213,14 +212,6 @@ struct HallScreen: View {
             .glassEffect(.regular.interactive(), in: .circle)
             .sensoryFeedback(.impact(weight: .light), trigger: cameraTrigger)
             .accessibilityLabel(app.hall.myDesk != nil ? "Masama Odaklan" : "Salonu Ortala")
-        }
-    }
-
-    private var bottomControlsPadding: CGFloat {
-        if app.hall.myDesk != nil {
-            return isDeckExpanded ? 330 : 110
-        } else {
-            return 50
         }
     }
 
