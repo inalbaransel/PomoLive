@@ -131,7 +131,7 @@ struct DiscoverRoomsView: View {
                 Button { openRoom(.room(id: room.id)) } label: {
                     RoomCard(
                         room: room.summary,
-                        layout: result.layout,
+                        layout: .forTheme(room.theme, in: result.layouts, fallback: result.layout),
                         isSeatedHere: room.id == result.seatedRoomId,
                         detail: detail(for: room)
                     )

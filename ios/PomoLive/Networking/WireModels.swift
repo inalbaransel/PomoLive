@@ -170,6 +170,8 @@ struct RoomSummary: Decodable, Hashable, Sendable, Identifiable {
 
 struct RoomsOverview: Decodable, Sendable {
     var layout: LibraryLayout
+    /// Floor plans by theme; missing from servers older than room themes.
+    var layouts: [String: LibraryLayout]?
     var myRooms: [RoomSummary]
     var seatedRoomId: String?
     /// People at a desk in halls and public rooms right now.
@@ -193,10 +195,11 @@ struct DiscoverRoom: Decodable, Hashable, Sendable, Identifiable {
     var topic: FocusCategory?
     var createdAt: Int64
     var score: Double
+    var theme: String?
 
     var summary: RoomSummary {
         RoomSummary(
-            id: id, kind: .public, name: name, symbol: symbol, color: color, code: nil, ownerId: nil,
+            id: id, kind: .public, name: name, symbol: symbol, color: color, theme: theme, code: nil, ownerId: nil,
             capacity: capacity, occupiedCount: occupiedCount, presenceCount: presenceCount, occupants: occupants
         )
     }
@@ -209,10 +212,19 @@ struct DiscoverResult: Decodable, Sendable {
     }
 
     var layout: LibraryLayout
+    /// Floor plans by theme; missing from servers older than room themes.
+    var layouts: [String: LibraryLayout]?
     var seatedRoomId: String?
     var halls: Halls
     /// Best first.
     var rooms: [DiscoverRoom]
+}
+
+extension LibraryLayout {
+    /// The floor plan for a room's theme, falling back to `fallback` when the server sent none for it.
+    static func forTheme(_ theme: String?, in layouts: [String: LibraryLayout]?, fallback: LibraryLayout) -> LibraryLayout {
+        theme.flatMap { layouts?[$0] } ?? fallback
+    }
 }
 
 struct DeskRecord: Codable, Hashable, Sendable, Identifiable {

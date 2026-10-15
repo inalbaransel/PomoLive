@@ -3,6 +3,7 @@ import { Glyph } from '../common/glyph.js';
 import { DeskStore } from '../library/desk-store.js';
 import { readTimer } from '../library/desk-timer.js';
 import {
+  LAYOUTS_BY_THEME,
   LIBRARY_LAYOUT,
   LibraryLayout,
 } from '../library/layout/library-layout.js';
@@ -43,8 +44,10 @@ export interface RoomOccupant {
 }
 
 export interface RoomsOverview {
-  /** The floor plan every room shares, so cards can draw previews. */
+  /** The classic floor plan, for rooms without a theme of their own. */
   layout: LibraryLayout;
+  /** Floor plans by theme, so each card previews its room's look. */
+  layouts: Record<string, LibraryLayout>;
   myRooms: RoomSummary[];
   /** The room where the reader still holds a desk, if any. */
   seatedRoomId: string | null;
@@ -60,6 +63,7 @@ export interface DiscoverRoom extends RoomSummary, RoomActivity {
 
 export interface DiscoverResult {
   layout: LibraryLayout;
+  layouts: Record<string, LibraryLayout>;
   seatedRoomId: string | null;
   /** All system halls together: "Hemen Başla" seats the reader in one with space. */
   halls: { occupiedCount: number; presenceCount: number };
@@ -92,6 +96,7 @@ export class RoomsService {
     );
     return {
       layout: LIBRARY_LAYOUT,
+      layouts: LAYOUTS_BY_THEME,
       myRooms: await this.summaries(
         myRooms.map((room) => RoomsService.identity(room)),
         now,
@@ -150,6 +155,7 @@ export class RoomsService {
     const hallTotals = [...hallCounts.values()];
     return {
       layout: LIBRARY_LAYOUT,
+      layouts: LAYOUTS_BY_THEME,
       seatedRoomId: seat?.roomId ?? null,
       halls: {
         occupiedCount: hallTotals.reduce(

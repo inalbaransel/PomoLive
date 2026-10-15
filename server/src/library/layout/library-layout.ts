@@ -149,6 +149,12 @@ function buildCoffeeShopLayout(): LibraryLayout {
 export const LIBRARY_LAYOUT: LibraryLayout = buildLibraryLayout();
 export const COFFEE_SHOP_LAYOUT: LibraryLayout = buildCoffeeShopLayout();
 
+/** Every floor plan by theme, so room cards can preview each room in its own look. */
+export const LAYOUTS_BY_THEME: Record<string, LibraryLayout> = {
+  classic: LIBRARY_LAYOUT,
+  coffee_shop: COFFEE_SHOP_LAYOUT,
+};
+
 export function getLayoutForTheme(theme?: string): LibraryLayout {
   if (theme === 'coffee_shop') {
     return COFFEE_SHOP_LAYOUT;

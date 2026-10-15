@@ -38,7 +38,11 @@ struct RoomsView: View {
                         }
                         ForEach(overview.myRooms) { room in
                             Button { openRoom(.room(id: room.id)) } label: {
-                                RoomCard(room: room, layout: overview.layout, isSeatedHere: room.id == overview.seatedRoomId)
+                                RoomCard(
+                                    room: room,
+                                    layout: .forTheme(room.theme, in: overview.layouts, fallback: overview.layout),
+                                    isSeatedHere: room.id == overview.seatedRoomId
+                                )
                             }
                             .buttonStyle(.plain)
                             .contextMenu { menu(for: room) }
