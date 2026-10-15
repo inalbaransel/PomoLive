@@ -18,7 +18,15 @@ struct UserProfileView: View {
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
 
-                if let stats = profile.stats {
+                if let stats = profile.stats, !stats.isUnlocked {
+                    Section {
+                        ContentUnavailableView(
+                            "Henüz yeterli veri yok",
+                            systemImage: "chart.bar.xaxis",
+                            description: Text("\(profile.displayName) birkaç gün daha çalışınca istatistikleri burada görünür.")
+                        )
+                    }
+                } else if let stats = profile.stats {
                     Section {
                         StatsHeadline(summary: stats)
                     }

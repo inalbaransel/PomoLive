@@ -33,6 +33,16 @@
         }
       }
     },
+    "%@ birkaç gün daha çalışınca istatistikleri burada görünür." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@'s stats appear here after a few more days of focus."
+          }
+        }
+      }
+    },
     "%@ odak sürelerini yalnızca kendisi görüyor." : {
       "localizations" : {
         "en" : {
@@ -496,6 +506,16 @@
         }
       }
     },
+    "Anlamlı grafikler için %lld farklı günde odaklanman gerekiyor. Her gün en az bir oturum tamamla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus on %lld different days to unlock meaningful charts. Finish at least one session each day."
+          }
+        }
+      }
+    },
     "Arkadaşının paylaştığı 6 haneli oda kodu." : {
       "localizations" : {
         "en" : {
@@ -772,6 +792,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today"
+          }
+        }
+      }
+    },
+    "Bugün %@ odaklandın" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You focused %@ today"
           }
         }
       }
@@ -1264,6 +1294,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Sessions Yet"
+          }
+        }
+      }
+    },
+    "Henüz yeterli veri yok" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Enough Data Yet"
           }
         }
       }
@@ -3071,6 +3111,16 @@
         }
       }
     },
+    "gün" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "days"
+          }
+        }
+      }
+    },
     "kullaniciadi" : {
       "localizations" : {
         "en" : {
@@ -3257,6 +3307,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Statistics"
+          }
+        }
+      }
+    },
+    "İstatistiklerin hazırlanıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Stats Are Getting Ready"
           }
         }
       }

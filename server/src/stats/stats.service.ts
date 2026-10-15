@@ -28,6 +28,9 @@ export interface StatsSummary {
   last7Days: DayTotal[];
   /** Last 30 days, largest first. */
   categories: CategoryTotal[];
+  /** Days with recorded focus (last year); charts unlock once this reaches `requiredDays`. */
+  activeDays: number;
+  requiredDays: number;
 }
 
 export interface HistoryEntry {
@@ -43,6 +46,8 @@ export interface HistoryEntry {
 }
 
 const STREAK_LOOKBACK_DAYS = 366;
+/** Charts and totals need focus on this many separate days before they mean anything. */
+const REQUIRED_ACTIVE_DAYS = 2;
 
 @Injectable()
 export class StatsService {
@@ -128,6 +133,8 @@ export class StatsService {
       ),
       last7Days,
       categories: StatsService.sorted(categories),
+      activeDays: days.size,
+      requiredDays: REQUIRED_ACTIVE_DAYS,
     };
   }
 

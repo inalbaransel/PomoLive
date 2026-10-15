@@ -353,6 +353,12 @@ struct StatsSummary: Decodable, Hashable, Sendable {
     var streakDays: Int
     var last7Days: [DayTotal]
     var categories: [CategoryTotal]
+    /// Days with recorded focus; missing from older servers, which always count as unlocked.
+    var activeDays: Int?
+    var requiredDays: Int?
+
+    /// Charts only mean something after focusing on a couple of separate days.
+    var isUnlocked: Bool { (activeDays ?? .max) >= (requiredDays ?? 0) }
 }
 
 struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {

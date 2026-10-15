@@ -262,7 +262,7 @@ describe('Library realtime protocol (e2e)', () => {
     expect(open).toMatchObject({
       isSelf: false,
       focusingOn: { key: 'software' },
-      stats: { sessionCount: 0 },
+      stats: { sessionCount: 0, activeDays: 0, requiredDays: 2 },
     });
     expect(
       (await shy.send('user:profile', { userId: shyId })).result.profile.stats,
@@ -599,6 +599,7 @@ describe('Library realtime protocol (e2e)', () => {
     // The total, not today's minutes: run just after midnight, a backdated session belongs to yesterday.
     expect(stats.totalMs).toBeGreaterThanOrEqual(40 * 60_000);
     expect(stats.streakDays).toBe(1);
+    expect(stats.activeDays).toBeGreaterThanOrEqual(1);
     expect(stats.last7Days).toHaveLength(7);
     expect(stats.categories[0]).toMatchObject({ key: 'writing', name: 'Yazı' });
     reader.close();

@@ -11,7 +11,12 @@ struct StatsView: View {
 
         NavigationStack {
             List {
-                if let summary = app.stats.summary {
+                if let summary = app.stats.summary, !summary.isUnlocked {
+                    Section {
+                        StatsUnlockCard(summary: summary)
+                    }
+                    recentSessions
+                } else if let summary = app.stats.summary {
                     Section {
                         StatsHeadline(summary: summary)
                     }
@@ -45,7 +50,8 @@ struct StatsView: View {
             }
             .navigationTitle("İstatistik")
             .refreshable { await app.stats.refresh() }
-            .task(id: app.connection) {
+            // Reload whenever the tab appears, the connection comes back or a session ends.
+            .task(id: RefreshKey(connection: app.connection, deskId: app.seat.desk?.deskId)) {
                 if app.connection == .online { await app.stats.refresh() }
             }
             .errorAlert($stats.error)
@@ -68,6 +74,58 @@ struct StatsView: View {
                 NavigationLink("Tüm Geçmiş") { HistoryView() }
             }
         }
+    }
+}
+
+private struct RefreshKey: Hashable {
+    var connection: AppModel.Connection
+    var deskId: String?
+}
+
+/// Shown until the reader has focused on enough separate days for charts to mean something.
+struct StatsUnlockCard: View {
+    let summary: StatsSummary
+
+    private var required: Int { summary.requiredDays ?? 2 }
+    private var done: Int { min(summary.activeDays ?? 0, required) }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .stroke(Color.accentColor.opacity(0.18), lineWidth: 10)
+                Circle()
+                    .trim(from: 0, to: max(Double(done) / Double(required), 0.02))
+                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                VStack(spacing: 0) {
+                    Text(verbatim: "\(done)/\(required)")
+                        .font(.system(.title, design: .rounded, weight: .bold))
+                    Text("gün")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 104, height: 104)
+            .animation(.smooth, value: done)
+
+            VStack(spacing: 6) {
+                Text("İstatistiklerin hazırlanıyor")
+                    .font(.headline)
+                Text("Anlamlı grafikler için \(required) farklı günde odaklanman gerekiyor. Her gün en az bir oturum tamamla.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            if summary.todayMs > 0 {
+                Label("Bugün \(formattedFocus(summary.todayMs)) odaklandın", systemImage: "checkmark.circle.fill")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.green)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
     }
 }
 
