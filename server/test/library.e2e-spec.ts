@@ -239,7 +239,19 @@ describe('Library realtime protocol (e2e)', () => {
     expect(overview.halls.length).toBeGreaterThan(0);
     expect(
       overview.publicRooms.find((room: any) => room.id === publicRoom.id),
-    ).toMatchObject({ occupiedCount: 1, presenceCount: 1 });
+    ).toMatchObject({
+      occupiedCount: 1,
+      presenceCount: 1,
+      occupants: [
+        {
+          deskId: 'desk_2',
+          userName: 'Ece',
+          avatarSpriteId: 'scholar_01',
+          resting: false,
+        },
+      ],
+    });
+    expect(overview.layout.desks).toHaveLength(30);
     expect(overview.myRooms).toEqual([]);
     expect(overview.seatedRoomId).toBeNull();
 
@@ -256,6 +268,13 @@ describe('Library realtime protocol (e2e)', () => {
     });
     expect(await myRoomIds()).toEqual([publicRoom.id]);
     await visitor.send('desk:stand');
+    expect(
+      (await visitor.send('room:forget', { roomId: publicRoom.id })).ok,
+    ).toBe(true);
+    expect(await myRoomIds()).toEqual([]);
+    expect(
+      await owner.send('room:forget', { roomId: publicRoom.id }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
     expect((await owner.send('room:list')).result.seatedRoomId).toBe(
       publicRoom.id,
     );

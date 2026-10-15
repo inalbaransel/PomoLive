@@ -39,10 +39,33 @@ struct RoomState: Codable, Hashable, Sendable, Identifiable {
     var presenceCount: Int
 }
 
+/// Someone at a desk, as shown on a room's preview card.
+struct RoomOccupant: Decodable, Hashable, Sendable {
+    var deskId: String
+    var userName: String
+    var avatarSpriteId: String
+    var resting: Bool
+}
+
+/// A room in the lists: identity, live counts and who sits where.
+struct RoomSummary: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var kind: RoomKind
+    var name: String
+    var emoji: String
+    var code: String?
+    var ownerId: String?
+    var capacity: Int
+    var occupiedCount: Int
+    var presenceCount: Int
+    var occupants: [RoomOccupant]
+}
+
 struct RoomsOverview: Decodable, Sendable {
-    var halls: [RoomState]
-    var publicRooms: [RoomState]
-    var myRooms: [RoomState]
+    var layout: LibraryLayout
+    var halls: [RoomSummary]
+    var publicRooms: [RoomSummary]
+    var myRooms: [RoomSummary]
     var seatedRoomId: String?
 }
 

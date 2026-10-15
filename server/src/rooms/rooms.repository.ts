@@ -114,6 +114,10 @@ export class RoomsRepository {
     });
   }
 
+  async removeMembership(userId: string, roomId: string): Promise<void> {
+    await this.prisma.roomMembership.deleteMany({ where: { userId, roomId } });
+  }
+
   async delete(id: string): Promise<void> {
     await this.prisma.room.delete({ where: { id } });
   }

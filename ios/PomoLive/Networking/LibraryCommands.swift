@@ -78,6 +78,13 @@ struct DeleteRoomCommand: LibraryCommand {
     var roomId: String
 }
 
+/// Removes a room from "Odalarım" (not for owners, who delete instead).
+struct ForgetRoomCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "room:forget"
+    var roomId: String
+}
+
 /// Stops looking at the room; a desk held there stays taken.
 struct LeaveRoomCommand: LibraryCommand {
     typealias Result = NoResult

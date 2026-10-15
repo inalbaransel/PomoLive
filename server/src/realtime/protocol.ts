@@ -13,6 +13,7 @@ export const ClientEvent = {
   joinRoom: 'room:join',
   createRoom: 'room:create',
   deleteRoom: 'room:delete',
+  forgetRoom: 'room:forget',
   leaveRoom: 'room:leave',
   sit: 'desk:sit',
   stand: 'desk:stand',

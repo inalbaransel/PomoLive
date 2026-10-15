@@ -212,6 +212,16 @@ export class LibraryGateway
     return reply(data, {});
   }
 
+  @SubscribeMessage(ClientEvent.forgetRoom)
+  async onForgetRoom(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId } = parsePayload(deleteRoomSchema, data);
+    await this.rooms.forget(this.sessionOf(socket).user.id, roomId);
+    return reply(data, {});
+  }
+
   @SubscribeMessage(ClientEvent.leaveRoom)
   async onLeave(
     @ConnectedSocket() socket: WebSocket,

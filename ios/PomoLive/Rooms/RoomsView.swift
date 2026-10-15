@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The home tab: a greeting with today's focus, then halls, public rooms and the reader's rooms.
+/// The home tab: a way into public rooms, then the reader's own community of rooms as live cards.
 struct RoomsView: View {
     let openRoom: (HallStore.Target) -> Void
 
@@ -14,42 +14,44 @@ struct RoomsView: View {
         var id: String { rawValue }
     }
 
+    @State private var roomToDelete: RoomSummary?
+
     var body: some View {
         @Bindable var rooms = app.rooms
 
         NavigationStack {
-            List {
-                Section {
-                    TodaySummary(summary: app.stats.summary)
-                }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 14) {
+                    NavigationLink {
+                        DiscoverRoomsView(openRoom: openRoom, onCreate: { sheet = .create })
+                    } label: {
+                        DiscoverBanner(overview: app.rooms.overview)
+                    }
+                    .buttonStyle(.plain)
 
-                if let overview = app.rooms.overview {
-                    section("Genel Salonlar", rooms: overview.halls, seatedRoomId: overview.seatedRoomId)
-                    if !overview.myRooms.isEmpty {
-                        section("Odalarım", rooms: overview.myRooms, seatedRoomId: overview.seatedRoomId)
-                    }
-                    Section {
-                        ForEach(overview.publicRooms) { room in
-                            roomButton(room, seatedRoomId: overview.seatedRoomId)
+                    SectionTitle("Odalarım")
+                        .padding(.top, 12)
+
+                    if let overview = app.rooms.overview {
+                        if overview.myRooms.isEmpty {
+                            emptyState
                         }
-                        if overview.publicRooms.isEmpty {
-                            Button("İlk odayı sen aç", systemImage: "plus.circle.fill") { sheet = .create }
+                        ForEach(overview.myRooms) { room in
+                            Button { openRoom(.room(id: room.id)) } label: {
+                                RoomCard(room: room, layout: overview.layout, isSeatedHere: room.id == overview.seatedRoomId)
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu { menu(for: room) }
                         }
-                    } header: {
-                        Text("Keşfet")
-                    } footer: {
-                        Text("Herkese açık odalar. Özel bir odaya katılmak için sağ üstteki + ile kodu gir.")
-                    }
-                } else {
-                    Section {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Spacer()
-                        }
+                    } else {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 60)
                     }
                 }
+                .padding(16)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Odalar")
             .navigationSubtitle(app.user.map { "Merhaba, \($0.displayName)" } ?? "")
             .toolbar {
@@ -60,12 +62,12 @@ struct RoomsView: View {
                     }
                 }
             }
-            .refreshable { await refresh() }
+            .refreshable { await app.rooms.refresh() }
             .task(id: app.connection) {
                 // Live counts change while the tab is visible; poll gently instead of streaming every room.
                 guard app.connection == .online else { return }
                 while !Task.isCancelled {
-                    await refresh()
+                    await app.rooms.refresh()
                     try? await Task.sleep(for: .seconds(20))
                 }
             }
@@ -80,35 +82,57 @@ struct RoomsView: View {
                         .presentationDetents([.height(280)])
                 }
             }
+            .confirmationDialog(
+                "\(roomToDelete?.name ?? "Oda") silinsin mi?",
+                isPresented: Binding(get: { roomToDelete != nil }, set: { if !$0 { roomToDelete = nil } }),
+                titleVisibility: .visible
+            ) {
+                Button("Odayı Sil", role: .destructive) {
+                    guard let room = roomToDelete else { return }
+                    Task { await app.rooms.delete(room) }
+                }
+            } message: {
+                Text("İçerideki herkesin oturumu biter ve oda herkesin listesinden kalkar.")
+            }
             .errorAlert($rooms.error)
         }
     }
 
-    private func section(_ title: String, rooms: [RoomState], seatedRoomId: String?) -> some View {
-        Section(title) {
-            ForEach(rooms) { room in
-                roomButton(room, seatedRoomId: seatedRoomId)
-            }
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label("Henüz bir odan yok", systemImage: "door.left.hand.open")
+        } description: {
+            Text("Keşfet'ten bir odaya gidip masaya otur ya da arkadaşlarınla kendi odanı aç.")
+        } actions: {
+            Button("Oda Oluştur") { sheet = .create }
+                .buttonStyle(.borderedProminent)
+            Button("Kodla Katıl") { sheet = .joinByCode }
         }
+        .padding(.vertical, 24)
+        .frame(maxWidth: .infinity)
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
     }
 
-    private func roomButton(_ room: RoomState, seatedRoomId: String?) -> some View {
-        Button { openRoom(.room(id: room.id)) } label: {
-            RoomRow(room: room, isSeatedHere: room.id == seatedRoomId)
+    @ViewBuilder
+    private func menu(for room: RoomSummary) -> some View {
+        if let code = room.code {
+            ShareLink(item: "PomoLive'da \(room.emoji) \(room.name) odasına gel! Oda kodu: \(code)") {
+                Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
+            }
         }
-        .tint(.primary)
+        if room.ownerId == app.user?.id {
+            Button("Odayı Sil", systemImage: "trash", role: .destructive) { roomToDelete = room }
+        } else {
+            Button("Odalarımdan Kaldır", systemImage: "minus.circle", role: .destructive) {
+                Task { await app.rooms.forget(room) }
+            }
+        }
     }
 
     private func openPendingRoom() {
         guard let pendingRoom else { return }
         self.pendingRoom = nil
         openRoom(pendingRoom)
-    }
-
-    private func refresh() async {
-        async let rooms: Void = app.rooms.refresh()
-        async let stats: Void = app.stats.refresh()
-        _ = await (rooms, stats)
     }
 
     /// Creating a room also enters it on the server; the room screen re-joins by id.
@@ -118,71 +142,35 @@ struct RoomsView: View {
     }
 }
 
-/// Today's focus at a glance, in the spirit of Fitness: one big number, two quiet companions.
-private struct TodaySummary: View {
-    let summary: StatsSummary?
+/// The way into public rooms: a quiet card with how many people are focusing right now.
+private struct DiscoverBanner: View {
+    let overview: RoomsOverview?
 
-    var body: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Bugün")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text(summary.map { formattedFocus($0.todayMs) } ?? "–")
-                    .font(.system(.largeTitle, design: .rounded, weight: .semibold))
-                    .contentTransition(.numericText())
-            }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 6) {
-                Label("\(summary?.streakDays ?? 0) gün seri", systemImage: "flame.fill")
-                    .foregroundStyle(.orange)
-                Text("Bu hafta \(summary.map { formattedFocus($0.weekMs) } ?? "–")")
-                    .foregroundStyle(.secondary)
-            }
-            .font(.subheadline.weight(.medium))
-            .labelStyle(.titleAndIcon)
-        }
-        .padding(.vertical, 6)
-        .accessibilityElement(children: .combine)
+    private var focusingNow: Int {
+        guard let overview else { return 0 }
+        return (overview.halls + overview.publicRooms).reduce(0) { $0 + $1.occupiedCount }
     }
-}
-
-struct RoomRow: View {
-    let room: RoomState
-    let isSeatedHere: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
-            EmojiTile(emoji: room.emoji)
+        HStack(spacing: 14) {
+            SettingsIcon(systemName: "globe.europe.africa.fill", color: .accentColor)
+                .scaleEffect(1.3)
+                .frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 5) {
-                    Text(room.name)
-                        .lineLimit(1)
-                    if room.kind == .private {
-                        Image(systemName: "lock.fill")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel("Özel")
-                    }
-                }
-                Group {
-                    if isSeatedHere {
-                        let seated = Text("Masan burada").foregroundStyle(Color.accentColor).fontWeight(.medium)
-                        Text("\(seated) · \(room.presenceCount) kişi")
-                    } else {
-                        Text("\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa")
-                    }
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+                Text("Keşfet")
+                    .font(.headline)
+                Text(focusingNow > 0 ? "Şu an \(focusingNow) kişi odaklanıyor" : "Genel salonlar ve herkese açık odalar")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .contentTransition(.numericText())
             }
             Spacer(minLength: 0)
             Image(systemName: "chevron.forward")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(.tertiary)
         }
-        .contentShape(.rect)
-        .accessibilityElement(children: .combine)
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
+        .contentShape(.rect(cornerRadius: 22))
     }
 }

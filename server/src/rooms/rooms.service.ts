@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DeskStore } from '../library/desk-store.js';
-import { LIBRARY_LAYOUT } from '../library/layout/library-layout.js';
+import { readTimer } from '../library/desk-timer.js';
+import {
+  LIBRARY_LAYOUT,
+  LibraryLayout,
+} from '../library/layout/library-layout.js';
 import { RoomKind } from '../library/library.types.js';
 import { RoomDirectory, RoomIdentity } from '../library/room-directory.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
@@ -22,9 +26,20 @@ export interface RoomSummary {
   capacity: number;
   presenceCount: number;
   occupiedCount: number;
+  /** Who sits where, for the room's preview card. */
+  occupants: RoomOccupant[];
+}
+
+export interface RoomOccupant {
+  deskId: string;
+  userName: string;
+  avatarSpriteId: string;
+  resting: boolean;
 }
 
 export interface RoomsOverview {
+  /** The floor plan every room shares, so cards can draw previews. */
+  layout: LibraryLayout;
   halls: RoomSummary[];
   publicRooms: RoomSummary[];
   myRooms: RoomSummary[];
@@ -56,17 +71,25 @@ export class RoomsService {
         RoomsService.identity(room),
       ),
     ];
-    const counts = await this.directory.liveCounts(
-      [...new Set(identities.map((room) => room.id))],
-      now,
-    );
+    const roomIds = [...new Set(identities.map((room) => room.id))];
+    const [counts, desks] = await Promise.all([
+      this.directory.liveCounts(roomIds, now),
+      this.desks.listMany(roomIds),
+    ]);
     const summary = (room: RoomIdentity): RoomSummary => ({
       ...room,
       capacity: LIBRARY_LAYOUT.desks.length,
       ...counts.get(room.id)!,
+      occupants: desks.get(room.id)!.map((desk) => ({
+        deskId: desk.deskId,
+        userName: desk.userName,
+        avatarSpriteId: desk.avatarSpriteId,
+        resting: readTimer(desk.timer, now).phase === 'BREAK',
+      })),
     });
 
     return {
+      layout: LIBRARY_LAYOUT,
       halls: hallIds.map((id) => summary(RoomDirectory.hallIdentity(id))),
       publicRooms: publicRooms
         .map((room) => summary(RoomsService.identity(room)))
@@ -124,6 +147,15 @@ export class RoomsService {
       if (seatRoom) return seatRoom;
     }
     return RoomDirectory.hallIdentity(await this.directory.assignHall(now));
+  }
+
+  /** Removes a room from the reader's "Odalarım". Owners delete their rooms instead. */
+  async forget(userId: string, roomId: string): Promise<void> {
+    const room = await this.rooms.findById(roomId);
+    if (room?.ownerId === userId) {
+      ProtocolError.throw('FORBIDDEN', 'Owners delete their room instead');
+    }
+    await this.rooms.removeMembership(userId, roomId);
   }
 
   /** The room, if `userId` owns it; otherwise a protocol error. */

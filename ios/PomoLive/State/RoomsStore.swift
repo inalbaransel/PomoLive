@@ -21,6 +21,25 @@ final class RoomsStore {
         }
     }
 
+    func forget(_ room: RoomSummary) async {
+        do {
+            _ = try await socket.send(ForgetRoomCommand(roomId: room.id))
+            overview?.myRooms.removeAll { $0.id == room.id }
+        } catch {
+            self.error = LibraryError(error)
+        }
+    }
+
+    func delete(_ room: RoomSummary) async {
+        do {
+            _ = try await socket.send(DeleteRoomCommand(roomId: room.id))
+            overview?.myRooms.removeAll { $0.id == room.id }
+            overview?.publicRooms.removeAll { $0.id == room.id }
+        } catch {
+            self.error = LibraryError(error)
+        }
+    }
+
     func reset() {
         overview = nil
     }

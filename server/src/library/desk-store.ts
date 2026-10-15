@@ -177,6 +177,21 @@ export class DeskStore {
     return values.map((raw) => JSON.parse(raw) as DeskRecord);
   }
 
+  /** Occupied desks of several rooms in one round-trip. */
+  async listMany(roomIds: string[]): Promise<Map<string, DeskRecord[]>> {
+    const pipeline = this.redis.pipeline();
+    for (const roomId of roomIds) pipeline.hvals(RedisKeys.roomDesks(roomId));
+    const results = (await pipeline.exec()) ?? [];
+    return new Map(
+      roomIds.map((roomId, index) => [
+        roomId,
+        ((results[index]?.[1] as string[] | undefined) ?? []).map(
+          (raw) => JSON.parse(raw) as DeskRecord,
+        ),
+      ]),
+    );
+  }
+
   async seatOf(userId: string): Promise<SeatRef | null> {
     const value = await this.redis.get(RedisKeys.userSeat(userId));
     if (!value) return null;
