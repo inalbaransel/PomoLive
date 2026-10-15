@@ -14,6 +14,11 @@ final class RoomsStore {
         self.socket = socket
     }
 
+    /// Floor plans by theme from whichever list loaded, for theme previews.
+    var themeLayouts: [String: LibraryLayout] {
+        overview?.layouts ?? discover?.layouts ?? [:]
+    }
+
     func refresh() async {
         do {
             overview = try await socket.send(ListRoomsCommand())

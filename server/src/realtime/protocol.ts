@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { GLYPH_COLORS, GLYPH_SYMBOLS } from '../common/glyph.js';
+import { ROOM_THEMES } from '../library/layout/library-layout.js';
 import { AVATAR_SPRITE_IDS } from '../users/avatar-catalog.js';
 import { ProtocolError } from './protocol-error.js';
 
@@ -125,7 +126,7 @@ export const createRoomSchema = z.object({
   name: label(2, 32),
   ...glyph,
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
-  theme: z.enum(['classic', 'coffee_shop']).default('classic').optional(),
+  theme: z.enum(ROOM_THEMES).default('classic'),
 });
 
 export const deleteRoomSchema = z.object({ roomId: uuid });
@@ -137,7 +138,7 @@ export const updateRoomSchema = z
     symbol: glyph.symbol.optional(),
     color: glyph.color.optional(),
     visibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
-    theme: z.enum(['classic', 'coffee_shop']).optional(),
+    theme: z.enum(ROOM_THEMES).optional(),
   })
   .refine((changes) => Object.keys(changes).length > 1, {
     message: 'Nothing to change',

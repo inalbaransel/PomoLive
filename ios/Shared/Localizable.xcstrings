@@ -23,17 +23,35 @@
       },
       "shouldTranslate" : false
     },
-    "@%@" : {
-
+    "%@ ağırlıklı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostly %@"
+          }
+        }
+      }
     },
-    "@%@ alınmış." : {
-
+    "%@ odak sürelerini yalnızca kendisi görüyor." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ keeps their focus time private."
+          }
+        }
+      }
     },
-    "@%@ odadan çıkarılsın mı?" : {
-
-    },
-    "@%@ senin olabilir." : {
-
+    "%@ silinsin mi?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete %@?"
+          }
+        }
+      }
     },
     "%@ · %@" : {
       "localizations" : {
@@ -83,34 +101,24 @@
         }
       }
     },
-    "%@ ağırlıklı" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostly %@"
-          }
-        }
-      }
-    },
     "%@ çalışıyor" : {
-
-    },
-    "%@ odak sürelerini yalnızca kendisi görüyor." : {
-
-    },
-    "%@ silinsin mi?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete %@?"
+            "value" : "Working on %@"
           }
         }
       }
     },
     "%@, %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        },
         "tr" : {
           "stringUnit" : {
             "state" : "new",
@@ -178,6 +186,28 @@
         }
       }
     },
+    "%lld kişi göz atıyor" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld person browsing"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld people browsing"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld kişi · %lld/%lld masa dolu" : {
       "localizations" : {
         "en" : {
@@ -231,28 +261,6 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld people focusing"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld kişi göz atıyor" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld person browsing"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld people browsing"
                 }
               }
             }
@@ -315,7 +323,14 @@
       }
     },
     "%lld. sıra" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rank %lld"
+          }
+        }
+      }
     },
     "%lld/%lld" : {
       "localizations" : {
@@ -345,7 +360,54 @@
       "shouldTranslate" : false
     },
     "3–20 karakter: küçük harf, rakam, alt çizgi ve nokta. Profilinde ve odalarda görünür." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3–20 characters: lowercase letters, digits, underscores and dots. Shown on your profile and in rooms."
+          }
+        }
+      }
+    },
+    "@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "@%@"
+          }
+        }
+      }
+    },
+    "@%@ alınmış." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "@%@ is taken."
+          }
+        }
+      }
+    },
+    "@%@ odadan çıkarılsın mı?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove @%@ from the room?"
+          }
+        }
+      }
+    },
+    "@%@ senin olabilir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "@%@ is available."
+          }
+        }
+      }
     },
     "ABC123" : {
       "localizations" : {
@@ -357,16 +419,6 @@
         }
       },
       "shouldTranslate" : false
-    },
-    "Açık" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Light"
-          }
-        }
-      }
     },
     "Adın" : {
       "localizations" : {
@@ -389,7 +441,14 @@
       }
     },
     "Alınmış" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taken"
+          }
+        }
+      }
     },
     "Arkadaşının paylaştığı 6 haneli oda kodu." : {
       "localizations" : {
@@ -397,6 +456,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The 6-character room code your friend shared."
+          }
+        }
+      }
+    },
+    "Açık" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        }
+      }
+    },
+    "Ağaçlar, toprak patika, kamp ateşi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trees, a dirt path and a campfire"
           }
         }
       }
@@ -491,6 +570,26 @@
         }
       }
     },
+    "Bu Hafta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Week"
+          }
+        }
+      }
+    },
+    "Bu Hafta Popüler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Popular This Week"
+          }
+        }
+      }
+    },
     "Bu adda bir kategorin zaten var." : {
       "localizations" : {
         "en" : {
@@ -511,29 +610,6 @@
         }
       }
     },
-    "bu hafta" : {
-
-    },
-    "Bu Hafta" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This Week"
-          }
-        }
-      }
-    },
-    "bu hafta %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ this week"
-          }
-        }
-      }
-    },
     "Bu hafta henüz odak süren yok. İlk oturumun burada görünecek." : {
       "localizations" : {
         "en" : {
@@ -544,18 +620,15 @@
         }
       }
     },
-    "Bu Hafta Popüler" : {
+    "Bu haftaki odak süresine göre sıralı. Süresini gizleyenler en sonda." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Popular This Week"
+            "value" : "Ranked by this week's focus time. People who hide theirs come last."
           }
         }
       }
-    },
-    "Bu haftaki odak süresine göre sıralı. Süresini gizleyenler en sonda." : {
-
     },
     "Bu işlem geri alınamaz. Devam etmek için şifreni gir." : {
       "localizations" : {
@@ -578,10 +651,24 @@
       }
     },
     "Bu kişinin hesabı artık yok." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This person's account no longer exists."
+          }
+        }
+      }
     },
     "Bu kullanıcı adı alınmış. Başka bir tane dene." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That username is taken. Try another one."
+          }
+        }
+      }
     },
     "Bu masaya az önce başka biri oturdu." : {
       "localizations" : {
@@ -614,76 +701,11 @@
       }
     },
     "Burada · %lld" : {
-
-    },
-    "Çalışıyor" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Running"
-          }
-        }
-      }
-    },
-    "Çalışma süreleri gizli" : {
-
-    },
-    "Çevrimdışı" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Offline"
-          }
-        }
-      }
-    },
-    "Çivit" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Indigo"
-          }
-        }
-      }
-    },
-    "Çıkar" : {
-
-    },
-    "Çıkardığın kişiler sen engeli kaldırana kadar odaya giremez. Kaldırmak için sola kaydır." : {
-
-    },
-    "Çıkarılanlar" : {
-
-    },
-    "Çıkış Yap" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sign Out"
-          }
-        }
-      }
-    },
-    "Çıkış yapılsın mı?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sign Out?"
-          }
-        }
-      }
-    },
-    "Çok fazla deneme yapıldı. Biraz sonra tekrar dene." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Too many attempts. Please try again later."
+            "value" : "Here · %lld"
           }
         }
       }
@@ -694,6 +716,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minutes"
+          }
+        }
+      }
+    },
+    "Deniz, kumsal, palmiyeler ve şemsiyeler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sea, sand, palms and umbrellas"
           }
         }
       }
@@ -714,16 +746,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resume"
-          }
-        }
-      }
-    },
-    "Diğer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
           }
         }
       }
@@ -758,22 +780,22 @@
         }
       }
     },
+    "Diğer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        }
+      }
+    },
     "Dokunduğun bölgeye gider" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jumps to the area you tap"
-          }
-        }
-      }
-    },
-    "Dün" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yesterday"
           }
         }
       }
@@ -798,6 +820,16 @@
         }
       }
     },
+    "Dün" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
+          }
+        }
+      }
+    },
     "E-posta" : {
       "localizations" : {
         "en" : {
@@ -809,34 +841,51 @@
       }
     },
     "E-posta veya kullanıcı adı" : {
-
-    },
-    "E-posta ya da şifre hatalı." : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Incorrect email or password."
+            "value" : "Email or username"
           }
         }
       }
     },
     "E-posta, kullanıcı adı ya da şifre hatalı." : {
-
-    },
-    "En Çok Çalıştıkları" : {
-
-    },
-    "Engeli Kaldır" : {
-
-    },
-    "Geçmiş" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "History"
+            "value" : "Incorrect email, username or password."
+          }
+        }
+      }
+    },
+    "En Çok Çalıştıkları" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top Categories"
+          }
+        }
+      }
+    },
+    "Engeli Kaldır" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unblock"
+          }
+        }
+      }
+    },
+    "Gece Kafesi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night Café"
           }
         }
       }
@@ -873,6 +922,16 @@
         }
       }
     },
+    "Geçmiş" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        }
+      }
+    },
     "Girdiğin bilgiler geçersiz." : {
       "localizations" : {
         "en" : {
@@ -894,7 +953,24 @@
       }
     },
     "Gizlilik" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        }
+      }
+    },
+    "Gri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gray"
+          }
+        }
+      }
     },
     "Görünen ad" : {
       "localizations" : {
@@ -946,16 +1022,6 @@
         }
       }
     },
-    "Gri" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gray"
-          }
-        }
-      }
-    },
     "Gün" : {
       "localizations" : {
         "en" : {
@@ -987,7 +1053,14 @@
       }
     },
     "Hakkında" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        }
+      }
     },
     "Hazır kategoriler" : {
       "localizations" : {
@@ -1089,66 +1162,6 @@
         }
       }
     },
-    "İçerideki herkesin oturumu biter ve oda herkesin listesinden kalkar." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everyone's session in it ends and the room disappears for everyone."
-          }
-        }
-      }
-    },
-    "İçerideki herkesin oturumu biter ve oda listeden kalkar." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everyone's session in it ends and the room is removed from the list."
-          }
-        }
-      }
-    },
-    "İlerlemeni gör" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "See your progress"
-          }
-        }
-      }
-    },
-    "İlk herkese açık odayı sen aç; Keşfet'te herkes görsün." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open the first public room so everyone can find it in Discover."
-          }
-        }
-      }
-    },
-    "İş" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Work"
-          }
-        }
-      }
-    },
-    "İstatistik" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Statistics"
-          }
-        }
-      }
-    },
     "Kahverengi" : {
       "localizations" : {
         "en" : {
@@ -1175,17 +1188,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Character"
-          }
-        }
-      }
-    },
-    "Karakter ve görünen ad" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Character and display name"
           }
         }
       }
@@ -1251,7 +1253,14 @@
       }
     },
     "Katılım: %@" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joined %@"
+          }
+        }
+      }
     },
     "Kaydet" : {
       "localizations" : {
@@ -1293,18 +1302,32 @@
         }
       }
     },
-    "Kişiler" : {
-
-    },
-    "Kişiler yüklenemedi" : {
-
-    },
-    "Kırmızı" : {
+    "Kitaplıklar, ahşap parke, sessiz salon" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Red"
+            "value" : "Bookshelves, wooden floors, a quiet hall"
+          }
+        }
+      }
+    },
+    "Kişiler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "People"
+          }
+        }
+      }
+    },
+    "Kişiler yüklenemedi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Load People"
           }
         }
       }
@@ -1359,6 +1382,36 @@
         }
       }
     },
+    "Kullanıcı Adı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username"
+          }
+        }
+      }
+    },
+    "Kullanılabilir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available"
+          }
+        }
+      }
+    },
+    "Kütüphane" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Library"
+          }
+        }
+      }
+    },
     "Küçült" : {
       "localizations" : {
         "en" : {
@@ -1369,14 +1422,25 @@
         }
       }
     },
-    "kullaniciadi" : {
-
+    "Kırmızı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Red"
+          }
+        }
+      }
     },
-    "Kullanıcı Adı" : {
-
-    },
-    "Kullanılabilir" : {
-
+    "Lombozlardan yıldızlar, konsollar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stars through the portholes, consoles"
+          }
+        }
+      }
     },
     "Masa %lld" : {
       "localizations" : {
@@ -1456,19 +1520,15 @@
         }
       }
     },
-    "Masama Git" : {
-      "extractionState" : "stale",
+    "Masama Odaklan" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Go to My Desk"
+            "value" : "Focus on My Desk"
           }
         }
       }
-    },
-    "Masama Odaklan" : {
-
     },
     "Masan burada" : {
       "localizations" : {
@@ -1501,7 +1561,14 @@
       }
     },
     "Masası boşaltılır ve sen engeli kaldırana kadar odaya giremez." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Their desk is freed and they can't enter the room until you unblock them."
+          }
+        }
+      }
     },
     "Masaya otururken bunlar hazır seçili gelir; her oturumda değiştirebilirsin." : {
       "localizations" : {
@@ -1523,6 +1590,16 @@
         }
       }
     },
+    "Mekan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setting"
+          }
+        }
+      }
+    },
     "Merhaba, %@" : {
       "localizations" : {
         "en" : {
@@ -1534,7 +1611,14 @@
       }
     },
     "Mini Harita" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mini Map"
+          }
+        }
+      }
     },
     "Mod" : {
       "localizations" : {
@@ -1556,22 +1640,22 @@
         }
       }
     },
-    "Mola bitti. %@ çalışmana kaldığın yerden devam." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Break's over. Pick up your %@ where you left off."
-          }
-        }
-      }
-    },
     "Mola Süresi" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Break Length"
+          }
+        }
+      }
+    },
+    "Mola bitti. %@ çalışmana kaldığın yerden devam." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break's over. Pick up your %@ where you left off."
           }
         }
       }
@@ -1607,7 +1691,14 @@
       }
     },
     "Molada" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On a break"
+          }
+        }
+      }
     },
     "Molaya Geç" : {
       "localizations" : {
@@ -1660,7 +1751,14 @@
       }
     },
     "Ne üzerinde çalışıyorsun?" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What are you working on?"
+          }
+        }
+      }
     },
     "Not" : {
       "localizations" : {
@@ -1692,6 +1790,16 @@
         }
       }
     },
+    "Oda Oluştur" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Room"
+          }
+        }
+      }
+    },
     "Oda ara" : {
       "localizations" : {
         "en" : {
@@ -1712,21 +1820,25 @@
         }
       }
     },
-    "Oda Oluştur" : {
+    "Oda sahibi seni bu odadan çıkardı." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create Room"
+            "value" : "The room's owner removed you from this room."
           }
         }
       }
     },
-    "Oda sahibi seni bu odadan çıkardı." : {
-
-    },
     "Oda sahibi seni bu odadan çıkardı. Masan boşaltıldı, odak süren geçmişine kaydedildi." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The room's owner removed you from this room. Your desk was freed and your focus time was saved to your history."
+          }
+        }
+      }
     },
     "Oda silinsin mi?" : {
       "localizations" : {
@@ -1739,22 +1851,64 @@
       }
     },
     "Odadaki Kişiler" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "People in the Room"
+          }
+        }
+      }
     },
     "Odadaki kişiler ve profiline bakanlar haftalık süreni, serini ve kategorilerini görebilir." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "People in your rooms and anyone viewing your profile can see your weekly time, streak and categories."
+          }
+        }
+      }
     },
     "Odadaki kişileri gösterir" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the people in the room"
+          }
+        }
+      }
     },
     "Odadaki kişileri ve detayları açar" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the people and details of the room"
+          }
+        }
+      }
     },
     "Odadan Çıkar" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Room"
+          }
+        }
+      }
     },
     "Odadan çıkarıldın" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You Were Removed"
+          }
+        }
+      }
     },
     "Odak" : {
       "localizations" : {
@@ -1766,22 +1920,15 @@
         }
       }
     },
-    "Odak panelini aç" : {
-
-    },
-    "Odak panelini açar" : {
-      "extractionState" : "stale",
+    "Odak Sürelerimi Göster" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opens the focus panel"
+            "value" : "Show My Focus Time"
           }
         }
       }
-    },
-    "Odak Sürelerimi Göster" : {
-
     },
     "Odak Süresi" : {
       "localizations" : {
@@ -1789,6 +1936,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Focus Length"
+          }
+        }
+      }
+    },
+    "Odak panelini aç" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open focus panel"
           }
         }
       }
@@ -1874,7 +2031,14 @@
       }
     },
     "Odayı Düzenle" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Room"
+          }
+        }
+      }
     },
     "Odayı Sil" : {
       "localizations" : {
@@ -1906,12 +2070,12 @@
         }
       }
     },
-    "Önce bir odaya gir." : {
+    "Orman" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter a room first."
+            "value" : "Forest"
           }
         }
       }
@@ -1986,32 +2150,12 @@
         }
       }
     },
-    "Özel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Private"
-          }
-        }
-      }
-    },
     "Pembe" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pink"
-          }
-        }
-      }
-    },
-    "Piksel bir kütüphanede masaya otur, diğer okurlarla aynı salonda çalış." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Take a desk in a pixel library and work alongside other readers."
           }
         }
       }
@@ -2026,23 +2170,12 @@
         }
       }
     },
-    "Pomodoro" : {
+    "Piksel bir kütüphanede masaya otur, diğer okurlarla aynı salonda çalış." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pomodoro"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
-    "Pomodoro ya da kronometre" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pomodoro or stopwatch"
+            "value" : "Take a desk in a pixel library and work alongside other readers."
           }
         }
       }
@@ -2084,6 +2217,27 @@
         }
       }
     },
+    "Pomodoro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "Pomodoro ya da kronometre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro or stopwatch"
+          }
+        }
+      }
+    },
     "Profil" : {
       "localizations" : {
         "en" : {
@@ -2095,7 +2249,14 @@
       }
     },
     "Profil açılamadı" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Open Profile"
+          }
+        }
+      }
     },
     "Profili Düzenle" : {
       "localizations" : {
@@ -2108,7 +2269,14 @@
       }
     },
     "Profilimi Gör" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View My Profile"
+          }
+        }
+      }
     },
     "Renk" : {
       "localizations" : {
@@ -2131,6 +2299,16 @@
       },
       "shouldTranslate" : false
     },
+    "Sahil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beach"
+          }
+        }
+      }
+    },
     "Salon haritası" : {
       "localizations" : {
         "en" : {
@@ -2141,22 +2319,25 @@
         }
       }
     },
-    "Salondaki diğer okurlar seni bu adla görür." : {
-      "extractionState" : "stale",
+    "Salondaki diğer okurlar seni bu adla görür. Boş bırakırsan kullanıcı adın kullanılır." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Other readers in the hall see you by this name."
+            "value" : "Other readers in the hall see you by this name. If you leave it empty, your username is used."
           }
         }
       }
     },
-    "Salondaki diğer okurlar seni bu adla görür. Boş bırakırsan kullanıcı adın kullanılır." : {
-
-    },
     "Salonu Ortala" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Center the Hall"
+          }
+        }
+      }
     },
     "Sarı" : {
       "localizations" : {
@@ -2169,7 +2350,14 @@
       }
     },
     "Sen" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You"
+          }
+        }
+      }
     },
     "Seri" : {
       "localizations" : {
@@ -2187,36 +2375,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A quiet library, always open."
-          }
-        }
-      }
-    },
-    "Şifre" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Password"
-          }
-        }
-      }
-    },
-    "Şifren" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your password"
-          }
-        }
-      }
-    },
-    "Şifren en az %lld karakter olmalı." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your password must be at least %lld characters."
           }
         }
       }
@@ -2261,28 +2419,22 @@
         }
       }
     },
-    "Sınıra ulaştın. Kullanmadıklarını silip tekrar dene." : {
+    "Sohbet" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You've reached the limit. Delete ones you don't use and try again."
+            "value" : "Chat"
           }
         }
       }
     },
-    "Sohbet" : {
-
-    },
     "Sohbet çok yakında!" : {
-
-    },
-    "Son 7 Gün" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Last 7 Days"
+            "value" : "Chat is coming soon!"
           }
         }
       }
@@ -2293,6 +2445,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last 30 days"
+          }
+        }
+      }
+    },
+    "Son 7 Gün" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 7 Days"
           }
         }
       }
@@ -2313,74 +2475,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Results"
-          }
-        }
-      }
-    },
-    "Şövalye" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Knight"
-          }
-        }
-      }
-    },
-    "Şu an %@ çalışıyor" : {
-
-    },
-    "Şu an %lld kişi odaklanıyor" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld person focusing right now"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld people focusing right now"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "Şu An Canlı" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Live Now"
-          }
-        }
-      }
-    },
-    "Şu an odada kimse yok." : {
-
-    },
-    "Şu an sessiz" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quiet right now"
-          }
-        }
-      }
-    },
-    "Şu anda bir masada oturmuyorsun." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're not at a desk right now."
           }
         }
       }
@@ -2446,10 +2540,34 @@
       }
     },
     "Süren ve istatistiklerin yalnızca sende görünür. Adın ve karakterin yine görünür." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your time and stats are visible only to you. Your name and character stay visible."
+          }
+        }
+      }
     },
     "Süresini gizliyor" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hides their time"
+          }
+        }
+      }
+    },
+    "Sınıra ulaştın. Kullanmadıklarını silip tekrar dene." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've reached the limit. Delete ones you don't use and try again."
+          }
+        }
+      }
     },
     "Tamam" : {
       "localizations" : {
@@ -2501,6 +2619,36 @@
         }
       }
     },
+    "Turkuaz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teal"
+          }
+        }
+      }
+    },
+    "Turuncu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orange"
+          }
+        }
+      }
+    },
+    "Tuğla duvar, neon tabela, espresso barı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brick walls, a neon sign, an espresso bar"
+          }
+        }
+      }
+    },
     "Tüm Geçmiş" : {
       "localizations" : {
         "en" : {
@@ -2531,28 +2679,15 @@
         }
       }
     },
-    "Turkuaz" : {
+    "Uzay Mekiği" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Teal"
+            "value" : "Space Shuttle"
           }
         }
       }
-    },
-    "Turuncu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Orange"
-          }
-        }
-      }
-    },
-    "Üyeler · %lld" : {
-
     },
     "Varsayılan Mod" : {
       "localizations" : {
@@ -2624,16 +2759,6 @@
         }
       }
     },
-    "Yeni açıldı" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Just opened"
-          }
-        }
-      }
-    },
     "Yeni Kategori" : {
       "localizations" : {
         "en" : {
@@ -2654,6 +2779,16 @@
         }
       }
     },
+    "Yeni açıldı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Just opened"
+          }
+        }
+      }
+    },
     "Yeşil" : {
       "localizations" : {
         "en" : {
@@ -2665,7 +2800,14 @@
       }
     },
     "Yönetici" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin"
+          }
+        }
+      }
     },
     "Zaten hesabım var" : {
       "localizations" : {
@@ -2673,6 +2815,338 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I Already Have an Account"
+          }
+        }
+      }
+    },
+    "bu hafta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "this week"
+          }
+        }
+      }
+    },
+    "bu hafta %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ this week"
+          }
+        }
+      }
+    },
+    "kullaniciadi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "username"
+          }
+        }
+      }
+    },
+    "Çalışma süreleri gizli" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus Time Is Private"
+          }
+        }
+      }
+    },
+    "Çalışıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running"
+          }
+        }
+      }
+    },
+    "Çevrimdışı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline"
+          }
+        }
+      }
+    },
+    "Çivit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indigo"
+          }
+        }
+      }
+    },
+    "Çok fazla deneme yapıldı. Biraz sonra tekrar dene." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many attempts. Please try again later."
+          }
+        }
+      }
+    },
+    "Çıkar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "Çıkardığın kişiler sen engeli kaldırana kadar odaya giremez. Kaldırmak için sola kaydır." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "People you remove can't enter the room until you unblock them. Swipe left to unblock."
+          }
+        }
+      }
+    },
+    "Çıkarılanlar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed"
+          }
+        }
+      }
+    },
+    "Çıkış Yap" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign Out"
+          }
+        }
+      }
+    },
+    "Çıkış yapılsın mı?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign Out?"
+          }
+        }
+      }
+    },
+    "Önce bir odaya gir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a room first."
+          }
+        }
+      }
+    },
+    "Özel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private"
+          }
+        }
+      }
+    },
+    "Üyeler · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Members · %lld"
+          }
+        }
+      }
+    },
+    "İlerlemeni gör" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See your progress"
+          }
+        }
+      }
+    },
+    "İlk herkese açık odayı sen aç; Keşfet'te herkes görsün." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the first public room so everyone can find it in Discover."
+          }
+        }
+      }
+    },
+    "İstatistik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statistics"
+          }
+        }
+      }
+    },
+    "İçerideki herkesin oturumu biter ve oda herkesin listesinden kalkar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone's session in it ends and the room disappears for everyone."
+          }
+        }
+      }
+    },
+    "İçerideki herkesin oturumu biter ve oda listeden kalkar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone's session in it ends and the room is removed from the list."
+          }
+        }
+      }
+    },
+    "İş" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work"
+          }
+        }
+      }
+    },
+    "Şifre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        }
+      }
+    },
+    "Şifren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your password"
+          }
+        }
+      }
+    },
+    "Şifren en az %lld karakter olmalı." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your password must be at least %lld characters."
+          }
+        }
+      }
+    },
+    "Şu An Canlı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Now"
+          }
+        }
+      }
+    },
+    "Şu an %@ çalışıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Working on %@ right now"
+          }
+        }
+      }
+    },
+    "Şu an %lld kişi odaklanıyor" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld person focusing right now"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld people focusing right now"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Şu an odada kimse yok." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nobody is in the room right now."
+          }
+        }
+      }
+    },
+    "Şu an sessiz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet right now"
+          }
+        }
+      }
+    },
+    "Şu anda bir masada oturmuyorsun." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're not at a desk right now."
+          }
+        }
+      }
+    },
+    "Şövalye" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knight"
           }
         }
       }

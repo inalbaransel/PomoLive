@@ -13,6 +13,8 @@ struct RoomEditorSheet: View {
 
     /// The room being edited; `nil` creates a new one.
     let room: RoomState?
+    /// Floor plans by theme, for the previews.
+    let layouts: [String: LibraryLayout]
     let onSave: (Draft) async throws -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -20,12 +22,13 @@ struct RoomEditorSheet: View {
     @State private var isSaving = false
     @State private var error: LibraryError?
 
-    init(room: RoomState? = nil, onSave: @escaping (Draft) async throws -> Void) {
+    init(room: RoomState? = nil, layouts: [String: LibraryLayout], onSave: @escaping (Draft) async throws -> Void) {
         self.room = room
+        self.layouts = layouts
         self.onSave = onSave
         _draft = State(initialValue: room.map {
             Draft(name: $0.name, symbol: $0.symbol, color: $0.color, visibility: $0.kind, theme: $0.roomTheme)
-        } ?? Draft(name: "", symbol: "cup.and.saucer.fill", color: .indigo, visibility: .private, theme: .coffeeShop))
+        } ?? Draft(name: "", symbol: "books.vertical.fill", color: .indigo, visibility: .private, theme: .classic))
     }
 
     private var trimmedName: String { draft.name.trimmingCharacters(in: .whitespaces) }
@@ -53,27 +56,11 @@ struct RoomEditorSheet: View {
                 }
 
                 Section {
-                    Picker("Mekan Teması", selection: $draft.theme) {
-                        ForEach(RoomTheme.allCases) { theme in
-                            Label {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(theme.displayName)
-                                        .font(.body.weight(.medium))
-                                    Text(theme.subtitle)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            } icon: {
-                                Image(systemName: theme.symbol)
-                            }
-                            .tag(theme)
-                        }
-                    }
-                    .pickerStyle(.inline)
+                    ThemePicker(selection: $draft.theme, layouts: layouts)
+                        .listRowInsets(EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0))
+                        .listRowBackground(Color.clear)
                 } header: {
                     Text("Mekan")
-                } footer: {
-                    Text(draft.theme.description)
                 }
 
                 Section {

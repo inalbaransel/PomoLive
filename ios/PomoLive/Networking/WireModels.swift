@@ -89,38 +89,33 @@ enum RoomKind: String, Codable, Sendable {
     case `private` = "PRIVATE"
 }
 
-/// Available room environments.
+/// The look of a room. Every theme shares the same desks; only the scenery around them changes.
 enum RoomTheme: String, Codable, CaseIterable, Identifiable, Sendable {
     case classic = "classic"
     case coffeeShop = "coffee_shop"
+    case forest = "forest"
+    case space = "space"
+    case beach = "beach"
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
-        case .classic: String(localized: "Klasik Kütüphane")
+        case .classic: String(localized: "Kütüphane")
         case .coffeeShop: String(localized: "Gece Kafesi")
+        case .forest: String(localized: "Orman")
+        case .space: String(localized: "Uzay Mekiği")
+        case .beach: String(localized: "Sahil")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .classic: String(localized: "Yeşil duvarlar, ahşap parkeler, sessiz salon")
-        case .coffeeShop: String(localized: "Sıcak tuğla, espresso barı ve neon ışıklar")
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .classic: "books.vertical.fill"
-        case .coffeeShop: "cup.and.saucer.fill"
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .classic: String(localized: "Geleneksel kütüphane atmosferi: kitaplıklar, saksı bitkileri ve klasik kırmızı halı.")
-        case .coffeeShop: String(localized: "Sıcak bir kafe atmosferi: tuğla duvarlar, neon tabela, kahve barı ve lo-fi çalışma ortamı.")
+        case .classic: String(localized: "Kitaplıklar, ahşap parke, sessiz salon")
+        case .coffeeShop: String(localized: "Tuğla duvar, neon tabela, espresso barı")
+        case .forest: String(localized: "Ağaçlar, toprak patika, kamp ateşi")
+        case .space: String(localized: "Lombozlardan yıldızlar, konsollar")
+        case .beach: String(localized: "Deniz, kumsal, palmiyeler ve şemsiyeler")
         }
     }
 }
@@ -270,7 +265,18 @@ struct LayoutProp: Codable, Hashable, Sendable {
     enum Kind: String, Codable, Sendable {
         case window, clock, bookshelf, plant, coffeeMachine, rug, door
         case neonSign, chalkboard, coffeeBar
+        case path, tree, bush, flowers, mushroom, campfire, stump, pond
+        case walkway, porthole, viewscreen, console, crate, hologram, airlock
+        case boardwalk, palm, umbrella, towel, sandcastle, shell, surfboard
         case unknown
+
+        /// Drawn flat on the ground beneath everything else.
+        var isGroundCover: Bool {
+            switch self {
+            case .rug, .path, .walkway, .boardwalk: true
+            default: false
+            }
+        }
 
         init(from decoder: any Decoder) throws {
             self = Kind(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .unknown

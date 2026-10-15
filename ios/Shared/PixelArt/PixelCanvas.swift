@@ -71,6 +71,17 @@ struct PixelCanvas {
         }
     }
 
+    mutating func ellipse(centerX: Double, centerY: Double, radiusX: Double, radiusY: Double, _ color: PixelColor) {
+        guard radiusX > 0, radiusY > 0 else { return }
+        for y in Int((centerY - radiusY).rounded(.down))...Int((centerY + radiusY).rounded(.up)) {
+            for x in Int((centerX - radiusX).rounded(.down))...Int((centerX + radiusX).rounded(.up)) {
+                let dx = (Double(x) + 0.5 - centerX) / radiusX
+                let dy = (Double(y) + 0.5 - centerY) / radiusY
+                if dx * dx + dy * dy <= 1 { set(x, y, color) }
+            }
+        }
+    }
+
     /// Draws a sprite authored as strings, one character per pixel. Characters missing from `palette` are transparent.
     mutating func stamp(_ rows: [String], x: Int, y: Int, palette: [Character: PixelColor]) {
         for (rowIndex, row) in rows.enumerated() {

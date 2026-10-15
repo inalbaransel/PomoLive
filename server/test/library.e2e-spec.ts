@@ -596,7 +596,8 @@ describe('Library realtime protocol (e2e)', () => {
 
     const stats = (await reader.send('stats:summary')).result;
     expect(stats.sessionCount).toBe(1);
-    expect(stats.todayMs).toBeGreaterThanOrEqual(40 * 60_000);
+    // The total, not today's minutes: run just after midnight, a backdated session belongs to yesterday.
+    expect(stats.totalMs).toBeGreaterThanOrEqual(40 * 60_000);
     expect(stats.streakDays).toBe(1);
     expect(stats.last7Days).toHaveLength(7);
     expect(stats.categories[0]).toMatchObject({ key: 'writing', name: 'Yazı' });

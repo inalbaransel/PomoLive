@@ -1,4 +1,7 @@
-import { LIBRARY_LAYOUT } from './library-layout.js';
+import { LAYOUTS_BY_THEME, LIBRARY_LAYOUT } from './library-layout.js';
+
+/** Props drawn flat on the ground, which desks may stand next to or on. */
+const GROUND_COVERS = new Set(['rug', 'path', 'walkway', 'boardwalk']);
 
 describe('LIBRARY_LAYOUT', () => {
   it('has 30 uniquely numbered desks inside the floor area', () => {
@@ -12,24 +15,38 @@ describe('LIBRARY_LAYOUT', () => {
       expect(desk.tileY + 1).toBeLessThan(height - 1);
     }
   });
-
-  it('never places solid props on top of a desk', () => {
-    const occupied = new Set(
-      LIBRARY_LAYOUT.desks.flatMap(({ tileX, tileY }) =>
-        [0, 1].flatMap((dx) =>
-          [0, 1].map((dy) => `${tileX + dx},${tileY + dy}`),
-        ),
-      ),
-    );
-    for (const prop of LIBRARY_LAYOUT.props.filter(
-      (candidate) => candidate.kind !== 'rug',
-    )) {
-      for (let dx = 0; dx < prop.width; dx++) {
-        for (let dy = 0; dy < prop.height; dy++)
-          expect(occupied.has(`${prop.tileX + dx},${prop.tileY + dy}`)).toBe(
-            false,
-          );
-      }
-    }
-  });
 });
+
+describe.each(Object.entries(LAYOUTS_BY_THEME))(
+  '%s layout',
+  (theme, layout) => {
+    it('names its theme and keeps the shared desks', () => {
+      expect(layout.theme).toBe(theme);
+      expect(layout.desks).toEqual(LIBRARY_LAYOUT.desks);
+    });
+
+    it('keeps every prop inside the map and off the desks', () => {
+      const occupied = new Set(
+        layout.desks.flatMap(({ tileX, tileY }) =>
+          [0, 1].flatMap((dx) =>
+            [0, 1].map((dy) => `${tileX + dx},${tileY + dy}`),
+          ),
+        ),
+      );
+      for (const prop of layout.props) {
+        expect(prop.tileX).toBeGreaterThanOrEqual(0);
+        expect(prop.tileY).toBeGreaterThanOrEqual(0);
+        expect(prop.tileX + prop.width).toBeLessThanOrEqual(layout.width);
+        expect(prop.tileY + prop.height).toBeLessThanOrEqual(layout.height);
+        if (GROUND_COVERS.has(prop.kind)) continue;
+        for (let dx = 0; dx < prop.width; dx++) {
+          for (let dy = 0; dy < prop.height; dy++)
+            expect(
+              occupied.has(`${prop.tileX + dx},${prop.tileY + dy}`),
+              `${prop.kind} at ${prop.tileX},${prop.tileY}`,
+            ).toBe(false);
+        }
+      }
+    });
+  },
+);

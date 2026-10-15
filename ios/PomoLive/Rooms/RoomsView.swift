@@ -78,7 +78,7 @@ struct RoomsView: View {
             .sheet(item: $sheet, onDismiss: openPendingRoom) { sheet in
                 switch sheet {
                 case .create:
-                    RoomEditorSheet { draft in
+                    RoomEditorSheet(layouts: app.rooms.themeLayouts) { draft in
                         pendingRoom = .room(id: try await createRoom(draft))
                     }
                 case .joinByCode:
