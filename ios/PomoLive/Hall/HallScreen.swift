@@ -15,7 +15,6 @@ struct HallScreen: View {
     @State private var wasRemoved = false
     @State private var entryError: LibraryError?
     @State private var showsMiniMap = true
-    @State private var showsChatToast = false
     @State private var cameraTrigger = 0
 
     private enum Sheet: Identifiable {
@@ -23,6 +22,7 @@ struct HallScreen: View {
         case people
         case profile(userId: String)
         case editRoom(RoomState)
+        case chat
 
         var id: String {
             switch self {
@@ -30,6 +30,7 @@ struct HallScreen: View {
             case .people: "people"
             case .profile(let userId): "profile-\(userId)"
             case .editRoom: "edit"
+            case .chat: "chat"
             }
         }
     }
@@ -63,6 +64,10 @@ struct HallScreen: View {
                                 }
                         }
                         .presentationDetents([.medium, .large])
+                    case .chat:
+                        RoomChatSheet()
+                            .presentationDetents([.medium, .large])
+                            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
                     case .editRoom(let room):
                         RoomEditorSheet(room: room, layouts: app.rooms.themeLayouts) { draft in
                             try await hall.update(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility, theme: draft.theme)
@@ -94,21 +99,16 @@ struct HallScreen: View {
         .task {
             do {
                 try await app.hall.enter(target)
+                if let roomId = app.hall.room?.id { await app.chat.open(roomId: roomId) }
             } catch {
                 entryError = LibraryError(error)
             }
         }
-        .task(id: showsChatToast) {
-            if showsChatToast {
-                try? await Task.sleep(for: .seconds(2.5))
-                withAnimation(.easeOut(duration: 0.3)) {
-                    showsChatToast = false
-                }
-            }
-        }
         .onChange(of: app.hall.exit) { _, exit in
             switch exit {
-            case .closed: dismiss()
+            case .closed:
+                sheet = nil
+                dismiss()
             case .removed:
                 sheet = nil
                 wasRemoved = true
@@ -117,6 +117,7 @@ struct HallScreen: View {
         }
         .onDisappear {
             let visit = app.hall.visit
+            app.chat.reset()
             Task { await app.hall.leave(visit: visit) }
         }
     }
@@ -173,10 +174,6 @@ struct HallScreen: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .animation(FocusDeckView.fold, value: isDeckExpanded)
             }
-            .overlay(alignment: .top) {
-                chatToastView
-                    .padding(.top, 8)
-            }
             .animation(.spring(duration: 0.55, bounce: 0.25), value: hall.myDesk?.deskId)
         } else {
             ProgressView("Odaya giriliyor…")
@@ -188,11 +185,8 @@ struct HallScreen: View {
 
     private var floatingControls: some View {
         VStack(spacing: 12) {
-            // Chat button
             Button {
-                withAnimation(.spring(duration: 0.35, bounce: 0.2)) {
-                    showsChatToast = true
-                }
+                sheet = .chat
             } label: {
                 Image(systemName: "bubble.left.and.bubble.right.fill")
                     .font(.system(size: 19, weight: .semibold))
@@ -201,8 +195,10 @@ struct HallScreen: View {
             }
             .buttonStyle(.plain)
             .glassEffect(.regular.interactive(), in: .circle)
-            .sensoryFeedback(.impact(weight: .light), trigger: showsChatToast)
+            .overlay(alignment: .topTrailing) { unreadBadge }
+            .sensoryFeedback(.impact(weight: .light), trigger: app.chat.unreadCount)
             .accessibilityLabel("Sohbet")
+            .accessibilityValue(app.chat.unreadCount > 0 ? Text("\(app.chat.unreadCount) okunmamış mesaj") : Text(""))
 
             // Camera recenter / focus on desk button
             Button {
@@ -222,19 +218,20 @@ struct HallScreen: View {
     }
 
     @ViewBuilder
-    private var chatToastView: some View {
-        if showsChatToast {
-            HStack(spacing: 8) {
-                Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .foregroundStyle(app.hall.room?.color.color ?? .accentColor)
-                Text("Sohbet çok yakında!")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .glassEffect(.regular, in: .capsule)
-            .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
-            .transition(.move(edge: .top).combined(with: .opacity))
+    private var unreadBadge: some View {
+        let count = app.chat.unreadCount
+        if count > 0 {
+            Text(verbatim: count > 99 ? "99+" : "\(count)")
+                .font(.caption2.weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .frame(minWidth: 20, minHeight: 20)
+                .background(.red, in: .capsule)
+                .offset(x: 4, y: -4)
+                .contentTransition(.numericText())
+                .transition(.scale.combined(with: .opacity))
+                .animation(.snappy, value: count)
         }
     }
 

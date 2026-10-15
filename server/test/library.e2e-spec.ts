@@ -682,6 +682,83 @@ describe('Library realtime protocol (e2e)', () => {
     guest.close();
   });
 
+  it('chats in a room: delivery, idempotent retries, history, typing, deletes and limits', async () => {
+    const { client: owner, userId: ownerId } = await signedInWithId('Sohbet');
+    const { client: guest } = await signedInWithId('Konuk');
+    const { result } = await owner.send('room:create', {
+      name: 'Sohbet Odası',
+      symbol: 'books.vertical.fill',
+      color: 'teal',
+      visibility: 'PRIVATE',
+    });
+    expect(
+      await guest.send('chat:send', { body: 'erken', clientId: 'c-early-01' }),
+    ).toMatchObject({ ok: false, error: { code: 'NOT_IN_ROOM' } });
+    await guest.send('room:join', { code: result.room.code });
+
+    const sent = await guest.send('chat:send', {
+      body: '  Merhaba!\nNasılsınız?  ',
+      clientId: 'c-hello-01',
+    });
+    expect(sent.result.message).toMatchObject({
+      body: 'Merhaba!\nNasılsınız?',
+      clientId: 'c-hello-01',
+      user: { displayName: 'Konuk' },
+    });
+    const pushed = await owner.next((frame) => frame.event === 'chat:message');
+    expect(pushed.data.message.id).toBe(sent.result.message.id);
+
+    const retried = await guest.send('chat:send', {
+      body: 'Merhaba!\nNasılsınız?',
+      clientId: 'c-hello-01',
+    });
+    expect(retried.result.message.id).toBe(sent.result.message.id);
+    expect(
+      await guest.send('chat:send', { body: '   ', clientId: 'c-blank-01' }),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_PAYLOAD' } });
+
+    await guest.send('chat:typing');
+    const typing = await owner.next((frame) => frame.event === 'chat:typing');
+    expect(typing.data.user.displayName).toBe('Konuk');
+
+    const mine = await owner.send('chat:send', {
+      body: 'Hoş geldin',
+      clientId: 'c-welcome-1',
+    });
+    const history = (await guest.send('chat:history')).result;
+    expect(history.hasMore).toBe(false);
+    expect(history.messages.map((m: { body: string }) => m.body)).toEqual([
+      'Merhaba!\nNasılsınız?',
+      'Hoş geldin',
+    ]);
+
+    expect(
+      await guest.send('chat:delete', { messageId: mine.result.message.id }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    expect(
+      (await owner.send('chat:delete', { messageId: sent.result.message.id }))
+        .ok,
+    ).toBe(true);
+    const deleted = await guest.next((frame) => frame.event === 'chat:deleted');
+    expect(deleted.data.messageId).toBe(sent.result.message.id);
+
+    const burst = await Promise.all(
+      Array.from({ length: 12 }, (_, index) =>
+        guest.send('chat:send', {
+          body: `#${index}`,
+          clientId: `c-burst-${index}0`,
+        }),
+      ),
+    );
+    expect(burst.filter((reply) => reply.ok).length).toBeLessThanOrEqual(8);
+    expect(burst.some((reply) => reply.error?.code === 'RATE_LIMITED')).toBe(
+      true,
+    );
+    expect(ownerId).toBeTruthy();
+    owner.close();
+    guest.close();
+  });
+
   it('deletes an account only with the right password', async () => {
     const client = await TestClient.connect(url);
     const email = `silinecek-${randomUUID()}@example.com`;

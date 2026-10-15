@@ -16,6 +16,7 @@ export type ProtocolErrorCode =
   | 'LIMIT_REACHED'
   | 'NAME_TAKEN'
   | 'CATEGORY_NOT_FOUND'
+  | 'MESSAGE_NOT_FOUND'
   | 'INTERNAL';
 
 /** A failure the client is expected to handle; serialised into a `reply` with `ok: false`. */

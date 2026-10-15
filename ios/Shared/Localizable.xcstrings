@@ -53,6 +53,32 @@
         }
       }
     },
+    "%@ ve %@ yazıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ and %2$@ are typing"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ve %2$@ yazıyor"
+          }
+        }
+      }
+    },
+    "%@ yazıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is typing"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -208,6 +234,16 @@
         }
       }
     },
+    "%lld kişi yazıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld people are typing"
+          }
+        }
+      }
+    },
     "%lld kişi · %lld/%lld masa dolu" : {
       "localizations" : {
         "en" : {
@@ -264,6 +300,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld okunmamış mesaj" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld unread messages"
           }
         }
       }
@@ -680,6 +726,26 @@
         }
       }
     },
+    "Bu mesaj artık yok." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This message no longer exists."
+          }
+        }
+      }
+    },
+    "Bugün" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        }
+      }
+    },
     "Bugün Odak" : {
       "localizations" : {
         "en" : {
@@ -860,6 +926,16 @@
         }
       }
     },
+    "En alta git" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jump to Latest"
+          }
+        }
+      }
+    },
     "En Çok Çalıştıkları" : {
       "localizations" : {
         "en" : {
@@ -968,6 +1044,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gray"
+          }
+        }
+      }
+    },
+    "Gönder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        }
+      }
+    },
+    "Gönderilemedi · Tekrar dene" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Sent · Try Again"
+          }
+        }
+      }
+    },
+    "Gönderiliyor…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sending…"
           }
         }
       }
@@ -1108,6 +1214,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Rooms Yet"
+          }
+        }
+      }
+    },
+    "Henüz mesaj yok" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Messages Yet"
           }
         }
       }
@@ -1362,6 +1478,16 @@
         }
       }
     },
+    "Kopyala" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
     "Koyu" : {
       "localizations" : {
         "en" : {
@@ -1606,6 +1732,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hi, %@"
+          }
+        }
+      }
+    },
+    "Mesaj" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        }
+      }
+    },
+    "Mesaj silinsin mi?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Message?"
           }
         }
       }
@@ -1856,6 +2002,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "People in the Room"
+          }
+        }
+      }
+    },
+    "Odadaki herkes için silinir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It will be deleted for everyone in the room."
           }
         }
       }
@@ -2429,16 +2585,6 @@
         }
       }
     },
-    "Sohbet çok yakında!" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chat is coming soon!"
-          }
-        }
-      }
-    },
     "Son 30 gün" : {
       "localizations" : {
         "en" : {
@@ -2585,6 +2731,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Design"
+          }
+        }
+      }
+    },
+    "Tekrar Gönder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Again"
           }
         }
       }
@@ -2995,6 +3151,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open the first public room so everyone can find it in Discover."
+          }
+        }
+      }
+    },
+    "İlk mesajı sen yaz; odadaki herkes anında görür." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write the first message; everyone in the room sees it instantly."
           }
         }
       }

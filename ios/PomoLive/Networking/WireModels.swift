@@ -351,6 +351,23 @@ struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {
     var focusedMs: Int64
 }
 
+/// A line in a room's chat.
+struct ChatMessage: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    /// Chosen by the sending device; matches an optimistic local copy to the server's.
+    var clientId: String
+    var roomId: String
+    var user: PublicUser
+    var body: String
+    var createdAt: Int64
+}
+
+struct ChatPage: Decodable, Sendable {
+    /// Oldest first.
+    var messages: [ChatMessage]
+    var hasMore: Bool
+}
+
 /// Room changes pushed by the server without being asked. Every one names its room.
 enum LibraryEvent: Sendable {
     case deskOccupied(roomId: String, desk: DeskRecord)
@@ -362,4 +379,7 @@ enum LibraryEvent: Sendable {
     case roomUpdated(room: RoomState)
     /// The owner removed `userId` from the room.
     case memberRemoved(roomId: String, userId: String)
+    case chatMessage(ChatMessage)
+    case chatDeleted(roomId: String, messageId: String)
+    case chatTyping(roomId: String, user: PublicUser)
 }

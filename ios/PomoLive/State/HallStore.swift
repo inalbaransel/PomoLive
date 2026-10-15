@@ -143,6 +143,8 @@ final class HallStore {
             guard roomId == room?.id, removedId == userId else { return }
             reset()
             exit = .removed
+        case .chatMessage, .chatDeleted, .chatTyping:
+            break
         }
     }
 

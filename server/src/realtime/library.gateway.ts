@@ -17,6 +17,7 @@ import { AccountService } from '../account/account.service.js';
 import { AuthService } from '../auth/auth.service.js';
 import { BUILT_IN_CATEGORIES } from '../categories/built-in-categories.js';
 import { CategoriesRepository } from '../categories/categories.repository.js';
+import { ChatService } from '../chat/chat.service.js';
 import { ProfilesService } from '../community/profiles.service.js';
 import { RoomMembersService } from '../community/room-members.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
@@ -28,12 +29,14 @@ import { ProtocolErrorFilter } from './protocol-error.filter.js';
 import {
   authCommandSchema,
   changeTimerSchema,
+  chatHistorySchema,
   checkUsernameSchema,
   ClientEvent,
   createCategorySchema,
   createRoomSchema,
   deleteAccountSchema,
   deleteCategorySchema,
+  deleteChatSchema,
   deleteRoomSchema,
   heartbeatSchema,
   historySchema,
@@ -42,6 +45,7 @@ import {
   refSchema,
   roomMemberSchema,
   roomMembersSchema,
+  sendChatSchema,
   ServerEvent,
   sitSchema,
   updateProfileSchema,
@@ -53,6 +57,7 @@ import { Frame, RoomEventBus } from './room-event-bus.js';
 const AUTH_TIMEOUT_MS = 10_000;
 const PING_INTERVAL_MS = 25_000;
 const CLOSE_UNAUTHORIZED = 4401;
+const MAX_BUFFERED_BYTES = 2 * 1024 * 1024;
 const CLOSE_ACCOUNT_DELETED = 4410;
 
 interface Connection {
@@ -86,6 +91,7 @@ export class LibraryGateway
     private readonly users: UsersRepository,
     private readonly members: RoomMembersService,
     private readonly profiles: ProfilesService,
+    private readonly chat: ChatService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -256,6 +262,7 @@ export class LibraryGateway
     const room = await this.rooms.owned(this.sessionOf(socket).user.id, roomId);
     await this.library.closeRoom(room.id);
     await this.rooms.delete(room.id);
+    await this.chat.clear(room.id);
     return reply(data, {});
   }
 
@@ -444,6 +451,47 @@ export class LibraryGateway
     );
   }
 
+  // MARK: Chat
+
+  @SubscribeMessage(ClientEvent.sendChat)
+  async onSendChat(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { body, clientId } = parsePayload(sendChatSchema, data);
+    return reply(data, {
+      message: await this.chat.send(this.sessionOf(socket), body, clientId),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.chatHistory)
+  async onChatHistory(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { before } = parsePayload(chatHistorySchema, data);
+    return reply(data, await this.chat.history(this.sessionOf(socket), before));
+  }
+
+  @SubscribeMessage(ClientEvent.deleteChat)
+  async onDeleteChat(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { messageId } = parsePayload(deleteChatSchema, data);
+    await this.chat.delete(this.sessionOf(socket), messageId);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.chatTyping)
+  async onChatTyping(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    await this.chat.typing(this.sessionOf(socket));
+    return reply(data, {});
+  }
+
   // MARK: Plumbing
 
   private sessionOf(socket: WebSocket): ReaderSession {
@@ -464,8 +512,15 @@ export class LibraryGateway
     for (const [socket, connection] of this.connections) {
       const session = connection.session;
       if (!session || socket.readyState !== WebSocket.OPEN) continue;
-      if (session.roomId === roomId || session.user.id === deskOwner)
+      if (session.roomId === roomId || session.user.id === deskOwner) {
+        // A client that stopped reading (frozen app, dead radio) would buffer every frame in
+        // memory; drop it and let it reconnect and resync instead.
+        if (socket.bufferedAmount > MAX_BUFFERED_BYTES) {
+          socket.terminate();
+          continue;
+        }
         socket.send(message);
+      }
       const isShutOut =
         frame.event === ServerEvent.roomClosed ||
         (frame.event === ServerEvent.memberRemoved &&

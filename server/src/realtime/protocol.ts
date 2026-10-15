@@ -36,6 +36,10 @@ export const ClientEvent = {
   statsSummary: 'stats:summary',
   history: 'history:list',
   deleteAccount: 'account:delete',
+  sendChat: 'chat:send',
+  chatHistory: 'chat:history',
+  deleteChat: 'chat:delete',
+  chatTyping: 'chat:typing',
 } as const;
 
 export const ServerEvent = {
@@ -47,6 +51,9 @@ export const ServerEvent = {
   roomClosed: 'room:closed',
   roomUpdated: 'room:updated',
   memberRemoved: 'room:removed',
+  chatMessage: 'chat:message',
+  chatDeleted: 'chat:deleted',
+  chatTyping: 'chat:typing',
 } as const;
 
 const displayName = z.string().trim().min(2).max(24);
@@ -203,6 +210,23 @@ export const historySchema = z.object({
   before: z.number().int().positive().optional(),
   limit: z.number().int().min(1).max(50).default(30),
 });
+
+export const sendChatSchema = z.object({
+  /** Line breaks allowed; other control and invisible format characters are not. */
+  body: z
+    .string()
+    .trim()
+    .min(1)
+    .max(500)
+    .regex(/^(?:[^\p{Cc}\p{Cf}]|\n)+$/u),
+  clientId: z.string().min(8).max(64),
+});
+
+export const chatHistorySchema = z.object({
+  before: z.number().int().positive().optional(),
+});
+
+export const deleteChatSchema = z.object({ messageId: uuid });
 
 export const deleteAccountSchema = z.object({ password });
 

@@ -272,6 +272,35 @@ struct HistoryCommand: LibraryCommand {
     var limit = 30
 }
 
+struct ChatMessageResult: Decodable, Sendable {
+    var message: ChatMessage
+}
+
+/// Posts to the room this connection is looking at. Retrying with the same `clientId` never posts twice.
+struct SendChatCommand: LibraryCommand {
+    typealias Result = ChatMessageResult
+    static let event = "chat:send"
+    var body: String
+    var clientId: String
+}
+
+struct ChatHistoryCommand: LibraryCommand {
+    typealias Result = ChatPage
+    static let event = "chat:history"
+    var before: Int64?
+}
+
+struct DeleteChatCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "chat:delete"
+    var messageId: String
+}
+
+struct ChatTypingCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "chat:typing"
+}
+
 struct DeleteAccountCommand: LibraryCommand {
     typealias Result = NoResult
     static let event = "account:delete"

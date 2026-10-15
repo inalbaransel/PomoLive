@@ -26,6 +26,7 @@ model User {
   memberships    RoomMembership[]
   roomBans       RoomBan[]
   categories     Category[]
+  chatMessages   ChatMessage[]
 }
 
 enum RoomVisibility {
@@ -117,4 +118,19 @@ model FocusSession {
   endReason      SessionEndReason
 
   @@index([userId, startedAt])
+}
+
+/// A chat line in a room (user room or system hall). Kept until the room or the author is deleted.
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  roomId    String   @db.VarChar(64)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String   @db.VarChar(500)
+  /// Chosen by the sending device, so a retried send cannot post twice.
+  clientId  String   @db.VarChar(64)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, clientId])
+  @@index([roomId, createdAt])
 }

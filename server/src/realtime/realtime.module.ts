@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AccountModule } from '../account/account.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CategoriesModule } from '../categories/categories.module.js';
+import { ChatModule } from '../chat/chat.module.js';
 import { CommunityModule } from '../community/community.module.js';
 import { LibraryModule } from '../library/library.module.js';
 import { StatsModule } from '../stats/stats.module.js';
@@ -14,6 +15,7 @@ import { LibraryGateway } from './library.gateway.js';
     AccountModule,
     LibraryModule,
     CategoriesModule,
+    ChatModule,
     CommunityModule,
     StatsModule,
     UsersModule,

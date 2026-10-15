@@ -27,6 +27,7 @@ final class AppModel {
     let rooms: RoomsStore
     let stats: StatsStore
     let categories: CategoryStore
+    let chat: ChatStore
 
     @ObservationIgnored private let socket: LibrarySocket
     @ObservationIgnored private let sessionStore = SessionStore()
@@ -42,6 +43,7 @@ final class AppModel {
         rooms = RoomsStore(socket: socket)
         stats = StatsStore(socket: socket)
         categories = CategoryStore(socket: socket)
+        chat = ChatStore(socket: socket)
 
         // A profile cached by an older version may not decode; the session token alone is enough to reconnect.
         phase = sessionStore.token == nil ? .signedOut : .signedIn
@@ -118,6 +120,7 @@ final class AppModel {
         user = profile
         seat.userId = profile.id
         hall.userId = profile.id
+        chat.userId = profile.id
     }
 
     private func endSession() {
@@ -127,6 +130,7 @@ final class AppModel {
         rooms.reset()
         stats.reset()
         categories.reset()
+        chat.reset()
         user = nil
         connection = .offline
         phase = .signedOut
@@ -140,6 +144,7 @@ final class AppModel {
             ensureConnected()
         case .broadcast(let event):
             hall.apply(event)
+            chat.apply(event)
             seat.apply(event)
         }
     }
@@ -157,6 +162,8 @@ final class AppModel {
             async let categoriesRefresh: Void = categories.refresh()
             async let hallRejoin: Void = hall.rejoin()
             _ = await (seatRefresh, categoriesRefresh, hallRejoin)
+            // The server forgot what this connection looked at; catch up on messages missed while offline.
+            if let roomId = hall.room?.id { await chat.open(roomId: roomId) }
         } catch {
             await socket.disconnect()
             connection = .offline

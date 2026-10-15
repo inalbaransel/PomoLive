@@ -128,6 +128,10 @@ actor LibrarySocket {
             }
         case "room:closed": return payload(RoomPayload.self).map { .roomClosed(roomId: $0.roomId) }
         case "room:updated": return payload(RoomUpdatedPayload.self).map { .roomUpdated(room: $0.room) }
+        case "chat:message": return payload(ChatMessagePayload.self).map { .chatMessage($0.message) }
+        case "chat:deleted":
+            return payload(ChatDeletedPayload.self).map { .chatDeleted(roomId: $0.roomId, messageId: $0.messageId) }
+        case "chat:typing": return payload(ChatTypingPayload.self).map { .chatTyping(roomId: $0.roomId, user: $0.user) }
         case "room:removed":
             return payload(MemberRemovedPayload.self).map { .memberRemoved(roomId: $0.roomId, userId: $0.userId) }
         default: return nil
@@ -198,4 +202,7 @@ private struct VacatedPayload: Decodable { let roomId: String; let deskId: Strin
 private struct PresencePayload: Decodable { let roomId: String; let presenceCount: Int; let occupiedCount: Int }
 private struct RoomPayload: Decodable { let roomId: String }
 private struct RoomUpdatedPayload: Decodable { let room: RoomState }
+private struct ChatMessagePayload: Decodable { let message: ChatMessage }
+private struct ChatDeletedPayload: Decodable { let roomId: String; let messageId: String }
+private struct ChatTypingPayload: Decodable { let roomId: String; let user: PublicUser }
 private struct MemberRemovedPayload: Decodable { let roomId: String; let userId: String }
