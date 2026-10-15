@@ -9,6 +9,7 @@ struct RoomEditorSheet: View {
         var color: GlyphColor
         var visibility: RoomKind
         var theme: RoomTheme
+        var description: String
     }
 
     /// The room being edited; `nil` creates a new one.
@@ -27,15 +28,18 @@ struct RoomEditorSheet: View {
         self.layouts = layouts
         self.onSave = onSave
         _draft = State(initialValue: room.map {
-            Draft(name: $0.name, symbol: $0.symbol, color: $0.color, visibility: $0.kind, theme: $0.roomTheme)
-        } ?? Draft(name: "", symbol: "books.vertical.fill", color: .indigo, visibility: .private, theme: .classic))
+            Draft(name: $0.name, symbol: $0.symbol, color: $0.color, visibility: $0.kind, theme: $0.roomTheme, description: $0.description ?? "")
+        } ?? Draft(name: "", symbol: "books.vertical.fill", color: .indigo, visibility: .private, theme: .classic, description: ""))
     }
+
+    private static let descriptionLimit = 200
 
     private var trimmedName: String { draft.name.trimmingCharacters(in: .whitespaces) }
 
     private var hasChanges: Bool {
         guard let room else { return true }
         return trimmedName != room.name || draft.symbol != room.symbol || draft.color != room.color || draft.visibility != room.kind || draft.theme != room.roomTheme
+            || draft.description != (room.description ?? "")
     }
 
     var body: some View {
@@ -53,6 +57,18 @@ struct RoomEditorSheet: View {
                             .onChange(of: draft.name) { draft.name = String(draft.name.prefix(32)) }
                     }
                     .padding(.vertical, 8)
+                }
+
+                Section {
+                    TextField("Bu odada neler yapılıyor, hedef ne?", text: $draft.description, axis: .vertical)
+                        .lineLimit(3...6)
+                        .onChange(of: draft.description) { _, text in
+                            if text.count > Self.descriptionLimit { draft.description = String(text.prefix(Self.descriptionLimit)) }
+                        }
+                } header: {
+                    Text("Açıklama")
+                } footer: {
+                    Text("Katılmadan önce herkes bunu okur. \(draft.description.count)/\(Self.descriptionLimit)")
                 }
 
                 Section {
@@ -100,6 +116,7 @@ struct RoomEditorSheet: View {
         isSaving = true
         var draft = draft
         draft.name = trimmedName
+        draft.description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
         Task {
             defer { isSaving = false }
             do {

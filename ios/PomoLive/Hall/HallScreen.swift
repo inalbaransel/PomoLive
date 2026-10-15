@@ -70,7 +70,7 @@ struct HallScreen: View {
                             .presentationBackgroundInteraction(.enabled(upThrough: .medium))
                     case .editRoom(let room):
                         RoomEditorSheet(room: room, layouts: app.rooms.themeLayouts) { draft in
-                            try await hall.update(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility, theme: draft.theme)
+                            try await hall.update(draft)
                         }
                     }
                 }

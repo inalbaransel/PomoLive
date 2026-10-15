@@ -141,7 +141,7 @@ struct RoomsView: View {
 
     /// Creating a room also enters it on the server; the room screen re-joins by id.
     private func createRoom(_ draft: RoomEditorSheet.Draft) async throws -> String {
-        try await app.hall.create(name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility, theme: draft.theme)
+        try await app.hall.create(draft)
         return app.hall.room?.id ?? ""
     }
 }

@@ -516,6 +516,16 @@
         }
       }
     },
+    "Açıklama" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description"
+          }
+        }
+      }
+    },
     "Ağaçlar, toprak patika, kamp ateşi" : {
       "localizations" : {
         "en" : {
@@ -656,6 +666,16 @@
         }
       }
     },
+    "Bu hafta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week"
+          }
+        }
+      }
+    },
     "Bu hafta henüz odak süren yok. İlk oturumun burada görünecek." : {
       "localizations" : {
         "en" : {
@@ -732,6 +752,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This message no longer exists."
+          }
+        }
+      }
+    },
+    "Bu odada neler yapılıyor, hedef ne?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What happens in this room, and what's the goal?"
           }
         }
       }
@@ -1368,6 +1398,22 @@
         }
       }
     },
+    "Katılmadan önce herkes bunu okur. %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone reads this before joining. %1$lld/%2$lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Katılmadan önce herkes bunu okur. %1$lld/%2$lld"
+          }
+        }
+      }
+    },
     "Katılım: %@" : {
       "localizations" : {
         "en" : {
@@ -1528,6 +1574,16 @@
         }
       }
     },
+    "Kuran: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created by %@"
+          }
+        }
+      }
+    },
     "Kütüphane" : {
       "localizations" : {
         "en" : {
@@ -1662,6 +1718,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your desk is here"
+          }
+        }
+      }
+    },
+    "Masana Dön" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Your Desk"
           }
         }
       }
@@ -1946,12 +2012,22 @@
         }
       }
     },
-    "Oda ara" : {
+    "Oda adı veya açıklama ara" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search rooms"
+            "value" : "Search room names or descriptions"
+          }
+        }
+      }
+    },
+    "Oda açılamadı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Open Room"
           }
         }
       }
@@ -2162,6 +2238,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove from My Rooms"
+          }
+        }
+      }
+    },
+    "Odaya Katıl" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join Room"
           }
         }
       }
@@ -2825,16 +2911,6 @@
         }
       }
     },
-    "Tümü" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
-          }
-        }
-      }
-    },
     "Uzay Mekiği" : {
       "localizations" : {
         "en" : {
@@ -3125,6 +3201,16 @@
         }
       }
     },
+    "Üye" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Members"
+          }
+        }
+      }
+    },
     "Üyeler · %lld" : {
       "localizations" : {
         "en" : {
@@ -3235,12 +3321,22 @@
         }
       }
     },
-    "Şu An Canlı" : {
+    "Şu An En Aktif" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Live Now"
+            "value" : "Most Active Now"
+          }
+        }
+      }
+    },
+    "Şu An Odada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Room Now"
           }
         }
       }
@@ -3277,6 +3373,16 @@
         }
       }
     },
+    "Şu an kimse masada değil. İlk oturan sen ol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nobody is at a desk right now. Be the first to sit down."
+          }
+        }
+      }
+    },
     "Şu an odada kimse yok." : {
       "localizations" : {
         "en" : {
@@ -3293,6 +3399,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quiet right now"
+          }
+        }
+      }
+    },
+    "Şu an çalışan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focusing now"
           }
         }
       }

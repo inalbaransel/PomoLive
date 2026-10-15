@@ -27,6 +27,7 @@ export const ClientEvent = {
   updateProfile: 'profile:update',
   userProfile: 'user:profile',
   roomMembers: 'room:members',
+  previewRoom: 'room:preview',
   updateRoom: 'room:update',
   removeMember: 'room:remove',
   unbanMember: 'room:unban',
@@ -96,6 +97,14 @@ const roomCode = z
   .toUpperCase()
   .regex(/^[A-Z0-9]{6}$/);
 
+/** A room's blurb: up to 200 characters, line breaks allowed; an empty string clears it. */
+const roomDescription = z
+  .string()
+  .trim()
+  .max(200)
+  .regex(/^(?:[^\p{Cc}\p{Cf}]|\n)*$/u)
+  .transform((text) => text || null);
+
 export const refSchema = z.object({ ref: z.string().min(1).max(64) });
 
 export const authCommandSchema = z.discriminatedUnion('method', [
@@ -134,9 +143,12 @@ export const createRoomSchema = z.object({
   ...glyph,
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
   theme: z.enum(ROOM_THEMES).default('classic'),
+  description: roomDescription.optional(),
 });
 
 export const deleteRoomSchema = z.object({ roomId: uuid });
+
+export const previewRoomSchema = z.object({ roomId: uuid });
 
 export const updateRoomSchema = z
   .object({
@@ -146,6 +158,7 @@ export const updateRoomSchema = z
     color: glyph.color.optional(),
     visibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
     theme: z.enum(ROOM_THEMES).optional(),
+    description: roomDescription.optional(),
   })
   .refine((changes) => Object.keys(changes).length > 1, {
     message: 'Nothing to change',

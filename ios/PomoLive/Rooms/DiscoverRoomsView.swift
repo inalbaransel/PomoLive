@@ -1,14 +1,19 @@
 import SwiftUI
 
-/// Public rooms, ranked by the server's discover score: a one-tap start in a system hall, then
-/// rooms with people in them now, the week's most popular rooms and new ones, filterable by topic.
+/// Public rooms, ranked by the server's discover score: a one-tap start in a system hall, then the
+/// most active rooms right now, the week's most popular, new ones and everything else, searchable
+/// by name and description. Tapping a room shows its details before joining.
 struct DiscoverRoomsView: View {
     let openRoom: (HallStore.Target) -> Void
     let onCreate: () -> Void
 
     @Environment(AppModel.self) private var app
     @State private var query = ""
-    @State private var topicKey: String?
+    @State private var previewRoom: PreviewTarget?
+
+    private struct PreviewTarget: Identifiable {
+        let id: String
+    }
 
     private static let newRoomWindowMs: Int64 = 72 * 3_600_000
     private static let sectionLimit = 6
@@ -17,16 +22,18 @@ struct DiscoverRoomsView: View {
         ScrollView {
             if let result = app.rooms.discover {
                 LazyVStack(alignment: .leading, spacing: 14) {
-                    if !isFiltering {
-                        QuickStartCard(halls: result.halls) { openRoom(.automatic) }
-                    }
-                    if !topics(in: result).isEmpty {
-                        topicFilter(result)
-                    }
                     if isFiltering {
-                        section("Sonuçlar", rooms: filtered(result), result: result)
+                        let matches = filtered(result)
+                        section("Sonuçlar", rooms: matches, result: result)
+                        if matches.isEmpty {
+                            ContentUnavailableView.search(text: query)
+                                .padding(.top, 40)
+                        }
                     } else {
-                        let live = result.rooms.filter { $0.occupiedCount + $0.presenceCount > 0 }
+                        QuickStartCard(halls: result.halls) { openRoom(.automatic) }
+                        let live = result.rooms
+                            .filter { $0.occupiedCount + $0.presenceCount > 0 }
+                            .sorted { ($0.occupiedCount, $0.presenceCount) > ($1.occupiedCount, $1.presenceCount) }
                         let liveIds = Set(live.prefix(Self.sectionLimit).map(\.id))
                         let popular = result.rooms
                             .filter { !liveIds.contains($0.id) && $0.weeklyFocusMs > 0 }
@@ -37,7 +44,7 @@ struct DiscoverRoomsView: View {
                             .sorted { $0.createdAt > $1.createdAt }
                         let rest = result.rooms.filter { !shownIds.contains($0.id) && !isNew($0) }
 
-                        section("Şu An Canlı", rooms: Array(live.prefix(Self.sectionLimit)), result: result)
+                        section("Şu An En Aktif", rooms: Array(live.prefix(Self.sectionLimit)), result: result)
                         section("Bu Hafta Popüler", rooms: Array(popular.prefix(Self.sectionLimit)), result: result)
                         section("Yeni Açılanlar", rooms: Array(fresh.prefix(Self.sectionLimit)), result: result)
                         section("Tüm Odalar", rooms: rest, result: result)
@@ -45,7 +52,7 @@ struct DiscoverRoomsView: View {
                     }
                 }
                 .padding(16)
-                .animation(.snappy, value: topicKey)
+                .animation(.snappy, value: isFiltering)
             } else {
                 ProgressView()
                     .padding(.top, 120)
@@ -54,7 +61,11 @@ struct DiscoverRoomsView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Keşfet")
         .navigationBarTitleDisplayMode(.large)
-        .searchable(text: $query, prompt: "Oda ara")
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Oda adı veya açıklama ara")
+        .sheet(item: $previewRoom) { target in
+            RoomDetailSheet(roomId: target.id) { openRoom(.room(id: target.id)) }
+                .presentationDetents([.large])
+        }
         .refreshable { await app.rooms.refreshDiscover() }
         .task(id: app.connection) {
             guard app.connection == .online else { return }
@@ -66,60 +77,19 @@ struct DiscoverRoomsView: View {
     }
 
     private var isFiltering: Bool {
-        topicKey != nil || !query.trimmingCharacters(in: .whitespaces).isEmpty
+        !query.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     private func filtered(_ result: DiscoverResult) -> [DiscoverRoom] {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         return result.rooms.filter { room in
-            (topicKey == nil || room.topic?.key == topicKey)
-                && (trimmed.isEmpty || room.displayName.localizedStandardContains(trimmed))
+            room.displayName.localizedStandardContains(trimmed)
+                || (room.description?.localizedStandardContains(trimmed) ?? false)
         }
-    }
-
-    /// Topics that at least one room has, most common first.
-    private func topics(in result: DiscoverResult) -> [FocusCategory] {
-        let counts = Dictionary(grouping: result.rooms.compactMap(\.topic), by: \.key)
-        return counts.values.sorted { $0.count > $1.count }.compactMap(\.first)
     }
 
     private func isNew(_ room: DiscoverRoom) -> Bool {
         ServerClock.deviceNow() - room.createdAt < Self.newRoomWindowMs
-    }
-
-    private func topicFilter(_ result: DiscoverResult) -> some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                chip(Text("Tümü"), symbol: nil, color: nil, isSelected: topicKey == nil) { topicKey = nil }
-                ForEach(topics(in: result)) { topic in
-                    chip(Text(topic.displayName), symbol: topic.symbol, color: topic.color, isSelected: topicKey == topic.key) {
-                        topicKey = topicKey == topic.key ? nil : topic.key
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-        .scrollIndicators(.hidden)
-        .padding(.horizontal, -16)
-    }
-
-    private func chip(_ title: Text, symbol: String?, color: GlyphColor?, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                if let symbol, let color {
-                    Image(systemName: symbol)
-                        .foregroundStyle(isSelected ? .white : color.color)
-                }
-                title
-            }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(isSelected ? .white : .primary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(isSelected ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color(.secondarySystemGroupedBackground)), in: .capsule)
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder
@@ -128,7 +98,7 @@ struct DiscoverRoomsView: View {
             SectionTitle(title)
                 .padding(.top, 10)
             ForEach(rooms) { room in
-                Button { openRoom(.room(id: room.id)) } label: {
+                Button { previewRoom = PreviewTarget(id: room.id) } label: {
                     RoomCard(
                         room: room.summary,
                         layout: .forTheme(room.theme, in: result.layouts, fallback: result.layout),
@@ -141,8 +111,11 @@ struct DiscoverRoomsView: View {
         }
     }
 
-    /// "Yazılım ağırlıklı · bu hafta 12 sa · 8 üye"
+    /// The room's own description if it has one, otherwise "Yazılım ağırlıklı · bu hafta 12 sa · 8 üye".
     private func detail(for room: DiscoverRoom) -> String? {
+        if let description = room.description {
+            return description.replacingOccurrences(of: "\n", with: " ")
+        }
         var parts: [String] = []
         if let topic = room.topic { parts.append(String(localized: "\(topic.displayName) ağırlıklı")) }
         if room.weeklyFocusMs >= 60 * 60_000 { parts.append(String(localized: "bu hafta \(formattedFocus(room.weeklyFocusMs))")) }

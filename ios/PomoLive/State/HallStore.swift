@@ -58,9 +58,13 @@ final class HallStore {
         apply(try await timed { try await self.socket.send(command) })
     }
 
-    func create(name: String, symbol: String, color: GlyphColor, visibility: RoomKind, theme: RoomTheme = .classic) async throws {
+    func create(_ draft: RoomEditorSheet.Draft) async throws {
         visit += 1
-        apply(try await timed { try await self.socket.send(CreateRoomCommand(name: name, symbol: symbol, color: color, visibility: visibility, theme: theme.rawValue)) })
+        let command = CreateRoomCommand(
+            name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility,
+            theme: draft.theme.rawValue, description: draft.description.isEmpty ? nil : draft.description
+        )
+        apply(try await timed { try await self.socket.send(command) })
     }
 
     /// After a reconnect the server has forgotten what this connection looked at.
@@ -76,9 +80,17 @@ final class HallStore {
         _ = try? await socket.send(LeaveRoomCommand())
     }
 
-    func update(name: String, symbol: String, color: GlyphColor, visibility: RoomKind, theme: RoomTheme = .classic) async throws {
+    func update(_ draft: RoomEditorSheet.Draft) async throws {
         guard let room else { return }
-        _ = try await socket.send(UpdateRoomCommand(roomId: room.id, name: name, symbol: symbol, color: color, visibility: visibility, theme: theme.rawValue))
+        _ = try await socket.send(UpdateRoomCommand(
+            roomId: room.id, name: draft.name, symbol: draft.symbol, color: draft.color, visibility: draft.visibility,
+            theme: draft.theme.rawValue, description: draft.description
+        ))
+    }
+
+    /// A public room's card, blurb and people, without entering it.
+    func preview(_ roomId: String) async throws -> RoomPreviewResult {
+        try await socket.send(PreviewRoomCommand(roomId: roomId))
     }
 
     func members() async throws -> RoomMembers {

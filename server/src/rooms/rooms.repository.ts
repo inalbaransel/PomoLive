@@ -15,6 +15,7 @@ export interface RoomRecord {
   color: string;
   visibility: RoomVisibility;
   theme: string;
+  description: string | null;
   ownerId: string;
   createdAt: Date;
 }
@@ -27,6 +28,7 @@ const roomSelect = {
   color: true,
   visibility: true,
   theme: true,
+  description: true,
   ownerId: true,
   createdAt: true,
 } as const;
@@ -50,6 +52,7 @@ export class RoomsRepository {
     glyph: Glyph,
     visibility: RoomVisibility,
     theme: string = 'classic',
+    description: string | null = null,
   ): Promise<RoomRecord> {
     for (;;) {
       const code = Array.from(
@@ -64,6 +67,7 @@ export class RoomsRepository {
             ...glyph,
             visibility,
             theme: theme || 'classic',
+            description,
             ownerId,
             memberships: { create: { userId: ownerId } },
           },
@@ -81,7 +85,10 @@ export class RoomsRepository {
   update(
     id: string,
     changes: Partial<
-      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility' | 'theme'>
+      Pick<
+        RoomRecord,
+        'name' | 'symbol' | 'color' | 'visibility' | 'theme' | 'description'
+      >
     >,
   ): Promise<RoomRecord> {
     return this.prisma.room.update({
@@ -202,6 +209,15 @@ export class RoomsRepository {
       select: { roomId: true },
     });
     return new Set(bans.map((ban) => ban.roomId));
+  }
+
+  /** The room's owner as other readers see them. */
+  async owner(roomId: string): Promise<PublicUser | null> {
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      select: { owner: { select: publicUserSelect } },
+    });
+    return room?.owner ?? null;
   }
 
   async removeMembership(userId: string, roomId: string): Promise<void> {

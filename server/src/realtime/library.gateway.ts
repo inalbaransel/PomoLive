@@ -45,6 +45,7 @@ import {
   refSchema,
   roomMemberSchema,
   roomMembersSchema,
+  previewRoomSchema,
   sendChatSchema,
   ServerEvent,
   sitSchema,
@@ -238,10 +239,8 @@ export class LibraryGateway
     @ConnectedSocket() socket: WebSocket,
     @MessageBody() data: Payload,
   ) {
-    const { name, symbol, color, visibility, theme } = parsePayload(
-      createRoomSchema,
-      data,
-    );
+    const { name, symbol, color, visibility, theme, description } =
+      parsePayload(createRoomSchema, data);
     const session = this.sessionOf(socket);
     const room = await this.rooms.create(
       session.user.id,
@@ -249,6 +248,7 @@ export class LibraryGateway
       { symbol, color },
       visibility,
       theme,
+      description,
     );
     return reply(data, await this.library.enter(session, room));
   }
@@ -279,6 +279,22 @@ export class LibraryGateway
     );
     await this.library.refreshRoom(room);
     return reply(data, { room });
+  }
+
+  @SubscribeMessage(ClientEvent.previewRoom)
+  async onPreviewRoom(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId } = parsePayload(previewRoomSchema, data);
+    return reply(
+      data,
+      await this.rooms.preview(
+        this.sessionOf(socket).user.id,
+        roomId,
+        Date.now(),
+      ),
+    );
   }
 
   @SubscribeMessage(ClientEvent.roomMembers)

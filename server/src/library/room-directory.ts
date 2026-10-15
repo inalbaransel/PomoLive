@@ -16,6 +16,7 @@ export interface RoomIdentity {
   symbol: string;
   color: string;
   theme: string;
+  description: string | null;
   code: string | null;
   ownerId: string | null;
 }
@@ -52,6 +53,7 @@ export class RoomDirectory {
       name: `Piksel Salon ${number}`,
       ...HALL_GLYPH,
       theme: 'classic',
+      description: null,
       code: null,
       ownerId: null,
     };
@@ -83,6 +85,7 @@ export class RoomDirectory {
         symbol: room.symbol,
         color: room.color,
         theme: room.theme || 'classic',
+        description: room.description ?? '',
         code: room.code ?? '',
         ownerId: room.ownerId ?? '',
       });
@@ -100,6 +103,7 @@ export class RoomDirectory {
       symbol: room.symbol,
       color: room.color,
       theme: room.theme || 'classic',
+      description: room.description ?? '',
     });
   }
 
@@ -127,6 +131,7 @@ export class RoomDirectory {
       symbol: fields.symbol,
       color: fields.color,
       theme: fields.theme || 'classic',
+      description: fields.description || null,
       code: fields.code || null,
       ownerId: fields.ownerId || null,
       capacity: LIBRARY_LAYOUT.desks.length,

@@ -128,6 +128,8 @@ struct RoomState: Codable, Hashable, Sendable, Identifiable {
     var symbol: String
     var color: GlyphColor
     var theme: String?
+    /// What the room is for; set by its owner.
+    var description: String?
     var code: String?
     var ownerId: String?
     var capacity: Int
@@ -140,6 +142,8 @@ struct RoomState: Codable, Hashable, Sendable, Identifiable {
 /// Someone at a desk, as shown on a room's preview card.
 struct RoomOccupant: Decodable, Hashable, Sendable {
     var deskId: String
+    /// Missing from servers older than room previews.
+    var userId: String?
     var userName: String
     var avatarSpriteId: String
     var resting: Bool
@@ -153,6 +157,8 @@ struct RoomSummary: Decodable, Hashable, Sendable, Identifiable {
     var symbol: String
     var color: GlyphColor
     var theme: String?
+    /// What the room is for; set by its owner.
+    var description: String?
     var code: String?
     var ownerId: String?
     var capacity: Int
@@ -191,10 +197,12 @@ struct DiscoverRoom: Decodable, Hashable, Sendable, Identifiable {
     var createdAt: Int64
     var score: Double
     var theme: String?
+    var description: String?
 
     var summary: RoomSummary {
         RoomSummary(
-            id: id, kind: .public, name: name, symbol: symbol, color: color, theme: theme, code: nil, ownerId: nil,
+            id: id, kind: .public, name: name, symbol: symbol, color: color, theme: theme, description: description,
+            code: nil, ownerId: nil,
             capacity: capacity, occupiedCount: occupiedCount, presenceCount: presenceCount, occupants: occupants
         )
     }
@@ -220,6 +228,15 @@ extension LibraryLayout {
     static func forTheme(_ theme: String?, in layouts: [String: LibraryLayout]?, fallback: LibraryLayout) -> LibraryLayout {
         theme.flatMap { layouts?[$0] } ?? fallback
     }
+}
+
+/// A public room as shown before joining it.
+struct RoomPreviewResult: Decodable, Sendable {
+    var layout: LibraryLayout
+    var room: DiscoverRoom
+    var owner: PublicUser?
+    var isMember: Bool
+    var isSeatedHere: Bool
 }
 
 struct DeskRecord: Codable, Hashable, Sendable, Identifiable {

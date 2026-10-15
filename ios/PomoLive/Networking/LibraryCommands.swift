@@ -91,6 +91,7 @@ struct CreateRoomCommand: LibraryCommand {
     var color: GlyphColor
     var visibility: RoomKind
     var theme: String?
+    var description: String?
 }
 
 struct DeleteRoomCommand: LibraryCommand {
@@ -113,6 +114,14 @@ struct UpdateRoomCommand: LibraryCommand {
     var color: GlyphColor?
     var visibility: RoomKind?
     var theme: String?
+    /// An empty string clears it.
+    var description: String?
+}
+
+struct PreviewRoomCommand: LibraryCommand {
+    typealias Result = RoomPreviewResult
+    static let event = "room:preview"
+    var roomId: String
 }
 
 struct RoomMembersCommand: LibraryCommand {

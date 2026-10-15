@@ -3,6 +3,7 @@ import { Glyph } from '../common/glyph.js';
 import { DeskStore } from '../library/desk-store.js';
 import { readTimer } from '../library/desk-timer.js';
 import {
+  getLayoutForTheme,
   LAYOUTS_BY_THEME,
   LIBRARY_LAYOUT,
   LibraryLayout,
@@ -16,6 +17,7 @@ import {
   RoomVisibility,
 } from './rooms.repository.js';
 import { discoverScore } from './discover-score.js';
+import { PublicUser } from '../users/user.js';
 import { RoomActivity, RoomActivityRepository } from './room-activity.js';
 
 const MAX_OWNED_ROOMS = 10;
@@ -27,6 +29,7 @@ export interface RoomSummary {
   symbol: string;
   color: string;
   theme: string;
+  description: string | null;
   code: string | null;
   ownerId: string | null;
   capacity: number;
@@ -38,6 +41,7 @@ export interface RoomSummary {
 
 export interface RoomOccupant {
   deskId: string;
+  userId: string;
   userName: string;
   avatarSpriteId: string;
   resting: boolean;
@@ -69,6 +73,15 @@ export interface DiscoverResult {
   halls: { occupiedCount: number; presenceCount: number };
   /** Public rooms, best first. */
   rooms: DiscoverRoom[];
+}
+
+/** Everything shown about a public room before joining it. */
+export interface RoomPreviewResult {
+  layout: LibraryLayout;
+  room: DiscoverRoom;
+  owner: PublicUser | null;
+  isMember: boolean;
+  isSeatedHere: boolean;
 }
 
 export type RoomTarget = { roomId?: string; code?: string };
@@ -171,6 +184,59 @@ export class RoomsService {
     };
   }
 
+  /** A room's card, blurb, owner and who is inside, for deciding whether to join. */
+  async preview(
+    userId: string,
+    roomId: string,
+    now: number,
+  ): Promise<RoomPreviewResult> {
+    const record =
+      (await this.rooms.findById(roomId)) ??
+      ProtocolError.throw('ROOM_NOT_FOUND', 'Room no longer exists');
+    const [isMember, isBanned, seat] = await Promise.all([
+      this.rooms.isMember(userId, roomId),
+      this.rooms.isBanned(userId, roomId),
+      this.desks.seatOf(userId),
+    ]);
+    if (isBanned)
+      ProtocolError.throw('BANNED', 'The owner removed you from this room');
+    if (record.visibility === 'PRIVATE' && !isMember)
+      ProtocolError.throw('FORBIDDEN', 'Join this room with its code');
+
+    const [[summary], activity, members, owner] = await Promise.all([
+      this.summaries([RoomsService.identity(record)], now),
+      this.activity.forRooms([roomId], now),
+      this.rooms.memberCounts([roomId]),
+      this.rooms.owner(roomId),
+    ]);
+    const roomActivity = activity.get(roomId) ?? {
+      weeklyFocusMs: 0,
+      weeklyReaders: 0,
+      decayedFocusHours: 0,
+      topic: null,
+    };
+    const memberCount = members.get(roomId) ?? 0;
+    const createdAt = record.createdAt.getTime();
+    return {
+      layout: getLayoutForTheme(record.theme),
+      room: {
+        ...summary,
+        ...roomActivity,
+        memberCount,
+        createdAt,
+        score: discoverScore({
+          ...summary,
+          ...roomActivity,
+          memberCount,
+          ageHours: (now - createdAt) / 3_600_000,
+        }),
+      },
+      owner,
+      isMember,
+      isSeatedHere: seat?.roomId === roomId,
+    };
+  }
+
   /** Identity plus live counts and who sits where. */
   private async summaries(
     identities: RoomIdentity[],
@@ -187,6 +253,7 @@ export class RoomsService {
       ...counts.get(room.id)!,
       occupants: desks.get(room.id)!.map((desk) => ({
         deskId: desk.deskId,
+        userId: desk.userId,
         userName: desk.userName,
         avatarSpriteId: desk.avatarSpriteId,
         resting: readTimer(desk.timer, now).phase === 'BREAK',
@@ -200,6 +267,7 @@ export class RoomsService {
     glyph: Glyph,
     visibility: RoomVisibility,
     theme: string = 'classic',
+    description: string | null = null,
   ): Promise<RoomIdentity> {
     if ((await this.rooms.countOwned(ownerId)) >= MAX_OWNED_ROOMS) {
       ProtocolError.throw(
@@ -208,7 +276,14 @@ export class RoomsService {
       );
     }
     return RoomsService.identity(
-      await this.rooms.create(ownerId, name, glyph, visibility, theme),
+      await this.rooms.create(
+        ownerId,
+        name,
+        glyph,
+        visibility,
+        theme,
+        description,
+      ),
     );
   }
 
@@ -246,7 +321,10 @@ export class RoomsService {
     ownerId: string,
     roomId: string,
     changes: Partial<
-      Pick<RoomRecord, 'name' | 'symbol' | 'color' | 'visibility' | 'theme'>
+      Pick<
+        RoomRecord,
+        'name' | 'symbol' | 'color' | 'visibility' | 'theme' | 'description'
+      >
     >,
   ): Promise<RoomIdentity> {
     await this.owned(ownerId, roomId);
@@ -328,6 +406,7 @@ export class RoomsService {
       symbol: room.symbol,
       color: room.color,
       theme: room.theme,
+      description: room.description,
       code: room.code,
       ownerId: room.ownerId,
     };

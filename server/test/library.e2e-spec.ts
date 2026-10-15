@@ -759,6 +759,63 @@ describe('Library realtime protocol (e2e)', () => {
     guest.close();
   });
 
+  it('previews a public room with its description before joining', async () => {
+    const { client: owner, userId: ownerId } = await signedInWithId('Tanitan');
+    const { client: visitor } = await signedInWithId('Bakan');
+    const created = await owner.send('room:create', {
+      name: 'Tanıtım Odası',
+      symbol: 'books.vertical.fill',
+      color: 'indigo',
+      visibility: 'PUBLIC',
+      description: '  Sabah 9 gibi\nbirlikte KPSS çalışıyoruz  ',
+    });
+    const roomId = created.result.room.id;
+    expect(created.result.room.description).toBe(
+      'Sabah 9 gibi\nbirlikte KPSS çalışıyoruz',
+    );
+    await owner.send('desk:sit', {
+      deskId: 'desk_3',
+      timer: stopwatch,
+      categoryKey: 'study',
+    });
+
+    const preview = (await visitor.send('room:preview', { roomId })).result;
+    expect(preview).toMatchObject({
+      owner: { id: ownerId },
+      isMember: false,
+      isSeatedHere: false,
+      room: {
+        id: roomId,
+        description: 'Sabah 9 gibi\nbirlikte KPSS çalışıyoruz',
+        occupiedCount: 1,
+        occupants: [{ deskId: 'desk_3', userId: ownerId }],
+      },
+    });
+    const discovered = (await visitor.send('room:discover')).result.rooms.find(
+      (room: { id: string }) => room.id === roomId,
+    );
+    expect(discovered.description).toBe(
+      'Sabah 9 gibi\nbirlikte KPSS çalışıyoruz',
+    );
+
+    await owner.send('room:update', { roomId, description: '' });
+    expect(
+      (await visitor.send('room:preview', { roomId })).result.room.description,
+    ).toBeNull();
+
+    const secret = await owner.send('room:create', {
+      name: 'Gizli Oda',
+      symbol: 'books.vertical.fill',
+      color: 'indigo',
+      visibility: 'PRIVATE',
+    });
+    expect(
+      await visitor.send('room:preview', { roomId: secret.result.room.id }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    owner.close();
+    visitor.close();
+  });
+
   it('deletes an account only with the right password', async () => {
     const client = await TestClient.connect(url);
     const email = `silinecek-${randomUUID()}@example.com`;

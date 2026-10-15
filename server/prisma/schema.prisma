@@ -43,6 +43,8 @@ model Room {
   color       String           @db.VarChar(16)
   visibility  RoomVisibility
   theme       String           @default("classic") @db.VarChar(24)
+  /// What the room is for, shown before joining.
+  description String?          @db.VarChar(200)
   ownerId     String           @db.Uuid
   owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt   DateTime         @default(now())
