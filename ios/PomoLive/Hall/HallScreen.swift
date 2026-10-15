@@ -108,9 +108,14 @@ struct HallScreen: View {
         ToolbarItem(placement: .principal) {
             if let room = app.hall.room {
                 VStack(spacing: 1) {
-                    Text("\(room.emoji) \(room.name)")
-                        .font(.headline)
-                        .lineLimit(1)
+                    Label {
+                        Text(room.name)
+                    } icon: {
+                        Image(systemName: room.symbol)
+                            .foregroundStyle(room.color.color)
+                    }
+                    .font(.headline)
+                    .lineLimit(1)
                     Text(subtitle(for: room))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -130,7 +135,7 @@ struct HallScreen: View {
             Menu("Diğer", systemImage: "ellipsis") {
                 if let room = app.hall.room, let code = room.code {
                     ShareLink(
-                        item: "PomoLive'da \(room.emoji) \(room.name) odasına gel! Oda kodu: \(code)",
+                        item: "PomoLive'da \(room.name) odasına gel! Oda kodu: \(code)",
                         subject: Text("PomoLive oda kodu")
                     ) {
                         Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")

@@ -12,15 +12,15 @@ struct FocusLiveActivityWidget: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    PixelAvatar(id: context.attributes.avatarSpriteId, phase: context.state.phase, size: 40)
+                    CategoryIcon(attributes: context.attributes, phase: context.state.phase, size: 40)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     SessionClock(state: context.state)
-                        .font(.system(.title2, design: .monospaced, weight: .bold))
+                        .font(.system(.title2, design: .rounded, weight: .semibold))
                         .frame(maxWidth: 110)
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text("\(context.attributes.categoryEmoji) \(context.attributes.categoryName)")
+                    Text(context.attributes.categoryName)
                         .font(.headline)
                         .lineLimit(1)
                 }
@@ -31,15 +31,16 @@ struct FocusLiveActivityWidget: Widget {
                         .lineLimit(1)
                 }
             } compactLeading: {
-                Text(context.state.phase == .focus ? context.attributes.categoryEmoji : "☕")
+                Image(systemName: context.state.phase == .focus ? context.attributes.categorySymbol : "cup.and.saucer.fill")
+                    .foregroundStyle(context.state.phase == .focus ? context.attributes.categoryColor.color : .brown)
             } compactTrailing: {
                 SessionClock(state: context.state)
-                    .font(.system(.caption, design: .monospaced, weight: .semibold))
+                    .font(.system(.caption, design: .rounded, weight: .semibold))
                     .frame(maxWidth: 56)
             } minimal: {
                 PixelAvatar(id: context.attributes.avatarSpriteId, phase: context.state.phase, size: 20)
             }
-            .keylineTint(.orange)
+            .keylineTint(.indigo)
         }
     }
 }
@@ -60,7 +61,7 @@ private struct LockScreenFocusView: View {
         HStack(spacing: 14) {
             PixelAvatar(id: context.attributes.avatarSpriteId, phase: context.state.phase, size: 48)
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(context.attributes.categoryEmoji) \(context.attributes.categoryName)")
+                Text(context.attributes.categoryName)
                     .font(.headline)
                     .lineLimit(1)
                 Text("\(context.attributes.roomName) · \(context.state.focusedMinutes) dk odak")
@@ -74,7 +75,7 @@ private struct LockScreenFocusView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                 SessionClock(state: context.state)
-                    .font(.system(.title2, design: .monospaced, weight: .bold))
+                    .font(.system(.title2, design: .rounded, weight: .semibold))
             }
         }
     }
@@ -96,6 +97,21 @@ private struct SessionClock: View {
         }
         .monospacedDigit()
         .multilineTextAlignment(.trailing)
+    }
+}
+
+/// The category's glyph while focusing, a cup on a break.
+private struct CategoryIcon: View {
+    let attributes: FocusActivityAttributes
+    let phase: FocusActivityAttributes.ContentState.Phase
+    let size: CGFloat
+
+    var body: some View {
+        GlyphIcon(
+            symbol: phase == .focus ? attributes.categorySymbol : "cup.and.saucer.fill",
+            color: phase == .focus ? attributes.categoryColor : .brown,
+            size: size
+        )
     }
 }
 

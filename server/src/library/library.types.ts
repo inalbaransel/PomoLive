@@ -26,7 +26,8 @@ export interface RoomState {
   id: string;
   kind: RoomKind;
   name: string;
-  emoji: string;
+  symbol: string;
+  color: string;
   /** Share code of a user-created room; `null` for system halls. */
   code: string | null;
   ownerId: string | null;

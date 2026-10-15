@@ -21,8 +21,8 @@ final class CategoryStore {
         custom = result.custom
     }
 
-    func create(name: String, emoji: String) async throws -> FocusCategory {
-        let category = try await socket.send(CreateCategoryCommand(name: name, emoji: emoji)).category
+    func create(name: String, symbol: String, color: GlyphColor) async throws -> FocusCategory {
+        let category = try await socket.send(CreateCategoryCommand(name: name, symbol: symbol, color: color)).category
         custom.append(category)
         return category
     }

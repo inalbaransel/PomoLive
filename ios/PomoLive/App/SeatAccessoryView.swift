@@ -11,13 +11,10 @@ struct SeatAccessoryView: View {
         if let desk = app.seat.desk {
             Button(action: onOpen) {
                 HStack(spacing: 10) {
-                    Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: desk.avatarSpriteId)), scale: 1)
-                        .resizable()
-                        .interpolation(.none)
-                        .frame(width: 26, height: 26)
+                    GlyphIcon(symbol: desk.category.symbol, color: desk.category.color, size: 28)
                     if placement != .inline {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text("\(desk.category.emoji) \(desk.category.name)")
+                            Text(desk.category.name)
                                 .font(.subheadline.weight(.semibold))
                             Text(app.seat.room?.name ?? "")
                                 .font(.caption)

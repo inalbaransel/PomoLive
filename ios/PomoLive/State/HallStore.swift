@@ -51,9 +51,9 @@ final class HallStore {
         apply(try await timed { try await self.socket.send(command) })
     }
 
-    func create(name: String, emoji: String, visibility: RoomKind) async throws {
+    func create(name: String, symbol: String, color: GlyphColor, visibility: RoomKind) async throws {
         visit += 1
-        apply(try await timed { try await self.socket.send(CreateRoomCommand(name: name, emoji: emoji, visibility: visibility)) })
+        apply(try await timed { try await self.socket.send(CreateRoomCommand(name: name, symbol: symbol, color: color, visibility: visibility)) })
     }
 
     /// After a reconnect the server has forgotten what this connection looked at.

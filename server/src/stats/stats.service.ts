@@ -63,7 +63,8 @@ export class StatsService {
           focusedMs: true,
           categoryKey: true,
           categoryName: true,
-          categoryEmoji: true,
+          categorySymbol: true,
+          categoryColor: true,
         },
       }),
       this.prisma.focusSession.aggregate({
@@ -86,7 +87,8 @@ export class StatsService {
       const category = {
         key: session.categoryKey,
         name: session.categoryName,
-        emoji: session.categoryEmoji,
+        symbol: session.categorySymbol,
+        color: session.categoryColor,
       };
       if (at >= todayStart) todayMs += session.focusedMs;
       if (at >= weekStart) weekMs += session.focusedMs;
@@ -149,7 +151,8 @@ export class StatsService {
       category: {
         key: row.categoryKey,
         name: row.categoryName,
-        emoji: row.categoryEmoji,
+        symbol: row.categorySymbol,
+        color: row.categoryColor,
       },
       note: row.note,
       startedAt: row.startedAt.getTime(),

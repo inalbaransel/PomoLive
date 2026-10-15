@@ -187,7 +187,7 @@ private struct CategoryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            EmojiTile(emoji: category.emoji, size: 34)
+            GlyphIcon(symbol: category.symbol, color: category.color, size: 34)
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(category.name)
@@ -203,7 +203,7 @@ private struct CategoryRow: View {
                     .background(alignment: .leading) {
                         GeometryReader { proxy in
                             Capsule()
-                                .fill(Color.accentColor)
+                                .fill(category.color.color)
                                 .frame(width: max(6, proxy.size.width * share))
                         }
                     }
@@ -219,7 +219,7 @@ struct HistoryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            EmojiTile(emoji: entry.category.emoji, size: 36)
+            GlyphIcon(symbol: entry.category.symbol, color: entry.category.color, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.note ?? entry.category.name)
                     .lineLimit(1)

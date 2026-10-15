@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Glyph } from '../common/glyph.js';
 import { DeskStore } from '../library/desk-store.js';
 import { readTimer } from '../library/desk-timer.js';
 import {
@@ -13,6 +14,8 @@ import {
   RoomsRepository,
   RoomVisibility,
 } from './rooms.repository.js';
+import { discoverScore } from './discover-score.js';
+import { RoomActivity, RoomActivityRepository } from './room-activity.js';
 
 const MAX_OWNED_ROOMS = 10;
 
@@ -20,7 +23,8 @@ export interface RoomSummary {
   id: string;
   kind: RoomKind;
   name: string;
-  emoji: string;
+  symbol: string;
+  color: string;
   code: string | null;
   ownerId: string | null;
   capacity: number;
@@ -40,11 +44,26 @@ export interface RoomOccupant {
 export interface RoomsOverview {
   /** The floor plan every room shares, so cards can draw previews. */
   layout: LibraryLayout;
-  halls: RoomSummary[];
-  publicRooms: RoomSummary[];
   myRooms: RoomSummary[];
   /** The room where the reader still holds a desk, if any. */
   seatedRoomId: string | null;
+  /** People at a desk in halls and public rooms right now, for the Keşfet entry. */
+  focusingNow: number;
+}
+
+export interface DiscoverRoom extends RoomSummary, RoomActivity {
+  memberCount: number;
+  createdAt: number;
+  score: number;
+}
+
+export interface DiscoverResult {
+  layout: LibraryLayout;
+  seatedRoomId: string | null;
+  /** All system halls together: "Hemen Başla" seats the reader in one with space. */
+  halls: { occupiedCount: number; presenceCount: number };
+  /** Public rooms, best first. */
+  rooms: DiscoverRoom[];
 }
 
 export type RoomTarget = { roomId?: string; code?: string };
@@ -56,6 +75,7 @@ export class RoomsService {
     private readonly rooms: RoomsRepository,
     private readonly directory: RoomDirectory,
     private readonly desks: DeskStore,
+    private readonly activity: RoomActivityRepository,
   ) {}
 
   async overview(userId: string, now: number): Promise<RoomsOverview> {
@@ -65,18 +85,94 @@ export class RoomsService {
       this.rooms.listMine(userId),
       this.desks.seatOf(userId),
     ]);
-    const identities = [
-      ...hallIds.map((id) => RoomDirectory.hallIdentity(id)),
-      ...[...publicRooms, ...myRooms].map((room) =>
-        RoomsService.identity(room),
+    const openCounts = await this.directory.liveCounts(
+      [...hallIds, ...publicRooms.map((room) => room.id)],
+      now,
+    );
+    return {
+      layout: LIBRARY_LAYOUT,
+      myRooms: await this.summaries(
+        myRooms.map((room) => RoomsService.identity(room)),
+        now,
       ),
-    ];
-    const roomIds = [...new Set(identities.map((room) => room.id))];
+      seatedRoomId: seat?.roomId ?? null,
+      focusingNow: [...openCounts.values()].reduce(
+        (sum, count) => sum + count.occupiedCount,
+        0,
+      ),
+    };
+  }
+
+  async discover(userId: string, now: number): Promise<DiscoverResult> {
+    const [hallIds, publicRooms, seat] = await Promise.all([
+      this.directory.hallIds(),
+      this.rooms.listPublic(),
+      this.desks.seatOf(userId),
+    ]);
+    const roomIds = publicRooms.map((room) => room.id);
+    const [summaries, hallCounts, activity, members] = await Promise.all([
+      this.summaries(
+        publicRooms.map((room) => RoomsService.identity(room)),
+        now,
+      ),
+      this.directory.liveCounts(hallIds, now),
+      this.activity.forRooms(roomIds, now),
+      this.rooms.memberCounts(roomIds),
+    ]);
+
+    const rooms = summaries.map((summary, index): DiscoverRoom => {
+      const record = publicRooms[index];
+      const roomActivity = activity.get(summary.id) ?? {
+        weeklyFocusMs: 0,
+        weeklyReaders: 0,
+        decayedFocusHours: 0,
+        topic: null,
+      };
+      const memberCount = members.get(summary.id) ?? 0;
+      const createdAt = record.createdAt.getTime();
+      return {
+        ...summary,
+        ...roomActivity,
+        memberCount,
+        createdAt,
+        score: discoverScore({
+          ...summary,
+          ...roomActivity,
+          memberCount,
+          ageHours: (now - createdAt) / 3_600_000,
+        }),
+      };
+    });
+
+    const hallTotals = [...hallCounts.values()];
+    return {
+      layout: LIBRARY_LAYOUT,
+      seatedRoomId: seat?.roomId ?? null,
+      halls: {
+        occupiedCount: hallTotals.reduce(
+          (sum, count) => sum + count.occupiedCount,
+          0,
+        ),
+        presenceCount: hallTotals.reduce(
+          (sum, count) => sum + count.presenceCount,
+          0,
+        ),
+      },
+      rooms: rooms.sort((a, b) => b.score - a.score),
+    };
+  }
+
+  /** Identity plus live counts and who sits where. */
+  private async summaries(
+    identities: RoomIdentity[],
+    now: number,
+  ): Promise<RoomSummary[]> {
+    const roomIds = identities.map((room) => room.id);
     const [counts, desks] = await Promise.all([
       this.directory.liveCounts(roomIds, now),
       this.desks.listMany(roomIds),
     ]);
-    const summary = (room: RoomIdentity): RoomSummary => ({
+    return identities.map((room) => ({
       ...room,
       capacity: LIBRARY_LAYOUT.desks.length,
       ...counts.get(room.id)!,
@@ -86,28 +182,13 @@ export class RoomsService {
         avatarSpriteId: desk.avatarSpriteId,
         resting: readTimer(desk.timer, now).phase === 'BREAK',
       })),
-    });
-
-    return {
-      layout: LIBRARY_LAYOUT,
-      halls: hallIds.map((id) => summary(RoomDirectory.hallIdentity(id))),
-      publicRooms: publicRooms
-        .map((room) => summary(RoomsService.identity(room)))
-        .sort(
-          (a, b) =>
-            b.presenceCount +
-            b.occupiedCount -
-            (a.presenceCount + a.occupiedCount),
-        ),
-      myRooms: myRooms.map((room) => summary(RoomsService.identity(room))),
-      seatedRoomId: seat?.roomId ?? null,
-    };
+    }));
   }
 
   async create(
     ownerId: string,
     name: string,
-    emoji: string,
+    glyph: Glyph,
     visibility: RoomVisibility,
   ): Promise<RoomIdentity> {
     if ((await this.rooms.countOwned(ownerId)) >= MAX_OWNED_ROOMS) {
@@ -117,7 +198,7 @@ export class RoomsService {
       );
     }
     return RoomsService.identity(
-      await this.rooms.create(ownerId, name, emoji, visibility),
+      await this.rooms.create(ownerId, name, glyph, visibility),
     );
   }
 
@@ -202,7 +283,8 @@ export class RoomsService {
       id: room.id,
       kind: room.visibility,
       name: room.name,
-      emoji: room.emoji,
+      symbol: room.symbol,
+      color: room.color,
       code: room.code,
       ownerId: room.ownerId,
     };

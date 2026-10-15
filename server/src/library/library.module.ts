@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CategoriesModule } from '../categories/categories.module.js';
 import { RoomEventBus } from '../realtime/room-event-bus.js';
 import { RoomsRepository } from '../rooms/rooms.repository.js';
+import { RoomActivityRepository } from '../rooms/room-activity.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { UsersModule } from '../users/users.module.js';
 import { DeskStore } from './desk-store.js';
@@ -21,6 +22,7 @@ import { RoomDirectory } from './room-directory.js';
     RoomEventBus,
     RoomsRepository,
     RoomsService,
+    RoomActivityRepository,
   ],
   exports: [LibraryService, RoomsService, RoomEventBus],
 })

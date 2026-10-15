@@ -17,7 +17,8 @@ struct FocusActivityAttributes: ActivityAttributes, Hashable {
         var focusedMinutes: Int
     }
 
-    var categoryEmoji: String
+    var categorySymbol: String
+    var categoryColor: GlyphColor
     var categoryName: String
     var roomName: String
     var avatarSpriteId: String

@@ -56,6 +56,11 @@ struct ListRoomsCommand: LibraryCommand {
     static let event = "room:list"
 }
 
+struct DiscoverRoomsCommand: LibraryCommand {
+    typealias Result = DiscoverResult
+    static let event = "room:discover"
+}
+
 /// Without a target the server returns the reader to their desk's room, or to a hall with space.
 struct JoinRoomCommand: LibraryCommand {
     typealias Result = RoomSnapshot
@@ -68,7 +73,8 @@ struct CreateRoomCommand: LibraryCommand {
     typealias Result = RoomSnapshot
     static let event = "room:create"
     var name: String
-    var emoji: String
+    var symbol: String
+    var color: GlyphColor
     var visibility: RoomKind
 }
 
@@ -173,7 +179,8 @@ struct CreateCategoryCommand: LibraryCommand {
     typealias Result = CategoryResult
     static let event = "category:create"
     var name: String
-    var emoji: String
+    var symbol: String
+    var color: GlyphColor
 }
 
 struct DeleteCategoryCommand: LibraryCommand {

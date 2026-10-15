@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The label floating over a reader: `Alp 💻 42dk`, or `☕` on a break. Tapping the desk expands it.
+/// The label floating over a reader: name, category symbol (a cup on a break) and minutes. Tap to expand.
 struct DeskBadgeView: View {
     let desk: DeskRecord
     let isMine: Bool
@@ -12,11 +12,18 @@ struct DeskBadgeView: View {
             let now = clock.now
             let isFocusing = desk.timer.reading(at: now).phase == .focus
             VStack(spacing: 2) {
-                Text("\(desk.userName) \(isFocusing ? desk.category.emoji : "☕") \(desk.badgeMinutes(at: now))dk")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                HStack(spacing: 4) {
+                    Text(desk.userName)
+                    Image(systemName: isFocusing ? desk.category.symbol : "cup.and.saucer.fill")
+                        .foregroundStyle(isFocusing ? desk.category.color.color : .brown)
+                    Text("\(desk.badgeMinutes(at: now)) dk")
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                .font(.system(size: 11, weight: .semibold))
                 if isExpanded {
                     Text([desk.category.name, desk.note, "\(desk.sessionNumber). Seans"].compactMap(\.self).joined(separator: " • "))
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.secondary)
                         .transition(.blurReplace)
                 }

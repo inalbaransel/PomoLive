@@ -13,7 +13,8 @@ struct UserProfile: Codable, Hashable, Sendable {
 struct FocusCategory: Codable, Hashable, Sendable, Identifiable {
     var key: String
     var name: String
-    var emoji: String
+    var symbol: String
+    var color: GlyphColor
 
     var id: String { key }
     var isCustom: Bool { key.hasPrefix("custom:") }
@@ -31,7 +32,8 @@ struct RoomState: Codable, Hashable, Sendable, Identifiable {
     var id: String
     var kind: RoomKind
     var name: String
-    var emoji: String
+    var symbol: String
+    var color: GlyphColor
     var code: String?
     var ownerId: String?
     var capacity: Int
@@ -52,7 +54,8 @@ struct RoomSummary: Decodable, Hashable, Sendable, Identifiable {
     var id: String
     var kind: RoomKind
     var name: String
-    var emoji: String
+    var symbol: String
+    var color: GlyphColor
     var code: String?
     var ownerId: String?
     var capacity: Int
@@ -63,10 +66,49 @@ struct RoomSummary: Decodable, Hashable, Sendable, Identifiable {
 
 struct RoomsOverview: Decodable, Sendable {
     var layout: LibraryLayout
-    var halls: [RoomSummary]
-    var publicRooms: [RoomSummary]
     var myRooms: [RoomSummary]
     var seatedRoomId: String?
+    /// People at a desk in halls and public rooms right now.
+    var focusingNow: Int
+}
+
+/// A public room in Keşfet: live state plus last week's activity and its ranking score.
+struct DiscoverRoom: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var name: String
+    var symbol: String
+    var color: GlyphColor
+    var capacity: Int
+    var occupiedCount: Int
+    var presenceCount: Int
+    var occupants: [RoomOccupant]
+    var weeklyFocusMs: Int64
+    var weeklyReaders: Int
+    var memberCount: Int
+    /// The category most focused on here this week.
+    var topic: FocusCategory?
+    var createdAt: Int64
+    var score: Double
+
+    var summary: RoomSummary {
+        RoomSummary(
+            id: id, kind: .public, name: name, symbol: symbol, color: color, code: nil, ownerId: nil,
+            capacity: capacity, occupiedCount: occupiedCount, presenceCount: presenceCount, occupants: occupants
+        )
+    }
+}
+
+struct DiscoverResult: Decodable, Sendable {
+    struct Halls: Decodable, Sendable {
+        var occupiedCount: Int
+        var presenceCount: Int
+    }
+
+    var layout: LibraryLayout
+    var seatedRoomId: String?
+    var halls: Halls
+    /// Best first.
+    var rooms: [DiscoverRoom]
 }
 
 struct DeskRecord: Codable, Hashable, Sendable, Identifiable {
@@ -143,7 +185,8 @@ struct RoomSnapshot: Decodable, Sendable {
 struct CategoryTotal: Decodable, Hashable, Sendable, Identifiable {
     var key: String
     var name: String
-    var emoji: String
+    var symbol: String
+    var color: GlyphColor
     var ms: Int64
 
     var id: String { key }

@@ -129,8 +129,9 @@ struct CategoryChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                Text(category.emoji)
+            HStack(spacing: 8) {
+                Image(systemName: category.symbol)
+                    .foregroundStyle(category.color.color)
                 Text(category.name)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)

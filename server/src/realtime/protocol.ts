@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GLYPH_COLORS, GLYPH_SYMBOLS } from '../common/glyph.js';
 import { AVATAR_SPRITE_IDS } from '../users/avatar-catalog.js';
 import { ProtocolError } from './protocol-error.js';
 
@@ -10,6 +11,7 @@ import { ProtocolError } from './protocol-error.js';
 export const ClientEvent = {
   auth: 'auth',
   listRooms: 'room:list',
+  discoverRooms: 'room:discover',
   joinRoom: 'room:join',
   createRoom: 'room:create',
   deleteRoom: 'room:delete',
@@ -62,12 +64,10 @@ const label = (min: number, max: number) =>
     .min(min)
     .max(max)
     .regex(/^[^\p{Cc}\p{Cf}]+$/u);
-const emoji = z
-  .string()
-  .trim()
-  .min(1)
-  .max(16)
-  .regex(/^\p{Extended_Pictographic}/u);
+const glyph = {
+  symbol: z.enum(GLYPH_SYMBOLS),
+  color: z.enum(GLYPH_COLORS),
+};
 const roomCode = z
   .string()
   .trim()
@@ -103,7 +103,7 @@ export const joinRoomSchema = z
 
 export const createRoomSchema = z.object({
   name: label(2, 32),
-  emoji,
+  ...glyph,
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
 });
 
@@ -141,7 +141,7 @@ export const updateProfileSchema = z
       changes.displayName !== undefined || changes.avatarSpriteId !== undefined,
   );
 
-export const createCategorySchema = z.object({ name: label(2, 24), emoji });
+export const createCategorySchema = z.object({ name: label(2, 24), ...glyph });
 
 export const deleteCategorySchema = z.object({ id: uuid });
 

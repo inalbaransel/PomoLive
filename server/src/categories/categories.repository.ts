@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
+import { Glyph } from '../common/glyph.js';
 import { PrismaService } from '../infra/prisma.service.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import {
@@ -22,7 +23,7 @@ export class CategoriesRepository {
     const categories = await this.prisma.category.findMany({
       where: { userId },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, name: true, emoji: true },
+      select: { id: true, name: true, symbol: true, color: true },
     });
     return categories.map((category) => ({
       ...category,
@@ -33,7 +34,7 @@ export class CategoriesRepository {
   async create(
     userId: string,
     name: string,
-    emoji: string,
+    glyph: Glyph,
   ): Promise<CustomCategory> {
     if (
       (await this.prisma.category.count({ where: { userId } })) >=
@@ -46,8 +47,8 @@ export class CategoriesRepository {
     }
     try {
       const category = await this.prisma.category.create({
-        data: { userId, name, emoji },
-        select: { id: true, name: true, emoji: true },
+        data: { userId, name, ...glyph },
+        select: { id: true, name: true, symbol: true, color: true },
       });
       return { ...category, key: `${CUSTOM_CATEGORY_PREFIX}${category.id}` };
     } catch (error) {
@@ -78,7 +79,7 @@ export class CategoriesRepository {
       const id = key.slice(CUSTOM_CATEGORY_PREFIX.length);
       const custom = await this.prisma.category.findFirst({
         where: { id, userId },
-        select: { name: true, emoji: true },
+        select: { name: true, symbol: true, color: true },
       });
       if (custom) return { key, ...custom };
     }

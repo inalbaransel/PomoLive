@@ -154,7 +154,8 @@ describe('Library realtime protocol (e2e)', () => {
 
     const created = await alp.send('room:create', {
       name: 'Gece Kodlayanlar',
-      emoji: '🌙',
+      symbol: 'moon.stars.fill',
+      color: 'indigo',
       visibility: 'PRIVATE',
     });
     expect(created.ok).toBe(true);
@@ -162,7 +163,8 @@ describe('Library realtime protocol (e2e)', () => {
     expect(room).toMatchObject({
       kind: 'PRIVATE',
       name: 'Gece Kodlayanlar',
-      emoji: '🌙',
+      symbol: 'moon.stars.fill',
+      color: 'indigo',
       capacity: 30,
     });
     expect(layout.desks).toHaveLength(30);
@@ -186,7 +188,11 @@ describe('Library realtime protocol (e2e)', () => {
     expect(sat.result.desk).toMatchObject({
       deskId: 'desk_14',
       userName: 'Alp',
-      category: { key: 'software', emoji: '💻' },
+      category: {
+        key: 'software',
+        symbol: 'chevron.left.forwardslash.chevron.right',
+        color: 'blue',
+      },
       note: 'Swift Concurrency',
       timer: { mode: 'POMODORO', focusMinutes: 25, breakMinutes: 5 },
     });
@@ -219,13 +225,14 @@ describe('Library realtime protocol (e2e)', () => {
     selin.close();
   });
 
-  it('lists halls, public rooms and my rooms with live counts', async () => {
+  it('ranks public rooms in Keşfet and lists my rooms with live counts', async () => {
     const owner = await signedIn('Ece');
     const visitor = await signedIn('Mert');
     const publicRoom = (
       await owner.send('room:create', {
         name: 'Sessiz Okuma',
-        emoji: '📖',
+        symbol: 'book.fill',
+        color: 'brown',
         visibility: 'PUBLIC',
       })
     ).result.room;
@@ -235,13 +242,17 @@ describe('Library realtime protocol (e2e)', () => {
       categoryKey: 'reading',
     });
 
-    const overview = (await visitor.send('room:list')).result;
-    expect(overview.halls.length).toBeGreaterThan(0);
+    const discover = (await visitor.send('room:discover')).result;
+    expect(discover.layout.desks).toHaveLength(30);
+    expect(discover.halls).toMatchObject({ occupiedCount: expect.any(Number) });
     expect(
-      overview.publicRooms.find((room: any) => room.id === publicRoom.id),
+      discover.rooms.find((room: any) => room.id === publicRoom.id),
     ).toMatchObject({
+      symbol: 'book.fill',
+      color: 'brown',
       occupiedCount: 1,
       presenceCount: 1,
+      memberCount: 1,
       occupants: [
         {
           deskId: 'desk_2',
@@ -250,10 +261,15 @@ describe('Library realtime protocol (e2e)', () => {
           resting: false,
         },
       ],
+      score: expect.any(Number),
     });
-    expect(overview.layout.desks).toHaveLength(30);
+    const scores = discover.rooms.map((room: any) => room.score);
+    expect(scores).toEqual([...scores].sort((a, b) => b - a));
+
+    const overview = (await visitor.send('room:list')).result;
     expect(overview.myRooms).toEqual([]);
     expect(overview.seatedRoomId).toBeNull();
+    expect(overview.focusingNow).toBeGreaterThanOrEqual(1);
 
     const myRoomIds = async () =>
       (await visitor.send('room:list')).result.myRooms.map(
@@ -307,14 +323,20 @@ describe('Library realtime protocol (e2e)', () => {
     const reader = await signedIn('Deniz');
     const created = await reader.send('category:create', {
       name: 'Gitar',
-      emoji: '🎸',
+      symbol: 'guitars.fill',
+      color: 'red',
     });
     expect(created.result.category).toMatchObject({
       name: 'Gitar',
-      emoji: '🎸',
+      symbol: 'guitars.fill',
+      color: 'red',
     });
     expect(
-      await reader.send('category:create', { name: 'Gitar', emoji: '🎸' }),
+      await reader.send('category:create', {
+        name: 'Gitar',
+        symbol: 'guitars.fill',
+        color: 'red',
+      }),
     ).toMatchObject({ ok: false, error: { code: 'NAME_TAKEN' } });
 
     const list = (await reader.send('category:list')).result;
@@ -331,7 +353,8 @@ describe('Library realtime protocol (e2e)', () => {
     });
     expect(sat.result.desk.category).toMatchObject({
       name: 'Gitar',
-      emoji: '🎸',
+      symbol: 'guitars.fill',
+      color: 'red',
     });
     expect(
       await reader.send('desk:sit', {
@@ -397,7 +420,8 @@ describe('Library realtime protocol (e2e)', () => {
     const sleeper = await signedIn('Mert');
     const { result } = await watcher.send('room:create', {
       name: 'Uyku Testi',
-      emoji: '😴',
+      symbol: 'moon.stars.fill',
+      color: 'purple',
       visibility: 'PRIVATE',
     });
     await sleeper.send('room:join', { code: result.room.code });
@@ -441,7 +465,8 @@ describe('Library realtime protocol (e2e)', () => {
     const guest = await signedIn('Lale');
     const { result } = await owner.send('room:create', {
       name: 'Geçici Oda',
-      emoji: '⏳',
+      symbol: 'bolt.fill',
+      color: 'orange',
       visibility: 'PUBLIC',
     });
     await guest.send('room:join', { roomId: result.room.id });
@@ -497,7 +522,8 @@ describe('Library realtime protocol (e2e)', () => {
     expect(
       await client.send('room:create', {
         name: 'x',
-        emoji: 'a',
+        symbol: 'not.a.symbol',
+        color: 'indigo',
         visibility: 'PUBLIC',
       }),
     ).toMatchObject({ ok: false, error: { code: 'INVALID_PAYLOAD' } });

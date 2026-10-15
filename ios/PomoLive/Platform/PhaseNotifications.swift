@@ -10,7 +10,7 @@ final class PhaseNotifications {
     private let center = UNUserNotificationCenter.current()
 
     /// Replaces any scheduled reminders with the next phase changes of `timer`. Pass `nil` to clear.
-    func schedule(for timer: DeskTimer?, categoryEmoji: String, clock: ServerClock, enabled: Bool) {
+    func schedule(for timer: DeskTimer?, categoryName: String, clock: ServerClock, enabled: Bool) {
         clear()
         guard enabled, let timer else { return }
         let changes = timer.upcomingPhaseChanges(after: clock.now, count: Self.scheduledChanges)
@@ -20,8 +20,10 @@ final class PhaseNotifications {
             guard (try? await center.requestAuthorization(options: [.alert, .sound])) == true else { return }
             for (index, change) in changes.enumerated() {
                 let content = UNMutableNotificationContent()
-                content.title = change.phase == .rest ? "Mola zamanı ☕" : "Odak zamanı \(categoryEmoji)"
-                content.body = change.phase == .rest ? "Biraz dinlen, masan seni bekliyor." : "Mola bitti, kaldığın yerden devam."
+                content.title = change.phase == .rest ? "Mola zamanı" : "Odak zamanı"
+                content.body = change.phase == .rest
+                    ? "Biraz dinlen, masan seni bekliyor."
+                    : "Mola bitti. \(categoryName) çalışmana kaldığın yerden devam."
                 content.sound = .default
                 content.interruptionLevel = .timeSensitive
                 let delay = max(1, clock.localDate(change.at).timeIntervalSinceNow)

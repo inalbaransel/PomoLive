@@ -1,20 +1,16 @@
 import SwiftUI
 
-/// Creates one of the reader's own categories: a name and an emoji.
+/// Creates one of the reader's own categories: a name, a color and a symbol.
 struct CategoryEditorSheet: View {
     let onCreated: (FocusCategory) -> Void
 
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
-    @State private var emoji = Self.emojis[0]
+    @State private var symbol = "music.note"
+    @State private var color = GlyphColor.red
     @State private var isSaving = false
     @State private var error: LibraryError?
-
-    static let emojis = [
-        "🎸", "🎹", "🏃", "🧘", "🍳", "📷", "🧮", "🔬", "🧩", "🎬", "📝", "📐",
-        "🌍", "🎮", "🧵", "🪴", "🏋️", "♟️", "🎤", "🧑‍💻", "📊", "🗂️", "💡", "❤️",
-    ]
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespaces) }
 
@@ -22,27 +18,20 @@ struct CategoryEditorSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    HStack(spacing: 14) {
-                        EmojiTile(emoji: emoji, size: 56)
-                        TextField("Kategori adı", text: $name)
+                    VStack(spacing: 16) {
+                        GlyphIcon(symbol: symbol, color: color, size: 84)
+                            .contentTransition(.symbolEffect(.replace))
+                        TextField("Kategori Adı", text: $name)
                             .font(.title3.weight(.semibold))
+                            .multilineTextAlignment(.center)
+                            .padding(.vertical, 10)
+                            .background(.fill.tertiary, in: .rect(cornerRadius: 12))
                             .onChange(of: name) { name = String(name.prefix(24)) }
                     }
+                    .padding(.vertical, 8)
                 }
-                Section("Simge") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: 10) {
-                        ForEach(Self.emojis, id: \.self) { option in
-                            Button { emoji = option } label: {
-                                Text(option)
-                                    .font(.title3)
-                                    .frame(width: 36, height: 36)
-                                    .selectableBackground(emoji == option, in: .circle)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.vertical, 6)
-                }
+
+                GlyphPicker(symbol: $symbol, color: $color)
             }
             .navigationTitle("Yeni Kategori")
             .navigationBarTitleDisplayMode(.inline)
@@ -68,7 +57,7 @@ struct CategoryEditorSheet: View {
         Task {
             defer { isSaving = false }
             do {
-                onCreated(try await app.categories.create(name: trimmedName, emoji: emoji))
+                onCreated(try await app.categories.create(name: trimmedName, symbol: symbol, color: color))
                 dismiss()
             } catch {
                 self.error = LibraryError(error)

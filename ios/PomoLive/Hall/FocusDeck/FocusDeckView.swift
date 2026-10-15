@@ -61,8 +61,13 @@ struct FocusDeckView: View {
                 .interpolation(.none)
                 .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(desk.category.emoji) \(desk.category.name)")
-                    .font(.headline)
+                Label {
+                    Text(desk.category.name)
+                } icon: {
+                    Image(systemName: desk.category.symbol)
+                        .foregroundStyle(desk.category.color.color)
+                }
+                .font(.headline)
                 Text(desk.note ?? "Masa \(desk.number) · \(desk.sessionNumber). seans")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -87,7 +92,6 @@ struct FocusDeckView: View {
             Button { onChangeTimer(action) } label: {
                 Label(title, systemImage: symbol)
                     .frame(maxWidth: .infinity)
-                    .foregroundStyle(.black)
             }
             .buttonStyle(.glassProminent)
             .contentTransition(.symbolEffect(.replace))
@@ -110,9 +114,10 @@ struct FocusDeckView: View {
                     .resizable()
                     .interpolation(.none)
                     .frame(width: 26, height: 26)
-                Text(desk.category.emoji)
+                Image(systemName: desk.category.symbol)
+                    .foregroundStyle(desk.category.color.color)
                 TimerText(timer: desk.timer, clock: clock)
-                    .font(.system(.headline, design: .monospaced))
+                    .font(.system(.headline, design: .rounded))
                 Text(desk.category.name)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -167,7 +172,7 @@ private struct ProgressRing: View {
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
                 TimerText(timer: timer, clock: clock)
-                    .font(.system(size: 42, weight: .bold, design: .monospaced))
+                    .font(.system(size: 44, weight: .semibold, design: .rounded))
                 Text("Toplam \(formattedFocus(reading.focusedMs)) odak")
                     .font(.footnote)
                     .foregroundStyle(.secondary)

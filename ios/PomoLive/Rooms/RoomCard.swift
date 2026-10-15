@@ -5,12 +5,14 @@ struct RoomCard: View {
     let room: RoomSummary
     let layout: LibraryLayout
     let isSeatedHere: Bool
+    /// An extra quiet line, e.g. the room's topic and last week's activity in Keşfet.
+    var detail: String?
 
     var body: some View {
         VStack(spacing: 0) {
             RoomPreview(layout: layout, occupants: room.occupants)
             HStack(spacing: 12) {
-                EmojiTile(emoji: room.emoji)
+                GlyphIcon(symbol: room.symbol, color: room.color, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 5) {
                         Text(room.name)
@@ -26,6 +28,12 @@ struct RoomCard: View {
                     status
                         .font(.subheadline)
                         .lineLimit(1)
+                    if let detail {
+                        Text(detail)
+                            .font(.footnote)
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(1)
+                    }
                 }
                 Spacer(minLength: 8)
                 AvatarStack(occupants: room.occupants)

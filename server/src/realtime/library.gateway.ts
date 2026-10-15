@@ -173,6 +173,17 @@ export class LibraryGateway
     );
   }
 
+  @SubscribeMessage(ClientEvent.discoverRooms)
+  async onDiscoverRooms(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    return reply(
+      data,
+      await this.rooms.discover(this.sessionOf(socket).user.id, Date.now()),
+    );
+  }
+
   @SubscribeMessage(ClientEvent.joinRoom)
   async onJoin(
     @ConnectedSocket() socket: WebSocket,
@@ -189,12 +200,15 @@ export class LibraryGateway
     @ConnectedSocket() socket: WebSocket,
     @MessageBody() data: Payload,
   ) {
-    const { name, emoji, visibility } = parsePayload(createRoomSchema, data);
+    const { name, symbol, color, visibility } = parsePayload(
+      createRoomSchema,
+      data,
+    );
     const session = this.sessionOf(socket);
     const room = await this.rooms.create(
       session.user.id,
       name,
-      emoji,
+      { symbol, color },
       visibility,
     );
     return reply(data, await this.library.enter(session, room));
@@ -305,12 +319,12 @@ export class LibraryGateway
     @ConnectedSocket() socket: WebSocket,
     @MessageBody() data: Payload,
   ) {
-    const { name, emoji } = parsePayload(createCategorySchema, data);
+    const { name, symbol, color } = parsePayload(createCategorySchema, data);
     return reply(data, {
       category: await this.categories.create(
         this.sessionOf(socket).user.id,
         name,
-        emoji,
+        { symbol, color },
       ),
     });
   }

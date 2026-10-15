@@ -32,7 +32,8 @@ model Room {
   id          String           @id @default(uuid()) @db.Uuid
   code        String           @unique @db.VarChar(6)
   name        String           @db.VarChar(32)
-  emoji       String           @db.VarChar(16)
+  symbol      String           @db.VarChar(48)
+  color       String           @db.VarChar(16)
   visibility  RoomVisibility
   ownerId     String           @db.Uuid
   owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -60,7 +61,8 @@ model Category {
   userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String   @db.VarChar(24)
-  emoji     String   @db.VarChar(16)
+  symbol    String   @db.VarChar(48)
+  color     String   @db.VarChar(16)
   createdAt DateTime @default(now())
 
   @@unique([userId, name])
@@ -78,21 +80,22 @@ enum TimerMode {
 
 /// Category and room are copied in, so history survives renamed or deleted categories and rooms.
 model FocusSession {
-  id            String           @id @default(uuid()) @db.Uuid
-  userId        String           @db.Uuid
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roomId        String           @db.VarChar(64)
-  roomName      String           @db.VarChar(32)
-  deskId        String           @db.VarChar(16)
-  mode          TimerMode
-  categoryKey   String           @db.VarChar(64)
-  categoryName  String           @db.VarChar(24)
-  categoryEmoji String           @db.VarChar(16)
-  note          String?          @db.VarChar(48)
-  startedAt     DateTime
-  endedAt       DateTime
-  focusedMs     Int
-  endReason     SessionEndReason
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @db.Uuid
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId         String           @db.VarChar(64)
+  roomName       String           @db.VarChar(32)
+  deskId         String           @db.VarChar(16)
+  mode           TimerMode
+  categoryKey    String           @db.VarChar(64)
+  categoryName   String           @db.VarChar(24)
+  categorySymbol String           @db.VarChar(48)
+  categoryColor  String           @db.VarChar(16)
+  note           String?          @db.VarChar(48)
+  startedAt      DateTime
+  endedAt        DateTime
+  focusedMs      Int
+  endReason      SessionEndReason
 
   @@index([userId, startedAt])
 }

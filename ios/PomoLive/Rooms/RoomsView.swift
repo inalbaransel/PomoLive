@@ -25,7 +25,7 @@ struct RoomsView: View {
                     NavigationLink {
                         DiscoverRoomsView(openRoom: openRoom, onCreate: { sheet = .create })
                     } label: {
-                        DiscoverBanner(overview: app.rooms.overview)
+                        DiscoverBanner(focusingNow: app.rooms.overview?.focusingNow)
                     }
                     .buttonStyle(.plain)
 
@@ -74,8 +74,8 @@ struct RoomsView: View {
             .sheet(item: $sheet, onDismiss: openPendingRoom) { sheet in
                 switch sheet {
                 case .create:
-                    CreateRoomSheet { name, emoji, visibility in
-                        pendingRoom = .room(id: try await createRoom(name: name, emoji: emoji, visibility: visibility))
+                    CreateRoomSheet { name, symbol, color, visibility in
+                        pendingRoom = .room(id: try await createRoom(name: name, symbol: symbol, color: color, visibility: visibility))
                     }
                 case .joinByCode:
                     JoinByCodeSheet { code in pendingRoom = .code(code) }
@@ -116,7 +116,7 @@ struct RoomsView: View {
     @ViewBuilder
     private func menu(for room: RoomSummary) -> some View {
         if let code = room.code {
-            ShareLink(item: "PomoLive'da \(room.emoji) \(room.name) odasına gel! Oda kodu: \(code)") {
+            ShareLink(item: "PomoLive'da \(room.name) odasına gel! Oda kodu: \(code)") {
                 Label("Kodu Paylaş · \(code)", systemImage: "square.and.arrow.up")
             }
         }
@@ -136,30 +136,23 @@ struct RoomsView: View {
     }
 
     /// Creating a room also enters it on the server; the room screen re-joins by id.
-    private func createRoom(name: String, emoji: String, visibility: RoomKind) async throws -> String {
-        try await app.hall.create(name: name, emoji: emoji, visibility: visibility)
+    private func createRoom(name: String, symbol: String, color: GlyphColor, visibility: RoomKind) async throws -> String {
+        try await app.hall.create(name: name, symbol: symbol, color: color, visibility: visibility)
         return app.hall.room?.id ?? ""
     }
 }
 
-/// The way into public rooms: a quiet card with how many people are focusing right now.
+/// The way into public rooms, with how many people are focusing in them right now.
 private struct DiscoverBanner: View {
-    let overview: RoomsOverview?
-
-    private var focusingNow: Int {
-        guard let overview else { return 0 }
-        return (overview.halls + overview.publicRooms).reduce(0) { $0 + $1.occupiedCount }
-    }
+    let focusingNow: Int?
 
     var body: some View {
         HStack(spacing: 14) {
-            SettingsIcon(systemName: "globe.europe.africa.fill", color: .accentColor)
-                .scaleEffect(1.3)
-                .frame(width: 40, height: 40)
+            GlyphIcon(symbol: "globe.europe.africa.fill", color: .indigo, size: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Keşfet")
                     .font(.headline)
-                Text(focusingNow > 0 ? "Şu an \(focusingNow) kişi odaklanıyor" : "Genel salonlar ve herkese açık odalar")
+                Text(focusingNow.map { $0 > 0 ? "Şu an \($0) kişi odaklanıyor" : "Herkese açık odalara göz at" } ?? " ")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .contentTransition(.numericText())

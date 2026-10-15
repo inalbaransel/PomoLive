@@ -7,13 +7,14 @@ import { RoomKind, RoomState } from './library.types.js';
 import { RedisKeys } from './redis-keys.js';
 
 const PRESENCE_TTL_MS = 2 * 60_000;
-const HALL_EMOJI = '🏛️';
+const HALL_GLYPH = { symbol: 'building.columns.fill', color: 'brown' };
 
 export interface RoomIdentity {
   id: string;
   kind: RoomKind;
   name: string;
-  emoji: string;
+  symbol: string;
+  color: string;
   code: string | null;
   ownerId: string | null;
 }
@@ -48,7 +49,7 @@ export class RoomDirectory {
       id: roomId,
       kind: 'HALL',
       name: `Piksel Salon ${number}`,
-      emoji: HALL_EMOJI,
+      ...HALL_GLYPH,
       code: null,
       ownerId: null,
     };
@@ -77,7 +78,8 @@ export class RoomDirectory {
       await this.redis.hset(RedisKeys.roomState(room.id), {
         kind: room.kind,
         name: room.name,
-        emoji: room.emoji,
+        symbol: room.symbol,
+        color: room.color,
         code: room.code ?? '',
         ownerId: room.ownerId ?? '',
       });
@@ -98,7 +100,8 @@ export class RoomDirectory {
       id: fields.id,
       kind: fields.kind as RoomKind,
       name: fields.name,
-      emoji: fields.emoji,
+      symbol: fields.symbol,
+      color: fields.color,
       code: fields.code || null,
       ownerId: fields.ownerId || null,
       capacity: LIBRARY_LAYOUT.desks.length,

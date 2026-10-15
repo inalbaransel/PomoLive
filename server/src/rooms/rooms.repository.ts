@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
+import { Glyph } from '../common/glyph.js';
 import { PrismaService } from '../infra/prisma.service.js';
 
 export type RoomVisibility = 'PUBLIC' | 'PRIVATE';
@@ -9,18 +10,22 @@ export interface RoomRecord {
   id: string;
   code: string;
   name: string;
-  emoji: string;
+  symbol: string;
+  color: string;
   visibility: RoomVisibility;
   ownerId: string;
+  createdAt: Date;
 }
 
 const roomSelect = {
   id: true,
   code: true,
   name: true,
-  emoji: true,
+  symbol: true,
+  color: true,
   visibility: true,
   ownerId: true,
+  createdAt: true,
 } as const;
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -32,7 +37,7 @@ export class RoomsRepository {
   async create(
     ownerId: string,
     name: string,
-    emoji: string,
+    glyph: Glyph,
     visibility: RoomVisibility,
   ): Promise<RoomRecord> {
     for (;;) {
@@ -45,7 +50,7 @@ export class RoomsRepository {
           data: {
             code,
             name,
-            emoji,
+            ...glyph,
             visibility,
             ownerId,
             memberships: { create: { userId: ownerId } },
@@ -105,13 +110,23 @@ export class RoomsRepository {
     return memberships.map((membership) => membership.room);
   }
 
-  listPublic(take = 50): Promise<RoomRecord[]> {
+  listPublic(take = 200): Promise<RoomRecord[]> {
     return this.prisma.room.findMany({
       where: { visibility: 'PUBLIC' },
       orderBy: { createdAt: 'desc' },
       take,
       select: roomSelect,
     });
+  }
+
+  /** Members per room, for community size in Keşfet. */
+  async memberCounts(roomIds: string[]): Promise<Map<string, number>> {
+    const groups = await this.prisma.roomMembership.groupBy({
+      by: ['roomId'],
+      where: { roomId: { in: roomIds } },
+      _count: { _all: true },
+    });
+    return new Map(groups.map((group) => [group.roomId, group._count._all]));
   }
 
   async removeMembership(userId: string, roomId: string): Promise<void> {
