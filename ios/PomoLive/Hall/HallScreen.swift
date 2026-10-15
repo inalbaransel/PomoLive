@@ -168,6 +168,7 @@ struct HallScreen: View {
                         .transition(.move(edge: .bottom).combined(with: .blurReplace))
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .trailing)
                 .animation(FocusDeckView.fold, value: isDeckExpanded)
             }
             .overlay(alignment: .top) {
