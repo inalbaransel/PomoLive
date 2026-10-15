@@ -11,6 +11,9 @@ struct ProfileView: View {
     @State private var confirmsSignOut = false
     @State private var isDeletingAccount = false
 
+    private static let focusOptions = [15, 20, 25, 30, 45, 50, 60, 90, 120]
+    private static let breakOptions = [3, 5, 10, 15, 20, 30]
+
     var body: some View {
         NavigationStack {
             Form {
@@ -19,21 +22,22 @@ struct ProfileView: View {
                         NavigationLink {
                             ProfileEditor(user: user)
                         } label: {
-                            HStack(spacing: 16) {
+                            HStack(spacing: 14) {
                                 Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: user.avatarSpriteId)), scale: 1)
                                     .resizable()
                                     .interpolation(.none)
-                                    .frame(width: 64, height: 64)
-                                    .padding(6)
-                                    .glassEffect(.regular.tint(.accentColor.opacity(0.25)), in: .rect(cornerRadius: 18))
-                                VStack(alignment: .leading, spacing: 4) {
+                                    .frame(width: 44, height: 44)
+                                    .frame(width: 60, height: 60)
+                                    .background(.fill.tertiary, in: .circle)
+                                VStack(alignment: .leading, spacing: 2) {
                                     Text(user.displayName)
-                                        .font(.title2.weight(.bold))
-                                    Text(AvatarSprite(id: user.avatarSpriteId).displayName)
+                                        .font(.title3.weight(.semibold))
+                                    Text("Karakter ve görünen ad")
+                                        .font(.subheadline)
                                         .foregroundStyle(.secondary)
                                 }
                             }
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 4)
                         }
                     }
                 }
@@ -45,7 +49,7 @@ struct ProfileView: View {
                         LabeledContent {
                             Text("\(app.categories.custom.count)")
                         } label: {
-                            Label("Kategorilerim", systemImage: "square.grid.2x2.fill")
+                            SettingsLabel(title: "Kategorilerim", systemName: "square.grid.2x2.fill", color: .indigo)
                         }
                     }
                 }
@@ -55,13 +59,17 @@ struct ProfileView: View {
                         Text("Pomodoro").tag(TimerMode.pomodoro.rawValue)
                         Text("Kronometre").tag(TimerMode.stopwatch.rawValue)
                     } label: {
-                        Label("Varsayılan mod", systemImage: "timer")
+                        SettingsLabel(title: "Varsayılan Mod", systemName: "timer", color: .orange)
                     }
-                    Stepper(value: $focusMinutes, in: 5...180, step: 5) {
-                        LabeledContent("Odak süresi", value: "\(focusMinutes) dk")
+                    Picker(selection: $focusMinutes) {
+                        ForEach(Self.options(Self.focusOptions, including: focusMinutes), id: \.self) { Text("\($0) dk").tag($0) }
+                    } label: {
+                        SettingsLabel(title: "Odak Süresi", systemName: "brain.head.profile.fill", color: .blue)
                     }
-                    Stepper(value: $breakMinutes, in: 1...60) {
-                        LabeledContent("Mola süresi", value: "\(breakMinutes) dk")
+                    Picker(selection: $breakMinutes) {
+                        ForEach(Self.options(Self.breakOptions, including: breakMinutes), id: \.self) { Text("\($0) dk").tag($0) }
+                    } label: {
+                        SettingsLabel(title: "Mola Süresi", systemName: "cup.and.saucer.fill", color: .brown)
                     }
                 } header: {
                     Text("Oturum")
@@ -69,21 +77,26 @@ struct ProfileView: View {
                     Text("Masaya otururken bunlar hazır seçili gelir; her oturumda değiştirebilirsin.")
                 }
 
-                Section("Bildirimler ve Dokunuş") {
+                Section("Bildirimler") {
                     Toggle(isOn: $phaseNotifications) {
-                        Label("Mola ve odak bildirimleri", systemImage: "bell.badge.fill")
+                        SettingsLabel(title: "Mola ve Odak Hatırlatmaları", systemName: "bell.badge.fill", color: .red)
                     }
                     Toggle(isOn: $haptics) {
-                        Label("Titreşim", systemImage: "waveform")
+                        SettingsLabel(title: "Titreşim", systemName: "iphone.radiowaves.left.and.right", color: .pink)
                     }
                 }
                 .onChange(of: phaseNotifications) { app.seat.preferencesChanged() }
 
                 Section {
                     Button("Çıkış Yap", role: .destructive) { confirmsSignOut = true }
+                        .frame(maxWidth: .infinity)
+                }
+
+                Section {
                     Button("Hesabı Sil", role: .destructive) { isDeletingAccount = true }
+                        .frame(maxWidth: .infinity)
                 } footer: {
-                    Text("Hesabını silmek oturum geçmişini, kategorilerini ve açtığın odaları kalıcı olarak siler.")
+                    Text("Oturum geçmişin, kategorilerin ve açtığın odalar kalıcı olarak silinir.")
                 }
             }
             .navigationTitle("Profil")
@@ -97,6 +110,13 @@ struct ProfileView: View {
                     .presentationDetents([.medium])
             }
         }
+    }
+}
+
+extension ProfileView {
+    /// Preset choices plus the current value, so a custom duration picked elsewhere still shows.
+    fileprivate static func options(_ presets: [Int], including value: Int) -> [Int] {
+        Array(Set(presets + [value])).sorted()
     }
 }
 

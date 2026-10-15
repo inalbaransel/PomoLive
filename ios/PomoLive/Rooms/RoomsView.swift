@@ -20,9 +20,7 @@ struct RoomsView: View {
         NavigationStack {
             List {
                 Section {
-                    TodayCard(summary: app.stats.summary, userName: app.user?.displayName)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
+                    TodaySummary(summary: app.stats.summary)
                 }
 
                 if let overview = app.rooms.overview {
@@ -30,15 +28,30 @@ struct RoomsView: View {
                     if !overview.myRooms.isEmpty {
                         section("Odalarım", rooms: overview.myRooms, seatedRoomId: overview.seatedRoomId)
                     }
-                    section("Herkese Açık Odalar", rooms: overview.publicRooms, seatedRoomId: overview.seatedRoomId,
-                            empty: "Henüz kimse oda açmadı. İlk odayı sen aç!")
+                    Section {
+                        ForEach(overview.publicRooms) { room in
+                            roomButton(room, seatedRoomId: overview.seatedRoomId)
+                        }
+                        if overview.publicRooms.isEmpty {
+                            Button("İlk odayı sen aç", systemImage: "plus.circle.fill") { sheet = .create }
+                        }
+                    } header: {
+                        Text("Keşfet")
+                    } footer: {
+                        Text("Herkese açık odalar. Özel bir odaya katılmak için sağ üstteki + ile kodu gir.")
+                    }
                 } else {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .listRowBackground(Color.clear)
+                    Section {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    }
                 }
             }
             .navigationTitle("Odalar")
+            .navigationSubtitle(app.user.map { "Merhaba, \($0.displayName)" } ?? "")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Oda", systemImage: "plus") {
@@ -71,20 +84,19 @@ struct RoomsView: View {
         }
     }
 
-    @ViewBuilder
-    private func section(_ title: String, rooms: [RoomState], seatedRoomId: String?, empty: String? = nil) -> some View {
+    private func section(_ title: String, rooms: [RoomState], seatedRoomId: String?) -> some View {
         Section(title) {
-            if rooms.isEmpty, let empty {
-                Text(empty)
-                    .foregroundStyle(.secondary)
-            }
             ForEach(rooms) { room in
-                Button { openRoom(.room(id: room.id)) } label: {
-                    RoomRow(room: room, isSeatedHere: room.id == seatedRoomId)
-                }
-                .buttonStyle(.plain)
+                roomButton(room, seatedRoomId: seatedRoomId)
             }
         }
+    }
+
+    private func roomButton(_ room: RoomState, seatedRoomId: String?) -> some View {
+        Button { openRoom(.room(id: room.id)) } label: {
+            RoomRow(room: room, isSeatedHere: room.id == seatedRoomId)
+        }
+        .tint(.primary)
     }
 
     private func openPendingRoom() {
@@ -106,36 +118,32 @@ struct RoomsView: View {
     }
 }
 
-private struct TodayCard: View {
+/// Today's focus at a glance, in the spirit of Fitness: one big number, two quiet companions.
+private struct TodaySummary: View {
     let summary: StatsSummary?
-    let userName: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Merhaba, \(userName ?? "okur")")
-                .font(.title2.weight(.bold))
-            HStack(spacing: 12) {
-                metric("Bugün", value: summary.map { formattedFocus($0.todayMs) } ?? "—", symbol: "sun.max.fill")
-                metric("Seri", value: summary.map { "\($0.streakDays) gün" } ?? "—", symbol: "flame.fill")
-                metric("Bu hafta", value: summary.map { formattedFocus($0.weekMs) } ?? "—", symbol: "calendar")
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Bugün")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(summary.map { formattedFocus($0.todayMs) } ?? "–")
+                    .font(.system(.largeTitle, design: .rounded, weight: .semibold))
+                    .contentTransition(.numericText())
             }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 6) {
+                Label("\(summary?.streakDays ?? 0) gün seri", systemImage: "flame.fill")
+                    .foregroundStyle(.orange)
+                Text("Bu hafta \(summary.map { formattedFocus($0.weekMs) } ?? "–")")
+                    .foregroundStyle(.secondary)
+            }
+            .font(.subheadline.weight(.medium))
+            .labelStyle(.titleAndIcon)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular.tint(.accentColor.opacity(0.18)), in: .rect(cornerRadius: 28))
-    }
-
-    private func metric(_ title: String, value: String, symbol: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Label(title, systemImage: symbol)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(.headline, design: .monospaced))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -144,36 +152,33 @@ struct RoomRow: View {
     let isSeatedHere: Bool
 
     var body: some View {
-        HStack(spacing: 14) {
-            Text(room.emoji)
-                .font(.title2)
-                .frame(width: 48, height: 48)
-                .glassEffect(.regular, in: .rect(cornerRadius: 14))
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
+        HStack(spacing: 12) {
+            EmojiTile(emoji: room.emoji)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 5) {
                     Text(room.name)
-                        .font(.headline)
                         .lineLimit(1)
                     if room.kind == .private {
                         Image(systemName: "lock.fill")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
+                            .accessibilityLabel("Özel")
                     }
                 }
-                Text("\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
+                Group {
+                    if isSeatedHere {
+                        let seated = Text("Masan burada").foregroundStyle(Color.accentColor).fontWeight(.medium)
+                        Text("\(seated) · \(room.presenceCount) kişi")
+                    } else {
+                        Text("\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa")
+                    }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
             }
             Spacer(minLength: 0)
-            if isSeatedHere {
-                Image(systemName: "chair.lounge.fill")
-                    .font(.footnote.weight(.semibold))
-                    .frame(width: 32, height: 32)
-                    .glassEffect(.regular.tint(.accentColor.opacity(0.5)), in: .circle)
-                    .accessibilityLabel("Masan bu odada")
-            }
-            Image(systemName: "chevron.right")
+            Image(systemName: "chevron.forward")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(.tertiary)
         }

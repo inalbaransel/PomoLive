@@ -27,7 +27,7 @@ struct SeatAccessoryView: View {
                     }
                     Spacer(minLength: 0)
                     TimerText(timer: desk.timer, clock: app.time.clock)
-                        .font(.system(.headline, design: .monospaced))
+                        .font(.system(.headline, design: .rounded))
                 }
                 .padding(.horizontal, 16)
             }

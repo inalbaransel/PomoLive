@@ -1,7 +1,8 @@
 import Charts
 import SwiftUI
 
-/// The İstatistik tab: headline numbers, the last 7 days by category, the category mix and recent sessions.
+/// The İstatistik tab, in the spirit of Fitness and Screen Time: one headline number,
+/// the week as a simple bar chart, categories as proportion bars, then recent sessions.
 struct StatsView: View {
     @Environment(AppModel.self) private var app
 
@@ -9,20 +10,37 @@ struct StatsView: View {
         @Bindable var stats = app.stats
 
         NavigationStack {
-            ScrollView {
+            List {
                 if let summary = app.stats.summary {
-                    VStack(spacing: 16) {
-                        metrics(summary)
-                        WeekChart(days: summary.last7Days)
-                        if !summary.categories.isEmpty {
-                            CategoryBreakdown(categories: summary.categories)
-                        }
-                        recentSessions
+                    Section {
+                        Headline(summary: summary)
                     }
-                    .padding(16)
+
+                    Section("Son 7 Gün") {
+                        WeekChart(days: summary.last7Days)
+                    }
+
+                    if !summary.categories.isEmpty {
+                        Section {
+                            ForEach(summary.categories.prefix(6)) { category in
+                                CategoryRow(category: category, share: share(of: category, in: summary.categories))
+                            }
+                        } header: {
+                            Text("Kategoriler")
+                        } footer: {
+                            Text("Son 30 gün")
+                        }
+                    }
+
+                    recentSessions
                 } else {
-                    ProgressView()
-                        .padding(.top, 120)
+                    Section {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    }
                 }
             }
             .navigationTitle("İstatistik")
@@ -34,27 +52,9 @@ struct StatsView: View {
         }
     }
 
-    private func metrics(_ summary: StatsSummary) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-            MetricCard(title: "Bugün", value: formattedFocus(summary.todayMs), symbol: "sun.max.fill")
-            MetricCard(title: "Bu Hafta", value: formattedFocus(summary.weekMs), symbol: "calendar")
-            MetricCard(title: "Seri", value: "\(summary.streakDays) gün", symbol: "flame.fill")
-            MetricCard(title: "Toplam · \(summary.sessionCount) seans", value: formattedFocus(summary.totalMs), symbol: "hourglass")
-        }
-    }
-
     @ViewBuilder
     private var recentSessions: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Son Oturumlar")
-                    .font(.title3.weight(.bold))
-                Spacer()
-                if !app.stats.history.isEmpty {
-                    NavigationLink("Tümü") { HistoryView() }
-                        .font(.subheadline.weight(.semibold))
-                }
-            }
+        Section("Son Oturumlar") {
             if app.stats.history.isEmpty {
                 ContentUnavailableView(
                     "Henüz oturum yok",
@@ -62,43 +62,68 @@ struct StatsView: View {
                     description: Text("Bir odada masaya oturup en az bir dakika odaklandığında burada görünür.")
                 )
             } else {
-                VStack(spacing: 0) {
-                    ForEach(app.stats.history.prefix(5)) { entry in
-                        HistoryRow(entry: entry)
-                            .padding(.vertical, 10)
-                        if entry.id != app.stats.history.prefix(5).last?.id { Divider() }
-                    }
+                ForEach(app.stats.history.prefix(5)) { entry in
+                    HistoryRow(entry: entry)
                 }
-                .padding(.horizontal, 16)
-                .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                NavigationLink("Tüm Geçmiş") { HistoryView() }
             }
         }
     }
+
+    private func share(of category: CategoryTotal, in all: [CategoryTotal]) -> Double {
+        let longest = all.map(\.ms).max() ?? 0
+        return longest > 0 ? Double(category.ms) / Double(longest) : 0
+    }
 }
 
-private struct MetricCard: View {
-    let title: String
-    let value: String
-    let symbol: String
+/// Today in large rounded numerals, with the week, streak and lifetime total beneath.
+private struct Headline: View {
+    let summary: StatsSummary
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(title, systemImage: symbol)
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Bugün Odak")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text(formattedFocus(summary.todayMs))
+                    .font(.system(size: 44, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.accentColor)
+                    .contentTransition(.numericText())
+            }
+            HStack(alignment: .top) {
+                column("Bu Hafta", value: formattedFocus(summary.weekMs))
+                Divider()
+                column("Seri", value: "\(summary.streakDays) gün")
+                Divider()
+                column("Toplam", value: formattedFocus(summary.totalMs), detail: "\(summary.sessionCount) seans")
+            }
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func column(_ title: String, value: String, detail: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(.title2, design: .monospaced, weight: .bold))
+                .font(.system(.title3, design: .rounded, weight: .semibold))
                 .lineLimit(1)
-                .minimumScaleFactor(0.6)
+                .minimumScaleFactor(0.7)
+            if let detail {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .glassEffect(.regular, in: .rect(cornerRadius: 22))
         .accessibilityElement(children: .combine)
     }
 }
 
-/// Minutes per day, stacked by category.
+/// Focus minutes per day with the week's daily average as a dashed rule.
 private struct WeekChart: View {
     let days: [DayTotal]
 
@@ -109,87 +134,83 @@ private struct WeekChart: View {
         return formatter
     }()
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Son 7 Gün")
-                .font(.title3.weight(.bold))
-            if days.allSatisfy({ $0.totalMs == 0 }) {
-                Text("Bu hafta henüz odak süren yok. İlk oturumun burada çubuk olarak belirecek.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
-            } else {
-                chart
-            }
-        }
-        .padding(16)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+    private var averageMinutes: Double {
+        Double(days.reduce(0) { $0 + $1.totalMs }) / Double(max(days.count, 1)) / 60_000
     }
 
-    private var chart: some View {
-        Chart {
-            ForEach(days) { day in
-                let date = Self.parser.date(from: day.date) ?? .now
-                if day.byCategory.isEmpty {
-                    BarMark(x: .value("Gün", date, unit: .day), y: .value("Dakika", 0))
+    var body: some View {
+        if days.allSatisfy({ $0.totalMs == 0 }) {
+            Text("Bu hafta henüz odak süren yok. İlk oturumun burada görünecek.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(.vertical, 8)
+        } else {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Günlük ortalama \(formattedFocus(Int64(averageMinutes * 60_000)))")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Chart {
+                    ForEach(days) { day in
+                        BarMark(
+                            x: .value("Gün", Self.parser.date(from: day.date) ?? .now, unit: .day),
+                            y: .value("Dakika", Double(day.totalMs) / 60_000)
+                        )
+                        .foregroundStyle(Color.accentColor.gradient)
+                        .cornerRadius(5)
+                    }
+                    RuleMark(y: .value("Ortalama", averageMinutes))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                        .foregroundStyle(.secondary)
                 }
-                ForEach(day.byCategory) { category in
-                    BarMark(
-                        x: .value("Gün", date, unit: .day),
-                        y: .value("Dakika", Double(category.ms) / 60_000)
-                    )
-                    .foregroundStyle(by: .value("Kategori", "\(category.emoji) \(category.name)"))
-                    .cornerRadius(4)
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .day)) { _ in
+                        AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: true)
+                    }
                 }
+                .chartYAxis {
+                    AxisMarks(position: .trailing) { value in
+                        AxisGridLine()
+                        AxisValueLabel { if let minutes = value.as(Double.self) { Text("\(Int(minutes)) dk") } }
+                    }
+                }
+                .frame(height: 180)
             }
+            .padding(.vertical, 6)
         }
-        .chartXAxis {
-            AxisMarks(values: .stride(by: .day)) { _ in
-                AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: true)
-            }
-        }
-        .chartYAxisLabel("dk")
-        .chartLegend(position: .bottom, alignment: .leading)
-        .frame(height: 220)
     }
 }
 
-/// Last 30 days by category, as a donut and a ranked list.
-private struct CategoryBreakdown: View {
-    let categories: [CategoryTotal]
-
-    private var total: Int64 { categories.reduce(0) { $0 + $1.ms } }
+/// Screen Time style: icon, name and duration over a bar scaled to the top category.
+private struct CategoryRow: View {
+    let category: CategoryTotal
+    let share: Double
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Kategoriler · 30 Gün")
-                .font(.title3.weight(.bold))
-            HStack(spacing: 16) {
-                Chart(categories) { category in
-                    SectorMark(angle: .value("Süre", category.ms), innerRadius: .ratio(0.62), angularInset: 1.5)
-                        .foregroundStyle(by: .value("Kategori", "\(category.emoji) \(category.name)"))
-                        .cornerRadius(3)
+        HStack(spacing: 12) {
+            EmojiTile(emoji: category.emoji, size: 34)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(category.name)
+                    Spacer()
+                    Text(formattedFocus(category.ms))
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
-                .chartLegend(.hidden)
-                .frame(width: 120, height: 120)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(categories.prefix(5)) { category in
-                        HStack {
-                            Text("\(category.emoji) \(category.name)")
-                                .lineLimit(1)
-                            Spacer()
-                            Text(formattedFocus(category.ms))
-                                .font(.system(.subheadline, design: .monospaced))
-                                .foregroundStyle(.secondary)
+                Capsule()
+                    .fill(.fill.tertiary)
+                    .frame(height: 6)
+                    .frame(maxWidth: .infinity)
+                    .background(alignment: .leading) {
+                        GeometryReader { proxy in
+                            Capsule()
+                                .fill(Color.accentColor)
+                                .frame(width: max(6, proxy.size.width * share))
                         }
-                        .font(.subheadline)
                     }
-                }
             }
         }
-        .padding(16)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -198,13 +219,9 @@ struct HistoryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(entry.category.emoji)
-                .font(.title3)
-                .frame(width: 40, height: 40)
-                .glassEffect(.regular, in: .circle)
+            EmojiTile(emoji: entry.category.emoji, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.note ?? entry.category.name)
-                    .font(.headline)
                     .lineLimit(1)
                 Text("\(entry.roomName) · \(entry.mode == .pomodoro ? "Pomodoro" : "Kronometre")")
                     .font(.subheadline)
@@ -214,12 +231,21 @@ struct HistoryRow: View {
             Spacer(minLength: 0)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(formattedFocus(entry.focusedMs))
-                    .font(.system(.subheadline, design: .monospaced, weight: .semibold))
-                Text(Date(timeIntervalSince1970: Double(entry.startedAt) / 1000), format: .dateTime.hour().minute())
+                    .font(.subheadline.weight(.semibold))
+                    .monospacedDigit()
+                Text(Self.when(Date(timeIntervalSince1970: Double(entry.startedAt) / 1000)))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// "14:05" today, "Dün" yesterday, otherwise a short date, as in Messages and Mail.
+    private static func when(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) { return date.formatted(date: .omitted, time: .shortened) }
+        if calendar.isDateInYesterday(date) { return "Dün" }
+        return date.formatted(.dateTime.day().month(.abbreviated))
     }
 }

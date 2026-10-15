@@ -10,7 +10,7 @@ struct CategoriesView: View {
         List {
             Section {
                 ForEach(app.categories.custom) { category in
-                    Label { Text(category.name) } icon: { Text(category.emoji) }
+                    Label { Text(category.name) } icon: { EmojiTile(emoji: category.emoji, size: 30) }
                 }
                 .onDelete { offsets in
                     let doomed = offsets.map { app.categories.custom[$0] }
@@ -29,7 +29,7 @@ struct CategoriesView: View {
 
             Section("Hazır kategoriler") {
                 ForEach(app.categories.builtIn) { category in
-                    Label { Text(category.name) } icon: { Text(category.emoji) }
+                    Label { Text(category.name) } icon: { EmojiTile(emoji: category.emoji, size: 30) }
                 }
             }
         }

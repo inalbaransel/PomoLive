@@ -23,10 +23,7 @@ struct CategoryEditorSheet: View {
             Form {
                 Section {
                     HStack(spacing: 14) {
-                        Text(emoji)
-                            .font(.largeTitle)
-                            .frame(width: 60, height: 60)
-                            .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                        EmojiTile(emoji: emoji, size: 56)
                         TextField("Kategori adı", text: $name)
                             .font(.title3.weight(.semibold))
                             .onChange(of: name) { name = String(name.prefix(24)) }
@@ -39,7 +36,7 @@ struct CategoryEditorSheet: View {
                                 Text(option)
                                     .font(.title3)
                                     .frame(width: 36, height: 36)
-                                    .glassEffect(emoji == option ? .regular.tint(.accentColor.opacity(0.5)) : .identity, in: .circle)
+                                    .selectableBackground(emoji == option, in: .circle)
                             }
                             .buttonStyle(.plain)
                         }

@@ -37,7 +37,7 @@ struct ProfileEditor: View {
                             }
                             .padding(8)
                             .frame(maxWidth: .infinity)
-                            .glassEffect(avatar == sprite ? .regular.tint(.accentColor.opacity(0.5)) : .identity, in: .rect(cornerRadius: 16))
+                            .selectableBackground(avatar == sprite, in: .rect(cornerRadius: 16))
                         }
                         .buttonStyle(.plain)
                         .accessibilityAddTraits(avatar == sprite ? .isSelected : [])

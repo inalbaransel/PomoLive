@@ -47,10 +47,10 @@ struct SessionSetupSheet: View {
                                     breakMinutes = preset.rest
                                 } label: {
                                     Text("\(preset.focus)/\(preset.rest)")
-                                        .font(.system(.subheadline, design: .monospaced, weight: .semibold))
+                                        .font(.system(.subheadline, design: .rounded, weight: .semibold))
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 8)
-                                        .glassEffect(isSelected ? .regular.tint(.accentColor.opacity(0.5)) : .regular, in: .capsule)
+                                        .selectableBackground(isSelected, in: .capsule)
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel("\(preset.focus) dakika odak, \(preset.rest) dakika mola")
@@ -74,7 +74,7 @@ struct SessionSetupSheet: View {
                                 .font(.subheadline.weight(.semibold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
-                                .glassEffect(.regular, in: .capsule)
+                                .selectableBackground(false, in: .capsule)
                         }
                         .buttonStyle(.plain)
                     }
@@ -139,7 +139,7 @@ struct CategoryChip: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .padding(.horizontal, 6)
-            .glassEffect(isSelected ? .regular.tint(.accentColor.opacity(0.55)) : .regular, in: .capsule)
+            .selectableBackground(isSelected, in: .capsule)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
