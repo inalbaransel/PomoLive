@@ -16,6 +16,7 @@ struct HallScreen: View {
     @State private var entryError: LibraryError?
     @State private var showsMiniMap = true
     @State private var cameraTrigger = 0
+    @State private var showsFocusMode = false
 
     private enum Sheet: Identifiable {
         case sit(LayoutDesk)
@@ -115,7 +116,22 @@ struct HallScreen: View {
             case nil: break
             }
         }
+        // Turning the phone sideways while seated props it up as a desk clock.
+        .onAppear { UIDevice.current.beginGeneratingDeviceOrientationNotifications() }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            guard UIDevice.current.orientation.isLandscape, app.hall.myDesk != nil, sheet == nil else { return }
+            showsFocusMode = true
+        }
+        .fullScreenCover(isPresented: $showsFocusMode) {
+            if let desk = app.hall.myDesk, let layout = app.hall.layout {
+                FocusModeView(desk: desk, layout: layout, desks: app.hall.desks, clock: app.time.clock, myUserId: app.user?.id)
+            }
+        }
+        .onChange(of: app.hall.myDesk == nil) { _, standing in
+            if standing { showsFocusMode = false }
+        }
         .onDisappear {
+            UIDevice.current.endGeneratingDeviceOrientationNotifications()
             let visit = app.hall.visit
             app.chat.reset()
             Task { await app.hall.leave(visit: visit) }
@@ -166,7 +182,8 @@ struct HallScreen: View {
                             clock: app.time.clock,
                             isExpanded: $isDeckExpanded,
                             onChangeTimer: { action in Task { await app.seat.changeTimer(action) } },
-                            onFinish: { Task { await app.seat.stand() } }
+                            onFinish: { Task { await app.seat.stand() } },
+                            onFocusMode: { showsFocusMode = true }
                         )
                         .transition(.move(edge: .bottom).combined(with: .blurReplace))
                     }

@@ -7,4 +7,8 @@ enum Preferences {
     static let phaseNotifications = "phaseNotificationsEnabled"
     static let haptics = "hapticsEnabled"
     static let appearance = "appearance"
+    static let focusModeStyle = "focusModeStyle"
+    static let clockFace = "focusModeClockFace"
+    static let clockTint = "focusModeClockTint"
+    static let clockShowsSeconds = "focusModeShowsSeconds"
 }

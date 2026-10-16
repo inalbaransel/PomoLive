@@ -596,6 +596,16 @@
         }
       }
     },
+    "Beyaz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "White"
+          }
+        }
+      }
+    },
     "Bildirimler" : {
       "localizations" : {
         "en" : {
@@ -652,6 +662,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "End"
+          }
+        }
+      }
+    },
+    "Bitti" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
           }
         }
       }
@@ -896,6 +916,16 @@
         }
       }
     },
+    "Dijital" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digital"
+          }
+        }
+      }
+    },
     "Dil" : {
       "localizations" : {
         "en" : {
@@ -1046,12 +1076,42 @@
         }
       }
     },
+    "Gece Haritası" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night Map"
+          }
+        }
+      }
+    },
     "Gece Kafesi" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Night Café"
+          }
+        }
+      }
+    },
+    "Gece Kırmızısı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night Red"
+          }
+        }
+      }
+    },
+    "Gece Kırmızısı karanlıkta gözü en az yorar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night Red is the easiest on your eyes in the dark."
           }
         }
       }
@@ -1258,6 +1318,16 @@
         }
       }
     },
+    "Halka" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ring"
+          }
+        }
+      }
+    },
     "Hazır kategoriler" : {
       "localizations" : {
         "en" : {
@@ -1378,6 +1448,16 @@
         }
       }
     },
+    "Kadran" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dial"
+          }
+        }
+      }
+    },
     "Kahverengi" : {
       "localizations" : {
         "en" : {
@@ -1394,6 +1474,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "Kapatınca ekran daha az yenilenir ve pil daha uzun gider." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turning this off redraws the screen less often and saves battery."
           }
         }
       }
@@ -1510,6 +1600,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cat"
+          }
+        }
+      }
+    },
+    "Kehribar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amber"
           }
         }
       }
@@ -2242,6 +2342,16 @@
         }
       }
     },
+    "Odak Modu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus Mode"
+          }
+        }
+      }
+    },
     "Odak Sürelerimi Göster" : {
       "localizations" : {
         "en" : {
@@ -2661,6 +2771,26 @@
       },
       "shouldTranslate" : false
     },
+    "Saat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clock"
+          }
+        }
+      }
+    },
+    "Saat Stili" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clock Style"
+          }
+        }
+      }
+    },
     "Sahil" : {
       "localizations" : {
         "en" : {
@@ -2697,6 +2827,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Center the Hall"
+          }
+        }
+      }
+    },
+    "Saniyeleri Göster" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Seconds"
           }
         }
       }
@@ -3367,6 +3507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Private"
+          }
+        }
+      }
+    },
+    "Özelleştir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize"
           }
         }
       }
