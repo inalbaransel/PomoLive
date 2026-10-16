@@ -313,6 +313,38 @@ struct ChatTypingCommand: LibraryCommand {
     static let event = "chat:typing"
 }
 
+struct TaskListResult: Decodable, Sendable {
+    var tasks: [FocusTask]
+}
+
+struct TaskResult: Decodable, Sendable {
+    var task: FocusTask
+}
+
+struct ListTasksCommand: LibraryCommand {
+    typealias Result = TaskListResult
+    static let event = "task:list"
+}
+
+struct CreateTaskCommand: LibraryCommand {
+    typealias Result = TaskResult
+    static let event = "task:create"
+    var title: String
+}
+
+struct SetTaskDoneCommand: LibraryCommand {
+    typealias Result = TaskResult
+    static let event = "task:done"
+    var id: String
+    var done: Bool
+}
+
+struct DeleteTaskCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "task:delete"
+    var id: String
+}
+
 struct DeleteAccountCommand: LibraryCommand {
     typealias Result = NoResult
     static let event = "account:delete"

@@ -23,6 +23,7 @@ import { RoomMembersService } from '../community/room-members.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { StatsService } from '../stats/stats.service.js';
+import { TasksService } from '../tasks/tasks.service.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { ProtocolError } from './protocol-error.js';
 import { ProtocolErrorFilter } from './protocol-error.filter.js';
@@ -34,10 +35,12 @@ import {
   ClientEvent,
   createCategorySchema,
   createRoomSchema,
+  createTaskSchema,
   deleteAccountSchema,
   deleteCategorySchema,
   deleteChatSchema,
   deleteRoomSchema,
+  deleteTaskSchema,
   heartbeatSchema,
   historySchema,
   joinRoomSchema,
@@ -47,6 +50,7 @@ import {
   roomMembersSchema,
   previewRoomSchema,
   sendChatSchema,
+  setTaskDoneSchema,
   ServerEvent,
   sitSchema,
   updateProfileSchema,
@@ -93,6 +97,7 @@ export class LibraryGateway
     private readonly members: RoomMembersService,
     private readonly profiles: ProfilesService,
     private readonly chat: ChatService,
+    private readonly tasks: TasksService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -505,6 +510,50 @@ export class LibraryGateway
     @MessageBody() data: Payload,
   ) {
     await this.chat.typing(this.sessionOf(socket));
+    return reply(data, {});
+  }
+
+  // MARK: Tasks
+
+  @SubscribeMessage(ClientEvent.listTasks)
+  async onListTasks(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    return reply(data, {
+      tasks: await this.tasks.list(this.sessionOf(socket).user.id, Date.now()),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.createTask)
+  async onCreateTask(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { title } = parsePayload(createTaskSchema, data);
+    return reply(data, {
+      task: await this.tasks.create(this.sessionOf(socket).user.id, title),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.setTaskDone)
+  async onSetTaskDone(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { id, done } = parsePayload(setTaskDoneSchema, data);
+    return reply(data, {
+      task: await this.tasks.setDone(this.sessionOf(socket).user.id, id, done),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.deleteTask)
+  async onDeleteTask(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { id } = parsePayload(deleteTaskSchema, data);
+    await this.tasks.delete(this.sessionOf(socket).user.id, id);
     return reply(data, {});
   }
 

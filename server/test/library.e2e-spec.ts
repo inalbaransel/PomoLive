@@ -837,6 +837,38 @@ describe('Library realtime protocol (e2e)', () => {
     visitor.close();
   });
 
+  it('keeps a personal task list', async () => {
+    const reader = await signedIn('Gorevli');
+    const other = await signedIn('Baskasi');
+    const first = (
+      await reader.send('task:create', { title: '  Fizik 3. ünite  ' })
+    ).result.task;
+    expect(first).toMatchObject({ title: 'Fizik 3. ünite', completedAt: null });
+    await reader.send('task:create', { title: 'Deneme sınavı' });
+    expect(await reader.send('task:create', { title: '   ' })).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_PAYLOAD' },
+    });
+
+    const done = (await reader.send('task:done', { id: first.id, done: true }))
+      .result.task;
+    expect(done.completedAt).toEqual(expect.any(Number));
+    expect(
+      await other.send('task:done', { id: first.id, done: false }),
+    ).toMatchObject({ ok: false, error: { code: 'TASK_NOT_FOUND' } });
+
+    const listed = (await reader.send('task:list')).result.tasks;
+    expect(listed.map((task: { title: string }) => task.title)).toEqual([
+      'Fizik 3. ünite',
+      'Deneme sınavı',
+    ]);
+    expect((await other.send('task:list')).result.tasks).toEqual([]);
+    expect((await reader.send('task:delete', { id: first.id })).ok).toBe(true);
+    expect((await reader.send('task:list')).result.tasks).toHaveLength(1);
+    reader.close();
+    other.close();
+  });
+
   it('deletes an account only with the right password', async () => {
     const client = await TestClient.connect(url);
     const email = `silinecek-${randomUUID()}@example.com`;

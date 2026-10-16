@@ -24,6 +24,7 @@ struct HallScreen: View {
         case profile(userId: String)
         case editRoom(RoomState)
         case chat
+        case tasks
 
         var id: String {
             switch self {
@@ -32,6 +33,7 @@ struct HallScreen: View {
             case .profile(let userId): "profile-\(userId)"
             case .editRoom: "edit"
             case .chat: "chat"
+            case .tasks: "tasks"
             }
         }
     }
@@ -58,6 +60,16 @@ struct HallScreen: View {
                     case .profile(let userId):
                         NavigationStack {
                             UserProfileView(userId: userId)
+                                .toolbar {
+                                    ToolbarItem(placement: .topBarLeading) {
+                                        Button("Kapat", systemImage: "xmark", role: .close) { self.sheet = nil }
+                                    }
+                                }
+                        }
+                        .presentationDetents([.medium, .large])
+                    case .tasks:
+                        NavigationStack {
+                            TasksView()
                                 .toolbar {
                                     ToolbarItem(placement: .topBarLeading) {
                                         Button("Kapat", systemImage: "xmark", role: .close) { self.sheet = nil }
@@ -183,7 +195,8 @@ struct HallScreen: View {
                             isExpanded: $isDeckExpanded,
                             onChangeTimer: { action in Task { await app.seat.changeTimer(action) } },
                             onFinish: { Task { await app.seat.stand() } },
-                            onFocusMode: { showsFocusMode = true }
+                            onFocusMode: { showsFocusMode = true },
+                            onTasks: { sheet = .tasks }
                         )
                         .transition(.move(edge: .bottom).combined(with: .blurReplace))
                     }

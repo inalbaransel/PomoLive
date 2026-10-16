@@ -13,6 +13,7 @@ struct FocusDeckView: View {
     let onChangeTimer: (ChangeTimerCommand.Action) -> Void
     let onFinish: () -> Void
     let onFocusMode: () -> Void
+    let onTasks: () -> Void
 
     @GestureState private var dragOffset: CGFloat = 0
     @State private var confirmsFinish = false
@@ -119,6 +120,11 @@ struct FocusDeckView: View {
             }
 
             if isExpanded {
+                Button("Görevler", systemImage: "checklist", action: onTasks)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
                 Button("Odak Modu", systemImage: "moon.fill", action: onFocusMode)
                     .labelStyle(.iconOnly)
                     .buttonStyle(.glass)

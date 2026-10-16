@@ -30,6 +30,7 @@ model User {
   roomBans       RoomBan[]
   categories     Category[]
   chatMessages   ChatMessage[]
+  tasks          FocusTask[]
 }
 
 enum RoomVisibility {
@@ -138,4 +139,16 @@ model ChatMessage {
 
   @@unique([userId, clientId])
   @@index([roomId, createdAt])
+}
+
+/// A to-do the reader plans to get through in their sessions.
+model FocusTask {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String    @db.VarChar(120)
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([userId, createdAt])
 }

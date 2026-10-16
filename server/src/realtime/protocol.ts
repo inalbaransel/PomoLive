@@ -41,6 +41,10 @@ export const ClientEvent = {
   chatHistory: 'chat:history',
   deleteChat: 'chat:delete',
   chatTyping: 'chat:typing',
+  listTasks: 'task:list',
+  createTask: 'task:create',
+  setTaskDone: 'task:done',
+  deleteTask: 'task:delete',
 } as const;
 
 export const ServerEvent = {
@@ -255,6 +259,12 @@ export const chatHistorySchema = z.object({
 });
 
 export const deleteChatSchema = z.object({ messageId: uuid });
+
+export const createTaskSchema = z.object({ title: label(1, 120) });
+
+export const setTaskDoneSchema = z.object({ id: uuid, done: z.boolean() });
+
+export const deleteTaskSchema = z.object({ id: uuid });
 
 export const deleteAccountSchema = z.object({ password });
 

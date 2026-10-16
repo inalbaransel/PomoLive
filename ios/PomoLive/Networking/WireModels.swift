@@ -380,6 +380,16 @@ struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {
     var focusedMs: Int64
 }
 
+/// A to-do on the reader's own list.
+struct FocusTask: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var title: String
+    var createdAt: Int64
+    var completedAt: Int64?
+
+    var isDone: Bool { completedAt != nil }
+}
+
 /// A line in a room's chat.
 struct ChatMessage: Decodable, Hashable, Sendable, Identifiable {
     var id: String

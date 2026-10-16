@@ -59,6 +59,15 @@ struct ProfileView: View {
 
                 Section {
                     NavigationLink {
+                        TasksView()
+                    } label: {
+                        LabeledContent {
+                            Text("\(app.tasks.openTasks.count)")
+                        } label: {
+                            SettingsLabel(title: "Görevlerim", systemName: "checklist", color: .orange)
+                        }
+                    }
+                    NavigationLink {
                         CategoriesView()
                     } label: {
                         LabeledContent {

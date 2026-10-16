@@ -6,6 +6,7 @@ import { ChatModule } from '../chat/chat.module.js';
 import { CommunityModule } from '../community/community.module.js';
 import { LibraryModule } from '../library/library.module.js';
 import { StatsModule } from '../stats/stats.module.js';
+import { TasksModule } from '../tasks/tasks.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { LibraryGateway } from './library.gateway.js';
 
@@ -18,6 +19,7 @@ import { LibraryGateway } from './library.gateway.js';
     ChatModule,
     CommunityModule,
     StatsModule,
+    TasksModule,
     UsersModule,
   ],
   providers: [LibraryGateway],

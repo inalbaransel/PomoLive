@@ -27,6 +27,7 @@ enum LibraryError: LocalizedError, Equatable, Sendable {
             case "DESK_TAKEN": String(localized: "Bu masaya az önce başka biri oturdu.")
             case "ROOM_NOT_FOUND": String(localized: "Oda bulunamadı. Kodu kontrol et ya da oda kapanmış olabilir.")
             case "FORBIDDEN": String(localized: "Bunu yapmaya yetkin yok. Özel odalara kodla girilir.")
+            case "TASK_NOT_FOUND": String(localized: "Bu görev artık yok.")
             case "MESSAGE_NOT_FOUND": String(localized: "Bu mesaj artık yok.")
             case "BANNED": String(localized: "Oda sahibi seni bu odadan çıkardı.")
             case "USER_NOT_FOUND": String(localized: "Bu kişinin hesabı artık yok.")

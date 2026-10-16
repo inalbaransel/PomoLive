@@ -726,6 +726,16 @@
         }
       }
     },
+    "Bu görev artık yok." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This task no longer exists."
+          }
+        }
+      }
+    },
     "Bu hafta" : {
       "localizations" : {
         "en" : {
@@ -822,6 +832,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What happens in this room, and what's the goal?"
+          }
+        }
+      }
+    },
+    "Bu oturumda neyi bitirmek istediğini yaz; tamamladıkça işaretle." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write down what you want to finish this session and check it off as you go."
           }
         }
       }
@@ -1046,6 +1066,16 @@
         }
       }
     },
+    "Ekle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
+    },
     "En alta git" : {
       "localizations" : {
         "en" : {
@@ -1224,6 +1254,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sending…"
+          }
+        }
+      }
+    },
+    "Görev listen boş" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Task List Is Empty"
+          }
+        }
+      }
+    },
+    "Görevler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasks"
+          }
+        }
+      }
+    },
+    "Görevlerim" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Tasks"
           }
         }
       }
@@ -3161,6 +3221,26 @@
         }
       }
     },
+    "Tamamlanan görevler bir gün sonra listeden kalkar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finished tasks leave the list after a day."
+          }
+        }
+      }
+    },
+    "Tamamlananlar · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done · %lld"
+          }
+        }
+      }
+    },
     "Tasarım" : {
       "localizations" : {
         "en" : {
@@ -3301,6 +3381,16 @@
         }
       }
     },
+    "Yapılacaklar · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To Do · %lld"
+          }
+        }
+      }
+    },
     "Yazı" : {
       "localizations" : {
         "en" : {
@@ -3377,6 +3467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Just opened"
+          }
+        }
+      }
+    },
+    "Yeni görev" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New task"
           }
         }
       }
