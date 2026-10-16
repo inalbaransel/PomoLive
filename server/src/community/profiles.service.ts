@@ -6,6 +6,7 @@ import { ProtocolError } from '../realtime/protocol-error.js';
 import { StatsService, StatsSummary } from '../stats/stats.service.js';
 import { PublicUser } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
+import { SocialService } from './social.service.js';
 
 export interface PublicProfile extends PublicUser {
   bio: string | null;
@@ -19,6 +20,9 @@ export interface PublicProfile extends PublicUser {
   /** Goals are part of the focus data, so they are hidden along with it. */
   dailyGoalMinutes: number | null;
   weeklyGoalMinutes: number | null;
+  isFollowing: boolean;
+  followerCount: number;
+  followingCount: number;
 }
 
 /** A reader's profile page as another reader sees it. */
@@ -28,6 +32,7 @@ export class ProfilesService {
     private readonly users: UsersRepository,
     private readonly stats: StatsService,
     private readonly desks: DeskStore,
+    private readonly social: SocialService,
   ) {}
 
   async profile(viewer: ReaderSession, userId: string): Promise<PublicProfile> {
@@ -43,6 +48,10 @@ export class ProfilesService {
         ])
       : [null, null];
     const desk = seat ? await this.desks.get(seat) : null;
+    const [isFollowing, counts] = await Promise.all([
+      this.social.isFollowing(viewer.user.id, userId),
+      this.social.counts(userId),
+    ]);
 
     const { createdAt, ...rest } = card;
     return {
@@ -52,6 +61,9 @@ export class ProfilesService {
       focusingOn: desk?.category ?? null,
       dailyGoalMinutes: showsStats ? card.dailyGoalMinutes : null,
       weeklyGoalMinutes: showsStats ? card.weeklyGoalMinutes : null,
+      isFollowing,
+      followerCount: counts.followers,
+      followingCount: counts.following,
       stats,
     };
   }

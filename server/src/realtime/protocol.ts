@@ -42,6 +42,10 @@ export const ClientEvent = {
   deleteChat: 'chat:delete',
   chatTyping: 'chat:typing',
   listTasks: 'task:list',
+  follow: 'user:follow',
+  unfollow: 'user:unfollow',
+  searchUsers: 'user:search',
+  friends: 'friends:list',
   createTask: 'task:create',
   setTaskDone: 'task:done',
   deleteTask: 'task:delete',
@@ -59,6 +63,7 @@ export const ServerEvent = {
   chatMessage: 'chat:message',
   chatDeleted: 'chat:deleted',
   chatTyping: 'chat:typing',
+  friendStarted: 'friend:started',
 } as const;
 
 const displayName = z.string().trim().min(2).max(24);
@@ -265,6 +270,10 @@ export const createTaskSchema = z.object({ title: label(1, 120) });
 export const setTaskDoneSchema = z.object({ id: uuid, done: z.boolean() });
 
 export const deleteTaskSchema = z.object({ id: uuid });
+
+export const searchUsersSchema = z.object({
+  query: z.string().trim().min(2).max(24),
+});
 
 export const deleteAccountSchema = z.object({ password });
 

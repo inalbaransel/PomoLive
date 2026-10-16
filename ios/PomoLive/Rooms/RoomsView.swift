@@ -29,6 +29,13 @@ struct RoomsView: View {
                     }
                     .buttonStyle(.plain)
 
+                    NavigationLink {
+                        FriendsView(openRoom: openRoom)
+                    } label: {
+                        FriendsBanner(friends: app.friends.focusingFriends, hasFriends: !(app.friends.overview?.friends.isEmpty ?? true))
+                    }
+                    .buttonStyle(.plain)
+
                     SectionTitle("Odalarım")
                         .padding(.top, 12)
 
@@ -162,6 +169,48 @@ private struct DiscoverBanner: View {
                     .contentTransition(.numericText())
             }
             Spacer(minLength: 0)
+            Image(systemName: "chevron.forward")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
+        .contentShape(.rect(cornerRadius: 22))
+    }
+}
+
+/// Who the reader follows is focusing right now, as overlapping avatars.
+private struct FriendsBanner: View {
+    let friends: [Friend]
+    let hasFriends: Bool
+
+    var body: some View {
+        HStack(spacing: 14) {
+            GlyphIcon(symbol: "person.2.fill", color: .teal, size: 44)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Arkadaşlar")
+                    .font(.headline)
+                Text(friends.isEmpty
+                     ? (hasFriends ? String(localized: "Şu an kimse çalışmıyor") : String(localized: "Arkadaşlarını bul, birlikte çalış"))
+                     : String(localized: "\(friends.count) arkadaşın şu an çalışıyor"))
+                    .font(.subheadline)
+                    .foregroundStyle(friends.isEmpty ? AnyShapeStyle(.secondary) : AnyShapeStyle(.green))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .contentTransition(.numericText())
+            }
+            Spacer(minLength: 0)
+            HStack(spacing: -10) {
+                ForEach(friends.prefix(3)) { friend in
+                    Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: friend.user.avatarSpriteId)), scale: 1)
+                        .resizable()
+                        .interpolation(.none)
+                        .frame(width: 22, height: 22)
+                        .frame(width: 32, height: 32)
+                        .background(Color(.tertiarySystemFill), in: .circle)
+                        .overlay(Circle().stroke(Color(.secondarySystemGroupedBackground), lineWidth: 2))
+                }
+            }
             Image(systemName: "chevron.forward")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(.tertiary)

@@ -18,6 +18,18 @@ struct UserProfileView: View {
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
 
+                if !profile.isSelf {
+                    Section {
+                        HStack {
+                            Label("\(profile.followerCount ?? 0) takipçi", systemImage: "person.2.fill")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            FollowButton(userId: profile.id)
+                        }
+                    }
+                }
+
                 if let stats = profile.stats, !stats.isUnlocked {
                     Section {
                         ContentUnavailableView(

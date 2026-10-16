@@ -147,6 +147,26 @@
         }
       }
     },
+    "%@ · Katılmak için Arkadaşlar'a bak." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Open Friends to join."
+          }
+        }
+      }
+    },
+    "%@ çalışmaya başladı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ started focusing"
+          }
+        }
+      }
+    },
     "%@ çalışıyor" : {
       "localizations" : {
         "en" : {
@@ -183,6 +203,16 @@
         }
       },
       "shouldTranslate" : false
+    },
+    "%lld arkadaşın şu an çalışıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld friends focusing now"
+          }
+        }
+      }
     },
     "%lld dakika odak, %lld dakika mola" : {
       "localizations" : {
@@ -352,6 +382,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld takipçi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld followers"
           }
         }
       }
@@ -578,6 +618,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Focus on %lld different days to unlock meaningful charts. Finish at least one session each day."
+          }
+        }
+      }
+    },
+    "Arkadaşlar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friends"
+          }
+        }
+      }
+    },
+    "Arkadaşlarını bul, birlikte çalış" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find friends and focus together"
           }
         }
       }
@@ -1574,6 +1634,16 @@
         }
       }
     },
+    "Haftalık Sıralama" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly Ranking"
+          }
+        }
+      }
+    },
     "Hakkında" : {
       "localizations" : {
         "en" : {
@@ -1680,6 +1750,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No Rooms Yet"
+          }
+        }
+      }
+    },
+    "Henüz kimseyi takip etmiyorsun" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're Not Following Anyone Yet"
           }
         }
       }
@@ -2066,6 +2146,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Username"
+          }
+        }
+      }
+    },
+    "Kullanıcı adı veya isim ara" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search usernames or names"
           }
         }
       }
@@ -2714,6 +2804,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open focus panel"
+          }
+        }
+      }
+    },
+    "Odak süresini gizleyenler sıralamada görünmez. Sıralama her pazartesi sıfırlanır." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "People who hide their focus time aren't ranked. The ranking resets every Monday."
           }
         }
       }
@@ -3367,6 +3467,16 @@
         }
       }
     },
+    "Sonuç yok" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Results"
+          }
+        }
+      }
+    },
     "Sonuçlar" : {
       "localizations" : {
         "en" : {
@@ -3473,6 +3583,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You've reached the limit. Delete ones you don't use and try again."
+          }
+        }
+      }
+    },
+    "Takip Et" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow"
+          }
+        }
+      }
+    },
+    "Takip Ettiklerin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Following"
+          }
+        }
+      }
+    },
+    "Takiptesin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Following"
           }
         }
       }
@@ -3807,6 +3947,16 @@
         }
       }
     },
+    "Yukarıdan kullanıcı adıyla ara ya da bir odada birinin profilinden takip et." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search by username above, or follow someone from their profile in a room."
+          }
+        }
+      }
+    },
     "Yönetici" : {
       "localizations" : {
         "en" : {
@@ -4057,6 +4207,16 @@
         }
       }
     },
+    "özel oda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "private room"
+          }
+        }
+      }
+    },
     "İlerlemeni gör" : {
       "localizations" : {
         "en" : {
@@ -4217,6 +4377,16 @@
         }
       }
     },
+    "Şu An Çalışıyor · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focusing Now · %lld"
+          }
+        }
+      }
+    },
     "Şu an %@ çalışıyor" : {
       "localizations" : {
         "en" : {
@@ -4255,6 +4425,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nobody is at a desk right now. Be the first to sit down."
+          }
+        }
+      }
+    },
+    "Şu an kimse çalışmıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nobody is focusing right now"
           }
         }
       }

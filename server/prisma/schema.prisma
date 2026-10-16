@@ -31,6 +31,8 @@ model User {
   categories     Category[]
   chatMessages   ChatMessage[]
   tasks          FocusTask[]
+  following      Follow[]         @relation("follower")
+  followers      Follow[]         @relation("followee")
 }
 
 enum RoomVisibility {
@@ -151,4 +153,16 @@ model FocusTask {
   completedAt DateTime?
 
   @@index([userId, createdAt])
+}
+
+/// One reader following another, to see when they focus and to compare weeks.
+model Follow {
+  followerId String   @db.Uuid
+  follower   User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followeeId String   @db.Uuid
+  followee   User     @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([followerId, followeeId])
+  @@index([followeeId])
 }

@@ -131,6 +131,7 @@ actor LibrarySocket {
         case "chat:message": return payload(ChatMessagePayload.self).map { .chatMessage($0.message) }
         case "chat:deleted":
             return payload(ChatDeletedPayload.self).map { .chatDeleted(roomId: $0.roomId, messageId: $0.messageId) }
+        case "friend:started": return payload(DeskPayload.self).map { .friendStarted(roomId: $0.roomId, desk: $0.desk) }
         case "chat:typing": return payload(ChatTypingPayload.self).map { .chatTyping(roomId: $0.roomId, user: $0.user) }
         case "room:removed":
             return payload(MemberRemovedPayload.self).map { .memberRemoved(roomId: $0.roomId, userId: $0.userId) }

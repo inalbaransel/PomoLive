@@ -41,6 +41,10 @@ struct PublicProfile: Decodable, Hashable, Sendable, Identifiable {
     /// Focus goals in minutes; missing or nil means no goal.
     var dailyGoalMinutes: Int?
     var weeklyGoalMinutes: Int?
+    /// Missing from servers older than follows.
+    var isFollowing: Bool?
+    var followerCount: Int?
+    var followingCount: Int?
     var focusingOn: FocusCategory?
     var stats: StatsSummary?
 }
@@ -382,6 +386,37 @@ struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {
     var focusedMs: Int64
 }
 
+/// Where a followed reader is focusing. Private rooms come without id or name.
+struct FriendActivity: Decodable, Hashable, Sendable {
+    var roomId: String?
+    var roomName: String?
+    var category: FocusCategory
+    var resting: Bool
+    var since: Int64
+}
+
+struct Friend: Decodable, Hashable, Sendable, Identifiable {
+    var user: PublicUser
+    var activity: FriendActivity?
+    /// Nil when they hide their focus time.
+    var weekFocusMs: Int64?
+
+    var id: String { user.id }
+}
+
+struct LeaderboardRow: Decodable, Hashable, Sendable, Identifiable {
+    var user: PublicUser
+    var weekFocusMs: Int64
+    var isSelf: Bool
+
+    var id: String { user.id }
+}
+
+struct FriendsOverview: Decodable, Sendable {
+    var friends: [Friend]
+    var leaderboard: [LeaderboardRow]
+}
+
 /// A milestone; unknown ids from newer servers are skipped.
 struct Badge: Decodable, Hashable, Sendable, Identifiable {
     var id: String
@@ -430,4 +465,6 @@ enum LibraryEvent: Sendable {
     case chatMessage(ChatMessage)
     case chatDeleted(roomId: String, messageId: String)
     case chatTyping(roomId: String, user: PublicUser)
+    /// Someone the reader follows sat down at a desk in `roomId`.
+    case friendStarted(roomId: String, desk: DeskRecord)
 }

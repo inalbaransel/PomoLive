@@ -869,6 +869,63 @@ describe('Library realtime protocol (e2e)', () => {
     other.close();
   });
 
+  it('follows readers, pings followers when they sit and ranks the week', async () => {
+    const { client: me, userId: meId } = await signedInWithId('Takipci');
+    const { client: friend, userId: friendId } =
+      await signedInWithId('Arkadas');
+    const username = (await friend.send('profile:update', { bio: 'merhaba' }))
+      .result.user.username;
+
+    const found = (
+      await me.send('user:search', { query: username.slice(0, 6) })
+    ).result.users;
+    expect(found.map((user: { id: string }) => user.id)).toContain(friendId);
+    expect(await me.send('user:follow', { userId: meId })).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
+    expect((await me.send('user:follow', { userId: friendId })).ok).toBe(true);
+    expect(
+      (await me.send('user:profile', { userId: friendId })).result.profile,
+    ).toMatchObject({ isFollowing: true, followerCount: 1 });
+
+    const { result } = await friend.send('room:create', {
+      name: 'Arkadaş Odası',
+      symbol: 'books.vertical.fill',
+      color: 'indigo',
+      visibility: 'PUBLIC',
+    });
+    await friend.send('desk:sit', {
+      deskId: 'desk_2',
+      timer: stopwatch,
+      categoryKey: 'study',
+    });
+    const ping = await me.next((frame) => frame.event === 'friend:started');
+    expect(ping.data).toMatchObject({
+      roomId: result.room.id,
+      desk: { userId: friendId },
+    });
+
+    const overview = (await me.send('friends:list')).result;
+    expect(overview.friends).toMatchObject([
+      {
+        user: { id: friendId },
+        activity: { roomId: result.room.id, category: { key: 'study' } },
+      },
+    ]);
+    expect(
+      overview.leaderboard.map((row: { isSelf: boolean }) => row.isSelf),
+    ).toContain(true);
+    expect(overview.leaderboard).toHaveLength(2);
+
+    expect((await me.send('user:unfollow', { userId: friendId })).ok).toBe(
+      true,
+    );
+    expect((await me.send('friends:list')).result.friends).toEqual([]);
+    me.close();
+    friend.close();
+  });
+
   it('deletes an account only with the right password', async () => {
     const client = await TestClient.connect(url);
     const email = `silinecek-${randomUUID()}@example.com`;

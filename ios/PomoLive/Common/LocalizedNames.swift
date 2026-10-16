@@ -18,7 +18,7 @@ private func builtInCategoryName(_ key: String) -> String? {
 }
 
 /// `pixel-hall-3` → "Piksel Salon 3" / "Pixel Hall 3".
-private func localizedRoomName(id: String?, name: String) -> String {
+func localizedRoomName(id: String?, name: String) -> String {
     guard let id, id.hasPrefix("pixel-hall-"), let number = Int(id.dropFirst("pixel-hall-".count)) else { return name }
     return String(localized: "Piksel Salon \(number)")
 }

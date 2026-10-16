@@ -20,6 +20,7 @@ import { CategoriesRepository } from '../categories/categories.repository.js';
 import { ChatService } from '../chat/chat.service.js';
 import { ProfilesService } from '../community/profiles.service.js';
 import { RoomMembersService } from '../community/room-members.service.js';
+import { SocialService } from '../community/social.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { StatsService } from '../stats/stats.service.js';
@@ -48,6 +49,7 @@ import {
   refSchema,
   roomMemberSchema,
   roomMembersSchema,
+  searchUsersSchema,
   previewRoomSchema,
   sendChatSchema,
   setTaskDoneSchema,
@@ -69,6 +71,8 @@ interface Connection {
   session: ReaderSession | null;
   isAlive: boolean;
   authTimer: NodeJS.Timeout | undefined;
+  /** Readers this one follows, to ping when they sit down. */
+  following: Set<string>;
 }
 
 type Payload = Record<string, unknown> | undefined;
@@ -98,6 +102,7 @@ export class LibraryGateway
     private readonly profiles: ProfilesService,
     private readonly chat: ChatService,
     private readonly tasks: TasksService,
+    private readonly social: SocialService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -114,6 +119,7 @@ export class LibraryGateway
     const connection: Connection = {
       session: null,
       isAlive: true,
+      following: new Set(),
       authTimer: setTimeout(
         () => socket.close(CLOSE_UNAUTHORIZED, 'Authentication timeout'),
         AUTH_TIMEOUT_MS,
@@ -150,6 +156,7 @@ export class LibraryGateway
 
     clearTimeout(connection.authTimer);
     connection.session = { user, timeZone: command.timeZone, roomId: null };
+    connection.following = new Set(await this.social.followingIds(user.id));
     return reply(data, {
       user,
       sessionToken: session.token,
@@ -557,6 +564,53 @@ export class LibraryGateway
     return reply(data, {});
   }
 
+  // MARK: Friends
+
+  @SubscribeMessage(ClientEvent.follow)
+  async onFollow(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { userId } = parsePayload(userProfileSchema, data);
+    await this.social.follow(this.sessionOf(socket).user.id, userId);
+    this.connections.get(socket)!.following.add(userId);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.unfollow)
+  async onUnfollow(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { userId } = parsePayload(userProfileSchema, data);
+    await this.social.unfollow(this.sessionOf(socket).user.id, userId);
+    this.connections.get(socket)!.following.delete(userId);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.searchUsers)
+  async onSearchUsers(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { query } = parsePayload(searchUsersSchema, data);
+    return reply(data, {
+      users: await this.social.search(this.sessionOf(socket).user.id, query),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.friends)
+  async onFriends(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const session = this.sessionOf(socket);
+    return reply(
+      data,
+      await this.social.overview(session.user.id, session.timeZone, Date.now()),
+    );
+  }
+
   // MARK: Plumbing
 
   private sessionOf(socket: WebSocket): ReaderSession {
@@ -572,6 +626,10 @@ export class LibraryGateway
    */
   private fanOut(roomId: string, frame: Frame): void {
     const message = JSON.stringify(frame);
+    const friendStarted =
+      frame.event === ServerEvent.deskOccupied
+        ? JSON.stringify({ event: ServerEvent.friendStarted, data: frame.data })
+        : '';
     const data = frame.data as { userId?: string; desk?: { userId: string } };
     const deskOwner = data.userId ?? data.desk?.userId;
     for (const [socket, connection] of this.connections) {
@@ -585,6 +643,15 @@ export class LibraryGateway
           continue;
         }
         socket.send(message);
+      }
+      // Followers hear when someone they follow sits down, wherever they are in the app.
+      if (
+        frame.event === ServerEvent.deskOccupied &&
+        data.desk &&
+        connection.following.has(data.desk.userId) &&
+        session.roomId !== roomId
+      ) {
+        socket.send(friendStarted);
       }
       const isShutOut =
         frame.event === ServerEvent.roomClosed ||

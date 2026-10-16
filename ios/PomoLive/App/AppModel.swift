@@ -29,6 +29,7 @@ final class AppModel {
     let categories: CategoryStore
     let chat: ChatStore
     let tasks: TaskStore
+    let friends: FriendsStore
     let sounds = AmbientPlayer()
 
     @ObservationIgnored private let socket: LibrarySocket
@@ -47,6 +48,7 @@ final class AppModel {
         categories = CategoryStore(socket: socket)
         chat = ChatStore(socket: socket)
         tasks = TaskStore(socket: socket)
+        friends = FriendsStore(socket: socket)
 
         // A profile cached by an older version may not decode; the session token alone is enough to reconnect.
         phase = sessionStore.token == nil ? .signedOut : .signedIn
@@ -135,6 +137,7 @@ final class AppModel {
         categories.reset()
         chat.reset()
         tasks.reset()
+        friends.reset()
         sounds.stop()
         user = nil
         connection = .offline
@@ -150,6 +153,7 @@ final class AppModel {
         case .broadcast(let event):
             hall.apply(event)
             chat.apply(event)
+            friends.apply(event)
             seat.apply(event)
         }
     }
@@ -166,8 +170,9 @@ final class AppModel {
             async let seatRefresh: Void = seat.refresh()
             async let categoriesRefresh: Void = categories.refresh()
             async let tasksRefresh: Void = tasks.refresh()
+            async let friendsRefresh: Void = friends.refresh()
             async let hallRejoin: Void = hall.rejoin()
-            _ = await (seatRefresh, categoriesRefresh, tasksRefresh, hallRejoin)
+            _ = await (seatRefresh, categoriesRefresh, tasksRefresh, friendsRefresh, hallRejoin)
             // The server forgot what this connection looked at; catch up on messages missed while offline.
             if let roomId = hall.room?.id { await chat.open(roomId: roomId) }
         } catch {

@@ -345,6 +345,33 @@ struct DeleteTaskCommand: LibraryCommand {
     var id: String
 }
 
+struct FollowCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "user:follow"
+    var userId: String
+}
+
+struct UnfollowCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "user:unfollow"
+    var userId: String
+}
+
+struct UserSearchResult: Decodable, Sendable {
+    var users: [PublicUser]
+}
+
+struct SearchUsersCommand: LibraryCommand {
+    typealias Result = UserSearchResult
+    static let event = "user:search"
+    var query: String
+}
+
+struct FriendsCommand: LibraryCommand {
+    typealias Result = FriendsOverview
+    static let event = "friends:list"
+}
+
 struct DeleteAccountCommand: LibraryCommand {
     typealias Result = NoResult
     static let event = "account:delete"
