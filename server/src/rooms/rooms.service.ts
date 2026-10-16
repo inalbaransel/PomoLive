@@ -388,8 +388,8 @@ export class RoomsService {
     if (room.visibility === 'PRIVATE' && !isMember) {
       ProtocolError.throw('FORBIDDEN', 'Join this room with its code');
     }
-    // Only browsing a public room does not add it to "Odalarım"; sitting down there does.
-    if (isMember) await this.rooms.touchMembership(userId, room.id);
+    // Joining is a deliberate step after the room's preview, so it makes the room one of "Odalarım".
+    await this.rooms.touchMembership(userId, room.id);
     return RoomsService.identity(room);
   }
 

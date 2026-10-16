@@ -464,7 +464,7 @@ describe('Library realtime protocol (e2e)', () => {
         (room: any) => room.id,
       );
     await visitor.send('room:join', { roomId: publicRoom.id });
-    expect(await myRoomIds()).toEqual([]);
+    expect(await myRoomIds()).toEqual([publicRoom.id]);
     await visitor.send('desk:sit', {
       deskId: 'desk_3',
       timer: stopwatch,
