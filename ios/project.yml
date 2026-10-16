@@ -36,6 +36,7 @@ targets:
         CFBundleLocalizations: [tr, en]
         PomoLiveServerURL: $(POMOLIVE_SERVER_URL)
         NSSupportsLiveActivities: true
+        UIBackgroundModes: [audio]
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSAppTransportSecurity:

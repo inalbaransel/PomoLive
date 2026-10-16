@@ -606,6 +606,16 @@
         }
       }
     },
+    "Beyaz Gürültü" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "White Noise"
+          }
+        }
+      }
+    },
     "Bildirimler" : {
       "localizations" : {
         "en" : {
@@ -826,6 +836,16 @@
         }
       }
     },
+    "Bu oda için önerilen: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested for this room: %@"
+          }
+        }
+      }
+    },
     "Bu odada neler yapılıyor, hedef ne?" : {
       "localizations" : {
         "en" : {
@@ -906,12 +926,32 @@
         }
       }
     },
+    "Dalgalar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waves"
+          }
+        }
+      }
+    },
     "Deniz, kumsal, palmiyeler ve şemsiyeler" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The sea, sand, palms and umbrellas"
+          }
+        }
+      }
+    },
+    "Derin Uğultu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deep Hum"
           }
         }
       }
@@ -1022,6 +1062,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paused"
+          }
+        }
+      }
+    },
+    "Durdur" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
           }
         }
       }
@@ -2482,6 +2532,16 @@
         }
       }
     },
+    "Odak Sesleri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus Sounds"
+          }
+        }
+      }
+    },
     "Odak Sürelerimi Göster" : {
       "localizations" : {
         "en" : {
@@ -2738,6 +2798,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pink"
+          }
+        }
+      }
+    },
+    "Pembe Gürültü" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pink Noise"
           }
         }
       }
@@ -3007,6 +3077,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Streak"
+          }
+        }
+      }
+    },
+    "Ses Seviyesi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume"
+          }
+        }
+      }
+    },
+    "Ses, telefon kilitliyken ve diğer uygulamalardaki müzikle birlikte çalmaya devam eder." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound keeps playing while your phone is locked and alongside music from other apps."
           }
         }
       }
@@ -3417,6 +3507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Developer"
+          }
+        }
+      }
+    },
+    "Yağmur" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rain"
           }
         }
       }
@@ -3949,6 +4049,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You're not at a desk right now."
+          }
+        }
+      }
+    },
+    "Şömine" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fireplace"
           }
         }
       }

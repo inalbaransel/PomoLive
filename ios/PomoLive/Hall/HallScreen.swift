@@ -25,6 +25,7 @@ struct HallScreen: View {
         case editRoom(RoomState)
         case chat
         case tasks
+        case sounds
 
         var id: String {
             switch self {
@@ -34,6 +35,7 @@ struct HallScreen: View {
             case .editRoom: "edit"
             case .chat: "chat"
             case .tasks: "tasks"
+            case .sounds: "sounds"
             }
         }
     }
@@ -67,6 +69,9 @@ struct HallScreen: View {
                                 }
                         }
                         .presentationDetents([.medium, .large])
+                    case .sounds:
+                        SoundsSheet(theme: app.hall.layout?.roomTheme)
+                            .presentationDetents([.medium])
                     case .tasks:
                         NavigationStack {
                             TasksView()
@@ -215,6 +220,20 @@ struct HallScreen: View {
 
     private var floatingControls: some View {
         VStack(spacing: 12) {
+            Button {
+                sheet = .sounds
+            } label: {
+                Image(systemName: app.sounds.current?.symbol ?? "headphones")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundStyle(app.sounds.current?.color ?? .primary)
+                    .symbolEffect(.variableColor.iterative, isActive: app.sounds.current != nil)
+                    .contentTransition(.symbolEffect(.replace))
+                    .frame(width: 48, height: 48)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .circle)
+            .accessibilityLabel("Odak Sesleri")
+
             Button {
                 sheet = .chat
             } label: {

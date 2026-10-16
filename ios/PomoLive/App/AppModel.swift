@@ -29,6 +29,7 @@ final class AppModel {
     let categories: CategoryStore
     let chat: ChatStore
     let tasks: TaskStore
+    let sounds = AmbientPlayer()
 
     @ObservationIgnored private let socket: LibrarySocket
     @ObservationIgnored private let sessionStore = SessionStore()
@@ -134,6 +135,7 @@ final class AppModel {
         categories.reset()
         chat.reset()
         tasks.reset()
+        sounds.stop()
         user = nil
         connection = .offline
         phase = .signedOut
