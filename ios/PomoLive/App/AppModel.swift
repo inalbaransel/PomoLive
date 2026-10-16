@@ -32,6 +32,7 @@ final class AppModel {
     let friends: FriendsStore
     let events: RoomEventsStore
     let sounds = AmbientPlayer()
+    @ObservationIgnored private let widgets = WidgetBridge()
 
     @ObservationIgnored private let socket: LibrarySocket
     @ObservationIgnored private let sessionStore = SessionStore()
@@ -56,6 +57,7 @@ final class AppModel {
         phase = sessionStore.token == nil ? .signedOut : .signedIn
         if phase == .signedIn, let restored = sessionStore.profile { adopt(restored) }
 
+        widgets.start(self)
         Task { [weak self, events = socket.events] in
             for await event in events { self?.handle(event) }
         }

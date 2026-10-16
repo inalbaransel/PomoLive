@@ -282,6 +282,16 @@
         }
       }
     },
+    "%lld gün seri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld-day streak"
+          }
+        }
+      }
+    },
     "%lld katılıyor" : {
       "localizations" : {
         "en" : {
@@ -390,6 +400,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld unread messages"
+          }
+        }
+      }
+    },
+    "%lld sa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h"
           }
         }
       }
@@ -1082,12 +1102,38 @@
         }
       }
     },
+    "Bugün %@ · %lld gün seri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today %@ · %lld-day streak"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bugün %1$@ · %2$lld gün seri"
+          }
+        }
+      }
+    },
     "Bugün Odak" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Focus Today"
+          }
+        }
+      }
+    },
+    "Bugünkü Odak" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Focus"
           }
         }
       }
@@ -1690,6 +1736,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Daily goal reached"
+          }
+        }
+      }
+    },
+    "Günlük hedefin, serin ve masadaysan canlı sayaç." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your daily goal, streak and a live timer while you're at your desk."
           }
         }
       }
@@ -2434,6 +2490,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desk %lld, empty"
+          }
+        }
+      }
+    },
+    "Masada değilsin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not at your desk"
           }
         }
       }
@@ -4183,6 +4249,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ this week"
+          }
+        }
+      }
+    },
+    "bugün" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "today"
           }
         }
       }

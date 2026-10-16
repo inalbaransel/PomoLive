@@ -26,6 +26,12 @@ struct MainTabView: View {
         .tabViewBottomAccessory(isEnabled: app.seat.desk != nil) {
             SeatAccessoryView { openRoom = RoomRoute(target: .automatic) }
         }
+        // Widgets link here to bring the reader back to their desk.
+        .onOpenURL { url in
+            guard url.scheme == "pomolive", url.host() == "desk" else { return }
+            selection = .rooms
+            openRoom = RoomRoute(target: .automatic)
+        }
         .fullScreenCover(item: $openRoom, onDismiss: refreshAfterRoom) { route in
             HallScreen(target: route.target)
         }
