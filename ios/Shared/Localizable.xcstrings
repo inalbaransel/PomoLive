@@ -23,6 +23,16 @@
       },
       "shouldTranslate" : false
     },
+    "%%%lld tamamlandı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%% complete"
+          }
+        }
+      }
+    },
     "%@ ağırlıklı" : {
       "localizations" : {
         "en" : {
@@ -404,6 +414,22 @@
         }
       }
     },
+    "%lld/%lld rozet kazanıldı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld badges earned"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld rozet kazanıldı"
+          }
+        }
+      }
+    },
     "+%lld" : {
       "localizations" : {
         "en" : {
@@ -415,12 +441,52 @@
       },
       "shouldTranslate" : false
     },
+    "10 Saat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 Hours"
+          }
+        }
+      }
+    },
+    "30 gün üst üste çalış." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus 30 days in a row."
+          }
+        }
+      }
+    },
     "3–20 karakter: küçük harf, rakam, alt çizgi ve nokta. Profilinde ve odalarda görünür." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "3–20 characters: lowercase letters, digits, underscores and dots. Shown on your profile and in rooms."
+          }
+        }
+      }
+    },
+    "50 oturum tamamla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish 50 sessions."
+          }
+        }
+      }
+    },
+    "7 gün üst üste çalış." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus 7 days in a row."
           }
         }
       }
@@ -532,6 +598,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponytail"
+          }
+        }
+      }
+    },
+    "Aylık Seri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month Streak"
           }
         }
       }
@@ -1126,6 +1202,16 @@
         }
       }
     },
+    "Elli Seans" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fifty Sessions"
+          }
+        }
+      }
+    },
     "En alta git" : {
       "localizations" : {
         "en" : {
@@ -1156,6 +1242,26 @@
         }
       }
     },
+    "Erken Kuş" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Early Bird"
+          }
+        }
+      }
+    },
+    "Gece 23–04 arası 5 oturum başlat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start 5 sessions between 11 pm and 4 am."
+          }
+        }
+      }
+    },
     "Gece Haritası" : {
       "localizations" : {
         "en" : {
@@ -1172,6 +1278,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Night Café"
+          }
+        }
+      }
+    },
+    "Gece Kuşu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night Owl"
           }
         }
       }
@@ -1444,6 +1560,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly Goal"
+          }
+        }
+      }
+    },
+    "Haftalık Seri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week Streak"
           }
         }
       }
@@ -1774,6 +1900,16 @@
         }
       }
     },
+    "Kazanıldı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned"
+          }
+        }
+      }
+    },
     "Kedi" : {
       "localizations" : {
         "en" : {
@@ -1990,6 +2126,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stars through the portholes, consoles"
+          }
+        }
+      }
+    },
+    "Maraton" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marathon"
           }
         }
       }
@@ -2971,6 +3117,16 @@
       },
       "shouldTranslate" : false
     },
+    "Rozetler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges"
+          }
+        }
+      }
+    },
     "Saat" : {
       "localizations" : {
         "en" : {
@@ -2987,6 +3143,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clock Style"
+          }
+        }
+      }
+    },
+    "Sabah 05–08 arası 5 oturum başlat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start 5 sessions between 5 and 8 am."
           }
         }
       }
@@ -3171,6 +3337,16 @@
         }
       }
     },
+    "Son 30 günde 4 farklı kategoride çalış." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus in 4 different categories in 30 days."
+          }
+        }
+      }
+    },
     "Son 7 Gün" : {
       "localizations" : {
         "en" : {
@@ -3341,6 +3517,16 @@
         }
       }
     },
+    "Tek oturumda 2 saat odaklan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus for 2 hours in one session."
+          }
+        }
+      }
+    },
     "Tekrar Gönder" : {
       "localizations" : {
         "en" : {
@@ -3377,6 +3563,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ focused in total"
+          }
+        }
+      }
+    },
+    "Toplam 10 saat odaklan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus for 10 hours in total."
+          }
+        }
+      }
+    },
+    "Toplam 100 saat odaklan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus for 100 hours in total."
           }
         }
       }
@@ -3611,6 +3817,16 @@
         }
       }
     },
+    "Yüz Saat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100 Hours"
+          }
+        }
+      }
+    },
     "Zaten hesabım var" : {
       "localizations" : {
         "en" : {
@@ -3707,6 +3923,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Flower Girl"
+          }
+        }
+      }
+    },
+    "Çok Yönlü" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All-Rounder"
           }
         }
       }
@@ -3841,6 +4067,16 @@
         }
       }
     },
+    "İlk Adım" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First Step"
+          }
+        }
+      }
+    },
     "İlk herkese açık odayı sen aç; Keşfet'te herkes görsün." : {
       "localizations" : {
         "en" : {
@@ -3857,6 +4093,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Write the first message; everyone in the room sees it instantly."
+          }
+        }
+      }
+    },
+    "İlk odak oturumunu tamamla." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish your first focus session."
           }
         }
       }

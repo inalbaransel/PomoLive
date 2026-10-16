@@ -30,6 +30,9 @@ struct UserProfileView: View {
                     Section {
                         StatsHeadline(summary: stats, dailyGoalMinutes: profile.dailyGoalMinutes, weeklyGoalMinutes: profile.weeklyGoalMinutes)
                     }
+                    if let badges = stats.badges, badges.contains(where: \.earned) {
+                        Section("Rozetler") { BadgeShelf(badges: badges.filter(\.earned)) }
+                    }
                     Section("Son 7 Gün") {
                         WeekChart(days: stats.last7Days)
                     }

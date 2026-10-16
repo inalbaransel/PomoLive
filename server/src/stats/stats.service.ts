@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CategoryInfo } from '../categories/built-in-categories.js';
 import { PrismaService } from '../infra/prisma.service.js';
+import { Badge, computeBadges } from './badges.js';
 import {
   DAY_MS,
   localDateKey,
@@ -31,6 +32,8 @@ export interface StatsSummary {
   /** Days with recorded focus (last year); charts unlock once this reaches `requiredDays`. */
   activeDays: number;
   requiredDays: number;
+  /** Milestones from the last year of history plus lifetime totals. */
+  badges: Badge[];
 }
 
 export interface HistoryEntry {
@@ -135,6 +138,13 @@ export class StatsService {
       categories: StatsService.sorted(categories),
       activeDays: days.size,
       requiredDays: REQUIRED_ACTIVE_DAYS,
+      badges: computeBadges(
+        sessions,
+        totals._sum.focusedMs ?? 0,
+        totals._count,
+        timeZone,
+        now,
+      ),
     };
   }
 

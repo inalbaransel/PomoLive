@@ -360,6 +360,8 @@ struct StatsSummary: Decodable, Hashable, Sendable {
     var last7Days: [DayTotal]
     var categories: [CategoryTotal]
     /// Days with recorded focus; missing from older servers, which always count as unlocked.
+    /// Missing from servers older than badges.
+    var badges: [Badge]?
     var activeDays: Int?
     var requiredDays: Int?
 
@@ -378,6 +380,13 @@ struct HistoryEntry: Decodable, Hashable, Sendable, Identifiable {
     var startedAt: Int64
     var endedAt: Int64
     var focusedMs: Int64
+}
+
+/// A milestone; unknown ids from newer servers are skipped.
+struct Badge: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var progress: Double
+    var earned: Bool
 }
 
 /// A to-do on the reader's own list.

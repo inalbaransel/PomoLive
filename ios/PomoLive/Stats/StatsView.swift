@@ -21,6 +21,10 @@ struct StatsView: View {
                         StatsHeadline(summary: summary, dailyGoalMinutes: app.user?.dailyGoalMinutes, weeklyGoalMinutes: app.user?.weeklyGoalMinutes)
                     }
 
+                    if let badges = summary.badges {
+                        Section("Rozetler") { BadgeShelf(badges: badges) }
+                    }
+
                     Section("Son 7 Gün") {
                         WeekChart(days: summary.last7Days)
                     }
