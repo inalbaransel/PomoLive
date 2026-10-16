@@ -23,6 +23,7 @@ import { RoomMembersService } from '../community/room-members.service.js';
 import { SocialService } from '../community/social.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
+import { RoomEventsService } from '../rooms/room-events.service.js';
 import { StatsService } from '../stats/stats.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
 import { UsersRepository } from '../users/users.repository.js';
@@ -35,19 +36,23 @@ import {
   checkUsernameSchema,
   ClientEvent,
   createCategorySchema,
+  createEventSchema,
   createRoomSchema,
   createTaskSchema,
   deleteAccountSchema,
   deleteCategorySchema,
+  eventSchema,
   deleteChatSchema,
   deleteRoomSchema,
   deleteTaskSchema,
   heartbeatSchema,
   historySchema,
   joinRoomSchema,
+  listEventsSchema,
   parsePayload,
   refSchema,
   roomMemberSchema,
+  rsvpEventSchema,
   roomMembersSchema,
   searchUsersSchema,
   previewRoomSchema,
@@ -103,6 +108,7 @@ export class LibraryGateway
     private readonly chat: ChatService,
     private readonly tasks: TasksService,
     private readonly social: SocialService,
+    private readonly events: RoomEventsService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -561,6 +567,64 @@ export class LibraryGateway
   ) {
     const { id } = parsePayload(deleteTaskSchema, data);
     await this.tasks.delete(this.sessionOf(socket).user.id, id);
+    return reply(data, {});
+  }
+
+  // MARK: Room events
+
+  @SubscribeMessage(ClientEvent.listEvents)
+  async onListEvents(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId } = parsePayload(listEventsSchema, data);
+    return reply(data, {
+      events: await this.events.list(
+        this.sessionOf(socket).user.id,
+        roomId,
+        Date.now(),
+      ),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.createEvent)
+  async onCreateEvent(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { roomId, title, startsAt, durationMinutes } = parsePayload(
+      createEventSchema,
+      data,
+    );
+    return reply(data, {
+      event: await this.events.create(
+        this.sessionOf(socket).user.id,
+        roomId,
+        title,
+        startsAt,
+        durationMinutes,
+        Date.now(),
+      ),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.deleteEvent)
+  async onDeleteEvent(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { eventId } = parsePayload(eventSchema, data);
+    await this.events.delete(this.sessionOf(socket).user.id, eventId);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.rsvpEvent)
+  async onRsvpEvent(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { eventId, going } = parsePayload(rsvpEventSchema, data);
+    await this.events.rsvp(this.sessionOf(socket).user.id, eventId, going);
     return reply(data, {});
   }
 

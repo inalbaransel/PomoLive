@@ -26,6 +26,7 @@ struct HallScreen: View {
         case chat
         case tasks
         case sounds
+        case events(RoomState)
 
         var id: String {
             switch self {
@@ -36,6 +37,7 @@ struct HallScreen: View {
             case .chat: "chat"
             case .tasks: "tasks"
             case .sounds: "sounds"
+            case .events: "events"
             }
         }
     }
@@ -67,6 +69,22 @@ struct HallScreen: View {
                                         Button("Kapat", systemImage: "xmark", role: .close) { self.sheet = nil }
                                     }
                                 }
+                        }
+                        .presentationDetents([.medium, .large])
+                    case .events(let room):
+                        NavigationStack {
+                            ScrollView {
+                                RoomEventsList(roomId: room.id, isOwner: app.hall.isOwner)
+                                    .padding(16)
+                            }
+                            .background(Color(.systemGroupedBackground))
+                            .navigationTitle("Etkinlikler")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .topBarLeading) {
+                                    Button("Kapat", systemImage: "xmark", role: .close) { self.sheet = nil }
+                                }
+                            }
                         }
                         .presentationDetents([.medium, .large])
                     case .sounds:
@@ -307,6 +325,9 @@ struct HallScreen: View {
             Menu("Diğer", systemImage: "ellipsis") {
                 Toggle(isOn: $showsMiniMap.animation(.spring(duration: 0.4, bounce: 0.2))) {
                     Label("Mini Harita", systemImage: "map")
+                }
+                if let room = app.hall.room, room.kind != .hall {
+                    Button("Etkinlikler", systemImage: "calendar") { sheet = .events(room) }
                 }
 
                 Button {

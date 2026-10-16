@@ -33,12 +33,32 @@
         }
       }
     },
+    "%@ 10 dakika sonra" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ starts in 10 minutes"
+          }
+        }
+      }
+    },
     "%@ ağırlıklı" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostly %@"
+          }
+        }
+      }
+    },
+    "%@ başladı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has started"
           }
         }
       }
@@ -258,6 +278,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld katılıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld going"
           }
         }
       }
@@ -722,6 +752,16 @@
         }
       }
     },
+    "Başlangıç" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts"
+          }
+        }
+      }
+    },
     "Benim kategorilerim" : {
       "localizations" : {
         "en" : {
@@ -778,6 +818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sit at a desk in any room and focus for at least a minute to see it here."
+          }
+        }
+      }
+    },
+    "Bir oturum planla; katılanlara başlamadan önce hatırlatma gider." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan a session; everyone coming gets a reminder before it starts."
           }
         }
       }
@@ -868,6 +918,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "An account with this email already exists. Try signing in."
+          }
+        }
+      }
+    },
+    "Bu etkinlik iptal edilmiş." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This event was cancelled."
           }
         }
       }
@@ -1308,6 +1368,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Early Bird"
+          }
+        }
+      }
+    },
+    "Etkinlik Planla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan Event"
+          }
+        }
+      }
+    },
+    "Etkinlik iptal edilsin mi?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Event?"
+          }
+        }
+      }
+    },
+    "Etkinlikler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events"
+          }
+        }
+      }
+    },
+    "Etkinliği İptal Et" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Event"
           }
         }
       }
@@ -1944,6 +2044,36 @@
         }
       }
     },
+    "Katılacağım" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I'm In"
+          }
+        }
+      }
+    },
+    "Katılacağını söyleyenlere 10 dakika önce ve başlarken hatırlatma gider." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone coming is reminded 10 minutes before and at the start."
+          }
+        }
+      }
+    },
+    "Katılacağını söyleyenlerin hatırlatmaları da kaldırılır." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminders for everyone coming are removed too."
+          }
+        }
+      }
+    },
     "Katılmadan önce herkes bunu okur. %lld/%lld" : {
       "localizations" : {
         "en" : {
@@ -1966,6 +2096,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Joined %@"
+          }
+        }
+      }
+    },
+    "Katılıyorsun" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Going"
           }
         }
       }
@@ -2888,6 +3028,16 @@
         }
       }
     },
+    "Odaya gir, masana otur." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the room and take your desk."
+          }
+        }
+      }
+    },
     "Odaya girilemedi" : {
       "localizations" : {
         "en" : {
@@ -3084,6 +3234,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Take a desk in a pixel library and work alongside other readers."
+          }
+        }
+      }
+    },
+    "Planla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan"
+          }
+        }
+      }
+    },
+    "Planlanmış bir etkinlik yok." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No events planned."
           }
         }
       }
@@ -3373,6 +3543,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A quiet library, always open."
+          }
+        }
+      }
+    },
+    "Seçenekler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
           }
         }
       }
@@ -4157,6 +4337,16 @@
         }
       }
     },
+    "Örn. Sabah 3 pomodoro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E.g. Morning: 3 pomodoros"
+          }
+        }
+      }
+    },
     "Özel" : {
       "localizations" : {
         "en" : {
@@ -4415,6 +4605,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Şu an devam ediyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Happening now"
           }
         }
       }

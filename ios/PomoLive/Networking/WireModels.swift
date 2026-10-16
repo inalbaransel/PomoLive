@@ -417,6 +417,21 @@ struct FriendsOverview: Decodable, Sendable {
     var leaderboard: [LeaderboardRow]
 }
 
+/// A session the owner scheduled in a room.
+struct RoomEventItem: Decodable, Hashable, Sendable, Identifiable {
+    var id: String
+    var roomId: String
+    var title: String
+    var startsAt: Int64
+    var durationMinutes: Int
+    var goingCount: Int
+    var isGoing: Bool
+
+    var start: Date { Date(timeIntervalSince1970: Double(startsAt) / 1000) }
+    var end: Date { start.addingTimeInterval(Double(durationMinutes) * 60) }
+    func isLive(at now: Date) -> Bool { start <= now && now < end }
+}
+
 /// A milestone; unknown ids from newer servers are skipped.
 struct Badge: Decodable, Hashable, Sendable, Identifiable {
     var id: String
@@ -467,4 +482,6 @@ enum LibraryEvent: Sendable {
     case chatTyping(roomId: String, user: PublicUser)
     /// Someone the reader follows sat down at a desk in `roomId`.
     case friendStarted(roomId: String, desk: DeskRecord)
+    /// A room's scheduled events changed; reload them.
+    case roomEventsChanged(roomId: String)
 }

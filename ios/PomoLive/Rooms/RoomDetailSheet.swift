@@ -72,6 +72,8 @@ struct RoomDetailSheet: View {
 
                 stats(room)
 
+                RoomEventsList(roomId: room.id, isOwner: preview.owner?.id == app.user?.id)
+
                 people(room)
             }
             .padding(16)

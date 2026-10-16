@@ -926,6 +926,76 @@ describe('Library realtime protocol (e2e)', () => {
     friend.close();
   });
 
+  it('schedules room events that readers can join', async () => {
+    const { client: owner } = await signedInWithId('Planlayan');
+    const { client: guest } = await signedInWithId('Katilan');
+    const { result } = await owner.send('room:create', {
+      name: 'Etkinlik Odası',
+      symbol: 'books.vertical.fill',
+      color: 'indigo',
+      visibility: 'PUBLIC',
+    });
+    const roomId = result.room.id;
+    const startsAt = Date.now() + 24 * 3_600_000;
+
+    expect(
+      await guest.send('event:create', {
+        roomId,
+        title: 'Gizli',
+        startsAt,
+        durationMinutes: 60,
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    expect(
+      await owner.send('event:create', {
+        roomId,
+        title: 'Geçmiş',
+        startsAt: Date.now() - 3_600_000,
+        durationMinutes: 60,
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_PAYLOAD' } });
+
+    const created = (
+      await owner.send('event:create', {
+        roomId,
+        title: '3 pomodoro',
+        startsAt,
+        durationMinutes: 90,
+      })
+    ).result.event;
+    expect(created).toMatchObject({
+      title: '3 pomodoro',
+      goingCount: 1,
+      isGoing: true,
+    });
+    await owner.next((frame) => frame.event === 'room:events');
+
+    expect(
+      (await guest.send('event:rsvp', { eventId: created.id, going: true })).ok,
+    ).toBe(true);
+    const listed = (await guest.send('event:list', { roomId })).result.events;
+    expect(listed).toMatchObject([
+      { id: created.id, goingCount: 2, isGoing: true },
+    ]);
+
+    await guest.send('event:rsvp', { eventId: created.id, going: false });
+    expect(
+      (await guest.send('event:list', { roomId })).result.events[0],
+    ).toMatchObject({ goingCount: 1, isGoing: false });
+
+    expect(
+      await guest.send('event:delete', { eventId: created.id }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    expect((await owner.send('event:delete', { eventId: created.id })).ok).toBe(
+      true,
+    );
+    expect((await guest.send('event:list', { roomId })).result.events).toEqual(
+      [],
+    );
+    owner.close();
+    guest.close();
+  });
+
   it('deletes an account only with the right password', async () => {
     const client = await TestClient.connect(url);
     const email = `silinecek-${randomUUID()}@example.com`;

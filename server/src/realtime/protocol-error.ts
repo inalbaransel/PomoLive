@@ -18,6 +18,7 @@ export type ProtocolErrorCode =
   | 'CATEGORY_NOT_FOUND'
   | 'MESSAGE_NOT_FOUND'
   | 'TASK_NOT_FOUND'
+  | 'EVENT_NOT_FOUND'
   | 'INTERNAL';
 
 /** A failure the client is expected to handle; serialised into a `reply` with `ok: false`. */

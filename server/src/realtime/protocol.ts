@@ -46,6 +46,10 @@ export const ClientEvent = {
   unfollow: 'user:unfollow',
   searchUsers: 'user:search',
   friends: 'friends:list',
+  listEvents: 'event:list',
+  createEvent: 'event:create',
+  deleteEvent: 'event:delete',
+  rsvpEvent: 'event:rsvp',
   createTask: 'task:create',
   setTaskDone: 'task:done',
   deleteTask: 'task:delete',
@@ -64,6 +68,7 @@ export const ServerEvent = {
   chatDeleted: 'chat:deleted',
   chatTyping: 'chat:typing',
   friendStarted: 'friend:started',
+  roomEventsChanged: 'room:events',
 } as const;
 
 const displayName = z.string().trim().min(2).max(24);
@@ -274,6 +279,23 @@ export const deleteTaskSchema = z.object({ id: uuid });
 export const searchUsersSchema = z.object({
   query: z.string().trim().min(2).max(24),
 });
+
+export const listEventsSchema = z.object({ roomId: uuid });
+
+export const createEventSchema = z.object({
+  roomId: uuid,
+  title: label(2, 60),
+  startsAt: z.number().int().positive(),
+  durationMinutes: z
+    .number()
+    .int()
+    .min(15)
+    .max(8 * 60),
+});
+
+export const eventSchema = z.object({ eventId: uuid });
+
+export const rsvpEventSchema = z.object({ eventId: uuid, going: z.boolean() });
 
 export const deleteAccountSchema = z.object({ password });
 

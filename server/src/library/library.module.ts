@@ -4,6 +4,7 @@ import { RoomEventBus } from '../realtime/room-event-bus.js';
 import { RoomsRepository } from '../rooms/rooms.repository.js';
 import { RoomActivityRepository } from '../rooms/room-activity.js';
 import { RoomsService } from '../rooms/rooms.service.js';
+import { RoomEventsService } from '../rooms/room-events.service.js';
 import { UsersModule } from '../users/users.module.js';
 import { DeskStore } from './desk-store.js';
 import { FocusSessionsRepository } from './focus-sessions.repository.js';
@@ -23,6 +24,7 @@ import { RoomDirectory } from './room-directory.js';
     RoomsRepository,
     RoomsService,
     RoomActivityRepository,
+    RoomEventsService,
   ],
   exports: [
     LibraryService,
@@ -32,6 +34,7 @@ import { RoomDirectory } from './room-directory.js';
     DeskStore,
     FocusSessionsRepository,
     RoomsRepository,
+    RoomEventsService,
   ],
 })
 export class LibraryModule {}

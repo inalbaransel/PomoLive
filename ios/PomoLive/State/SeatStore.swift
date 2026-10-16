@@ -72,7 +72,7 @@ final class SeatStore {
             if roomId == room?.id { update(desk: nil, room: nil) }
         case .roomUpdated(let room):
             if room.id == self.room?.id { update(desk: desk, room: room) }
-        case .presence, .memberRemoved, .chatMessage, .chatDeleted, .chatTyping, .friendStarted:
+        case .presence, .memberRemoved, .chatMessage, .chatDeleted, .chatTyping, .friendStarted, .roomEventsChanged:
             break
         }
     }

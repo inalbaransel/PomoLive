@@ -30,6 +30,7 @@ final class AppModel {
     let chat: ChatStore
     let tasks: TaskStore
     let friends: FriendsStore
+    let events: RoomEventsStore
     let sounds = AmbientPlayer()
 
     @ObservationIgnored private let socket: LibrarySocket
@@ -49,6 +50,7 @@ final class AppModel {
         chat = ChatStore(socket: socket)
         tasks = TaskStore(socket: socket)
         friends = FriendsStore(socket: socket)
+        events = RoomEventsStore(socket: socket)
 
         // A profile cached by an older version may not decode; the session token alone is enough to reconnect.
         phase = sessionStore.token == nil ? .signedOut : .signedIn
@@ -138,6 +140,7 @@ final class AppModel {
         chat.reset()
         tasks.reset()
         friends.reset()
+        events.reset()
         sounds.stop()
         user = nil
         connection = .offline
@@ -154,6 +157,7 @@ final class AppModel {
             hall.apply(event)
             chat.apply(event)
             friends.apply(event)
+            events.apply(event)
             seat.apply(event)
         }
     }

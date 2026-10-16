@@ -372,6 +372,42 @@ struct FriendsCommand: LibraryCommand {
     static let event = "friends:list"
 }
 
+struct RoomEventsResult: Decodable, Sendable {
+    var events: [RoomEventItem]
+}
+
+struct RoomEventResult: Decodable, Sendable {
+    var event: RoomEventItem
+}
+
+struct ListRoomEventsCommand: LibraryCommand {
+    typealias Result = RoomEventsResult
+    static let event = "event:list"
+    var roomId: String
+}
+
+struct CreateRoomEventCommand: LibraryCommand {
+    typealias Result = RoomEventResult
+    static let event = "event:create"
+    var roomId: String
+    var title: String
+    var startsAt: Int64
+    var durationMinutes: Int
+}
+
+struct DeleteRoomEventCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "event:delete"
+    var eventId: String
+}
+
+struct RsvpRoomEventCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "event:rsvp"
+    var eventId: String
+    var going: Bool
+}
+
 struct DeleteAccountCommand: LibraryCommand {
     typealias Result = NoResult
     static let event = "account:delete"
