@@ -11,6 +11,9 @@ struct UserProfile: Codable, Hashable, Sendable {
     var avatarSpriteId: String
     var bio: String?
     var statsVisible: Bool
+    /// Focus goals in minutes; missing or nil means no goal.
+    var dailyGoalMinutes: Int?
+    var weeklyGoalMinutes: Int?
 
     var publicUser: PublicUser {
         PublicUser(id: id, username: username, displayName: displayName, avatarSpriteId: avatarSpriteId)
@@ -35,6 +38,9 @@ struct PublicProfile: Decodable, Hashable, Sendable, Identifiable {
     var joinedAt: Int64
     var isSelf: Bool
     var statsVisible: Bool
+    /// Focus goals in minutes; missing or nil means no goal.
+    var dailyGoalMinutes: Int?
+    var weeklyGoalMinutes: Int?
     var focusingOn: FocusCategory?
     var stats: StatsSummary?
 }

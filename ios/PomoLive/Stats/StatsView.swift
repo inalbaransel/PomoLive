@@ -18,7 +18,7 @@ struct StatsView: View {
                     recentSessions
                 } else if let summary = app.stats.summary {
                     Section {
-                        StatsHeadline(summary: summary)
+                        StatsHeadline(summary: summary, dailyGoalMinutes: app.user?.dailyGoalMinutes, weeklyGoalMinutes: app.user?.weeklyGoalMinutes)
                     }
 
                     Section("Son 7 Gün") {
@@ -82,6 +82,59 @@ private struct RefreshKey: Hashable {
     var deskId: String?
 }
 
+/// Activity-style concentric rings: daily goal outside, weekly inside. Overflow past 100% wraps.
+struct GoalRings: View {
+    let daily: Double?
+    let weekly: Double?
+
+    var body: some View {
+        ZStack {
+            if let daily { ring(daily, color: .accentColor, inset: 0) }
+            if let weekly { ring(weekly, color: .green, inset: daily == nil ? 0 : 16) }
+            if (daily ?? 0) >= 1 {
+                Image(systemName: "checkmark")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(Color.accentColor)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.8, bounce: 0.2), value: daily)
+        .animation(.spring(duration: 0.8, bounce: 0.2), value: weekly)
+        .accessibilityElement()
+        .accessibilityLabel("Hedef ilerlemesi")
+    }
+
+    private func ring(_ progress: Double, color: Color, inset: CGFloat) -> some View {
+        ZStack {
+            Circle().stroke(color.opacity(0.18), lineWidth: 12)
+            Circle()
+                .trim(from: 0, to: min(max(progress, 0.001), 1))
+                .stroke(color, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .padding(inset)
+    }
+}
+
+/// "45 dk kaldı" or "Hedef tamam! 🎉" under today's number.
+struct GoalCaption: View {
+    let doneMs: Int64
+    let goalMinutes: Int
+
+    var body: some View {
+        let remaining = Int64(goalMinutes) * 60_000 - doneMs
+        if remaining <= 0 {
+            Label("Günlük hedef tamam", systemImage: "checkmark.seal.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.green)
+        } else {
+            Text("Hedefe \(formattedFocus(remaining)) kaldı")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
 /// Shown until the reader has focused on enough separate days for charts to mean something.
 struct StatsUnlockCard: View {
     let summary: StatsSummary
@@ -132,20 +185,36 @@ struct StatsUnlockCard: View {
 /// Today in large rounded numerals, with the week, streak and lifetime total beneath.
 struct StatsHeadline: View {
     let summary: StatsSummary
+    var dailyGoalMinutes: Int?
+    var weeklyGoalMinutes: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Bugün Odak")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text(formattedFocus(summary.todayMs))
-                    .font(.system(size: 44, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color.accentColor)
-                    .contentTransition(.numericText())
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Bugün Odak")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(formattedFocus(summary.todayMs))
+                        .font(.system(size: 44, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.accentColor)
+                        .contentTransition(.numericText())
+                    if let dailyGoalMinutes {
+                        GoalCaption(doneMs: summary.todayMs, goalMinutes: dailyGoalMinutes)
+                    }
+                }
+                Spacer(minLength: 0)
+                if dailyGoalMinutes != nil || weeklyGoalMinutes != nil {
+                    GoalRings(
+                        daily: dailyGoalMinutes.map { Double(summary.todayMs) / Double($0 * 60_000) },
+                        weekly: weeklyGoalMinutes.map { Double(summary.weekMs) / Double($0 * 60_000) }
+                    )
+                    .frame(width: 84, height: 84)
+                }
             }
             HStack(alignment: .top) {
-                column("Bu Hafta", value: formattedFocus(summary.weekMs))
+                column("Bu Hafta", value: formattedFocus(summary.weekMs),
+                       detail: weeklyGoalMinutes.map { String(localized: "Hedef \(formattedFocus(Int64($0) * 60_000))") })
                 Divider()
                 column("Seri", value: String(localized: "\(summary.streakDays) gün"))
                 Divider()

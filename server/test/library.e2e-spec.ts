@@ -222,9 +222,20 @@ describe('Library realtime protocol (e2e)', () => {
     });
     await shy.send('room:join', { code: result.room.code });
     expect(
-      (await shy.send('profile:update', { statsVisible: false, bio: 'Selam' }))
-        .result.user,
-    ).toMatchObject({ statsVisible: false, bio: 'Selam' });
+      (
+        await shy.send('profile:update', {
+          statsVisible: false,
+          bio: 'Selam',
+          dailyGoalMinutes: 120,
+          weeklyGoalMinutes: 600,
+        })
+      ).result.user,
+    ).toMatchObject({
+      statsVisible: false,
+      bio: 'Selam',
+      dailyGoalMinutes: 120,
+      weeklyGoalMinutes: 600,
+    });
 
     const { result: members } = await owner.send('room:members', {
       roomId: result.room.id,
@@ -255,8 +266,17 @@ describe('Library realtime protocol (e2e)', () => {
       bio: 'Selam',
       statsVisible: false,
       stats: null,
+      dailyGoalMinutes: null,
       isSelf: false,
     });
+    expect(
+      (await shy.send('user:profile', { userId: shyId })).result.profile
+        .dailyGoalMinutes,
+    ).toBe(120);
+    expect(
+      (await shy.send('profile:update', { dailyGoalMinutes: 0 })).result.user
+        .dailyGoalMinutes,
+    ).toBeNull();
     const open = (await shy.send('user:profile', { userId: ownerId })).result
       .profile;
     expect(open).toMatchObject({

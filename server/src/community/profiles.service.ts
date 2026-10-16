@@ -16,6 +16,9 @@ export interface PublicProfile extends PublicUser {
   /** The category of the desk they hold right now. */
   focusingOn: CategoryInfo | null;
   stats: StatsSummary | null;
+  /** Goals are part of the focus data, so they are hidden along with it. */
+  dailyGoalMinutes: number | null;
+  weeklyGoalMinutes: number | null;
 }
 
 /** A reader's profile page as another reader sees it. */
@@ -47,6 +50,8 @@ export class ProfilesService {
       joinedAt: createdAt.getTime(),
       isSelf,
       focusingOn: desk?.category ?? null,
+      dailyGoalMinutes: showsStats ? card.dailyGoalMinutes : null,
+      weeklyGoalMinutes: showsStats ? card.weeklyGoalMinutes : null,
       stats,
     };
   }

@@ -28,7 +28,7 @@ struct UserProfileView: View {
                     }
                 } else if let stats = profile.stats {
                     Section {
-                        StatsHeadline(summary: stats)
+                        StatsHeadline(summary: stats, dailyGoalMinutes: profile.dailyGoalMinutes, weeklyGoalMinutes: profile.weeklyGoalMinutes)
                     }
                     Section("Son 7 Gün") {
                         WeekChart(days: stats.last7Days)

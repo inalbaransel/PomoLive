@@ -10,6 +10,8 @@ export interface PublicUser {
 export interface UserProfile extends PublicUser {
   bio: string | null;
   statsVisible: boolean;
+  dailyGoalMinutes: number | null;
+  weeklyGoalMinutes: number | null;
 }
 
 export type ProfileChanges = Partial<Omit<UserProfile, 'id'>>;

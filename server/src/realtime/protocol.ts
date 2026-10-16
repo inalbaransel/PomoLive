@@ -208,6 +208,21 @@ export const updateProfileSchema = z
       .transform((bio) => bio || null)
       .optional(),
     statsVisible: z.boolean().optional(),
+    /** 0 clears the goal. */
+    dailyGoalMinutes: z
+      .number()
+      .int()
+      .min(0)
+      .max(16 * 60)
+      .transform((minutes) => minutes || null)
+      .optional(),
+    weeklyGoalMinutes: z
+      .number()
+      .int()
+      .min(0)
+      .max(100 * 60)
+      .transform((minutes) => minutes || null)
+      .optional(),
   })
   .refine((changes) => Object.keys(changes).length > 0, {
     message: 'Nothing to change',

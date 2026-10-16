@@ -16,11 +16,11 @@ const profileSelect = {
   ...publicSelect,
   bio: true,
   statsVisible: true,
+  dailyGoalMinutes: true,
+  weeklyGoalMinutes: true,
 } as const;
 
-export interface UserCard extends PublicUser {
-  bio: string | null;
-  statsVisible: boolean;
+export interface UserCard extends UserProfile {
   createdAt: Date;
 }
 

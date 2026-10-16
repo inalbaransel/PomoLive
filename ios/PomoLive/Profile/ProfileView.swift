@@ -53,6 +53,7 @@ struct ProfileView: View {
                         }
                     }
 
+                    GoalsSection(user: user)
                     PrivacySection(user: user)
                 }
 
@@ -161,6 +162,52 @@ extension ProfileView {
     /// Preset choices plus the current value, so a custom duration picked elsewhere still shows.
     fileprivate static func options(_ presets: [Int], including value: Int) -> [Int] {
         Array(Set(presets + [value])).sorted()
+    }
+}
+
+/// Daily and weekly focus goals, saved on the server so they follow the reader across devices.
+private struct GoalsSection: View {
+    let user: UserProfile
+
+    @Environment(AppModel.self) private var app
+    @State private var error: LibraryError?
+
+    private static let dailyOptions = [0, 30, 60, 90, 120, 180, 240, 300, 360, 480]
+    private static let weeklyOptions = [0, 180, 300, 600, 900, 1200, 1500, 1800, 2400]
+
+    var body: some View {
+        Section {
+            Picker(selection: binding(\.dailyGoalMinutes, save: { UpdateProfileCommand(dailyGoalMinutes: $0) })) {
+                ForEach(Self.dailyOptions, id: \.self) { Text(Self.label($0)).tag($0) }
+            } label: {
+                SettingsLabel(title: "Günlük Hedef", systemName: "target", color: .indigo)
+            }
+            Picker(selection: binding(\.weeklyGoalMinutes, save: { UpdateProfileCommand(weeklyGoalMinutes: $0) })) {
+                ForEach(Self.weeklyOptions, id: \.self) { Text(Self.label($0)).tag($0) }
+            } label: {
+                SettingsLabel(title: "Haftalık Hedef", systemName: "calendar", color: .green)
+            }
+        } header: {
+            Text("Hedefler")
+        } footer: {
+            Text("İstatistik'te halkalar hedefe ne kadar yaklaştığını gösterir.")
+        }
+        .errorAlert($error)
+    }
+
+    private static func label(_ minutes: Int) -> String {
+        minutes == 0 ? String(localized: "Yok") : formattedFocus(Int64(minutes) * 60_000)
+    }
+
+    private func binding(_ keyPath: KeyPath<UserProfile, Int?>, save: @escaping (Int) -> UpdateProfileCommand) -> Binding<Int> {
+        Binding(
+            get: { user[keyPath: keyPath] ?? 0 },
+            set: { minutes in
+                Task {
+                    do { try await app.updateProfile(save(minutes)) } catch { self.error = LibraryError(error) }
+                }
+            }
+        )
     }
 }
 

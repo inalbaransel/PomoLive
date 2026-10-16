@@ -1288,6 +1288,26 @@
         }
       }
     },
+    "Günlük Hedef" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Goal"
+          }
+        }
+      }
+    },
+    "Günlük hedef tamam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily goal reached"
+          }
+        }
+      }
+    },
     "Günlük ortalama %@" : {
       "localizations" : {
         "en" : {
@@ -1304,6 +1324,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Daily streaks, weekly time and a breakdown by category."
+          }
+        }
+      }
+    },
+    "Haftalık Hedef" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly Goal"
           }
         }
       }
@@ -1344,6 +1374,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start with a preset or keep time freely, and follow along on the Lock Screen."
+          }
+        }
+      }
+    },
+    "Hedef %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goal %@"
+          }
+        }
+      }
+    },
+    "Hedef ilerlemesi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goal progress"
+          }
+        }
+      }
+    },
+    "Hedefe %@ kaldı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ left to your goal"
+          }
+        }
+      }
+    },
+    "Hedefler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goals"
           }
         }
       }
@@ -3321,6 +3391,16 @@
         }
       }
     },
+    "Yok" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
     "Yönetici" : {
       "localizations" : {
         "en" : {
@@ -3587,6 +3667,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Statistics"
+          }
+        }
+      }
+    },
+    "İstatistik'te halkalar hedefe ne kadar yaklaştığını gösterir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rings in Statistics show how close you are to your goals."
           }
         }
       }

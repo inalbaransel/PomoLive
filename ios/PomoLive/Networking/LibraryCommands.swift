@@ -224,6 +224,9 @@ struct UpdateProfileCommand: LibraryCommand {
     var avatarSpriteId: String?
     var bio: String?
     var statsVisible: Bool?
+    /// 0 clears the goal.
+    var dailyGoalMinutes: Int?
+    var weeklyGoalMinutes: Int?
 }
 
 struct PublicProfileResult: Decodable, Sendable {
