@@ -65,7 +65,7 @@ struct FocusModeView: View {
             }
         }
         .sheet(isPresented: $customizes) {
-            FocusModeSettings(style: $style, face: $face, tint: $tint, showsSeconds: $showsSeconds)
+            FocusModeSettings(style: style, face: $face, tint: $tint, showsSeconds: $showsSeconds)
                 .presentationDetents([.medium])
         }
     }
@@ -129,22 +129,22 @@ struct FocusModeView: View {
 
     private var controls: some View {
         VStack {
-            HStack {
+            HStack(spacing: 12) {
                 Button("Kapat", systemImage: "xmark") { dismiss() }
-                Spacer()
+                    .labelStyle(.iconOnly)
+                    .buttonBorderShape(.circle)
                 Picker("Görünüm", selection: $style) {
                     ForEach(FocusModeStyle.allCases) { option in
-                        Label(option.title, systemImage: option.symbol).tag(option)
+                        Text(option.title).tag(option)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 260)
-                Spacer()
-                Button("Özelleştir", systemImage: "slider.horizontal.3") { customizes = true }
+                .frame(maxWidth: 280)
+                Button("Özelleştir", systemImage: "paintpalette.fill") { customizes = true }
+                    .labelStyle(.iconOnly)
+                    .buttonBorderShape(.circle)
             }
-            .labelStyle(.iconOnly)
             .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
             .controlSize(.large)
             .tint(.white)
             Spacer()
@@ -167,7 +167,7 @@ struct FocusModeView: View {
 
 /// Face, ink colour and seconds for the focus mode.
 private struct FocusModeSettings: View {
-    @Binding var style: FocusModeStyle
+    let style: FocusModeStyle
     @Binding var face: ClockFace
     @Binding var tint: ClockTint
     @Binding var showsSeconds: Bool
@@ -177,17 +177,10 @@ private struct FocusModeSettings: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Görünüm") {
-                    Picker("Görünüm", selection: $style) {
-                        ForEach(FocusModeStyle.allCases) { Label($0.title, systemImage: $0.symbol).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                }
                 if style == .clock {
                     Section("Saat Stili") {
                         Picker("Saat Stili", selection: $face) {
-                            ForEach(ClockFace.allCases) { Label($0.title, systemImage: $0.symbol).tag($0) }
+                            ForEach(ClockFace.allCases) { Text($0.title).tag($0) }
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()

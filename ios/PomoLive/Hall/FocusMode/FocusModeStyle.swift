@@ -15,13 +15,6 @@ enum FocusModeStyle: String, CaseIterable, Identifiable {
         case .nightMap: "Gece Haritası"
         }
     }
-
-    var symbol: String {
-        switch self {
-        case .clock: "clock.fill"
-        case .nightMap: "moon.stars.fill"
-        }
-    }
 }
 
 /// The clock face in `FocusModeStyle.clock`.
@@ -35,14 +28,6 @@ enum ClockFace: String, CaseIterable, Identifiable {
         case .digital: "Dijital"
         case .ring: "Halka"
         case .analog: "Kadran"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .digital: "textformat.123"
-        case .ring: "circle.circle"
-        case .analog: "clock"
         }
     }
 }
