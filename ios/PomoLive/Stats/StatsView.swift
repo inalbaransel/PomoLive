@@ -303,8 +303,8 @@ struct HistoryRow: View {
     /// "14:05" today, "Dün" yesterday, otherwise a short date, as in Messages and Mail.
     private static func when(_ date: Date) -> String {
         let calendar = Calendar.current
-        if calendar.isDateInToday(date) { return date.formatted(date: .omitted, time: .shortened) }
+        if calendar.isDateInToday(date) { return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: .app)) }
         if calendar.isDateInYesterday(date) { return String(localized: "Dün") }
-        return date.formatted(.dateTime.day().month(.abbreviated))
+        return date.formatted(.dateTime.day().month(.abbreviated).locale(.app))
     }
 }

@@ -13,5 +13,6 @@ struct RootView: View {
         }
         .animation(.smooth, value: app.phase)
         .preferredColorScheme(appearance.colorScheme)
+        .environment(\.locale, .app)
     }
 }

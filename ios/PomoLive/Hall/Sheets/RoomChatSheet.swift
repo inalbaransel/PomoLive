@@ -274,7 +274,7 @@ private struct DayDivider: View {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) { return String(localized: "Bugün") }
         if calendar.isDateInYesterday(date) { return String(localized: "Dün") }
-        return date.formatted(.dateTime.day().month(.wide).weekday(.wide))
+        return date.formatted(.dateTime.day().month(.wide).weekday(.wide).locale(.app))
     }
 
     var body: some View {

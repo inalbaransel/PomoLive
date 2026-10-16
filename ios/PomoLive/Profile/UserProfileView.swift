@@ -90,7 +90,7 @@ private struct ProfileHeader: View {
     let profile: PublicProfile
 
     private var joined: String {
-        Date(timeIntervalSince1970: Double(profile.joinedAt) / 1000).formatted(.dateTime.month(.wide).year())
+        Date(timeIntervalSince1970: Double(profile.joinedAt) / 1000).formatted(.dateTime.month(.wide).year().locale(.app))
     }
 
     var body: some View {
