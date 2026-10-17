@@ -7,6 +7,7 @@ struct RoomsView: View {
     let openRoom: (HallStore.Target) -> Void
 
     @Environment(AppModel.self) private var app
+    @Environment(\.scenePhase) private var scenePhase
     @State private var sheet: Sheet?
     /// Opened once the sheet has finished dismissing, so two presentations never overlap.
     @State private var pendingRoom: HallStore.Target?
@@ -65,12 +66,13 @@ struct RoomsView: View {
                 showsFriends = true
             }
             .refreshable { await refresh() }
-            .task(id: app.connection) {
-                // Live counts change while the tab is visible; poll gently instead of streaming every room.
-                guard app.connection == .online else { return }
+            .task(id: app.connection == .online && scenePhase == .active) {
+                // Live counts change while the tab is on screen; poll gently instead of streaming every
+                // room, and not at all in the background or on other tabs.
+                guard app.connection == .online, scenePhase == .active else { return }
                 while !Task.isCancelled {
                     await refresh()
-                    try? await Task.sleep(for: .seconds(20))
+                    try? await Task.sleep(for: .seconds(30))
                 }
             }
             .sheet(item: $sheet, onDismiss: openPendingRoom) { sheet in
@@ -278,8 +280,7 @@ struct RoomsView: View {
     private func refresh() async {
         async let overview: Void = app.rooms.refresh()
         async let discover: Void = app.rooms.refreshDiscover()
-        async let activity: Void = app.rooms.refreshActivity()
-        _ = await (overview, discover, activity)
+        _ = await (overview, discover)
     }
 
     private var emptyState: some View {

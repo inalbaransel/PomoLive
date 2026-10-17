@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CategoryInfo } from '../categories/built-in-categories.js';
 import { PrismaService } from '../infra/prisma.service.js';
+import { RedisService } from '../infra/redis.service.js';
+import { RedisKeys } from '../library/redis-keys.js';
 import { Badge, computeBadges } from './badges.js';
 import {
   DAY_MS,
@@ -8,6 +10,9 @@ import {
   startOfLocalDay,
   startOfLocalWeek,
 } from '../library/local-day.js';
+
+/** Short, so today's numbers stay fresh across midnight too. */
+const SUMMARY_CACHE_SECONDS = 60;
 
 export interface CategoryTotal extends CategoryInfo {
   ms: number;
@@ -54,12 +59,32 @@ const REQUIRED_ACTIVE_DAYS = 2;
 
 @Injectable()
 export class StatsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+  ) {}
 
-  async summary(
+  /**
+   * The summary is read far more often than it changes (Stats, Profile, other readers' profiles),
+   * so it is cached per time zone until the reader's next recorded session or a minute passes.
+   */
+  async summary(userId: string, timeZone: string): Promise<StatsSummary> {
+    const key = RedisKeys.statsSummary(userId);
+    const cached = await this.redis.client.hget(key, timeZone);
+    if (cached) return JSON.parse(cached) as StatsSummary;
+    const summary = await this.compute(userId, timeZone, Date.now());
+    await this.redis.client
+      .multi()
+      .hset(key, timeZone, JSON.stringify(summary))
+      .expire(key, SUMMARY_CACHE_SECONDS)
+      .exec();
+    return summary;
+  }
+
+  private async compute(
     userId: string,
     timeZone: string,
-    now = Date.now(),
+    now: number,
   ): Promise<StatsSummary> {
     const [sessions, totals] = await Promise.all([
       this.prisma.focusSession.findMany({

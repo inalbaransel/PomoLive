@@ -61,7 +61,6 @@ export const ClientEvent = {
   report: 'report:create',
   registerPush: 'push:register',
   unregisterPush: 'push:unregister',
-  recentActivity: 'feed:recent',
   react: 'desk:react',
 } as const;
 

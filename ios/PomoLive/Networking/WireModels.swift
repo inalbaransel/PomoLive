@@ -237,6 +237,8 @@ struct DiscoverResult: Decodable, Sendable {
     var halls: Halls
     /// Best first.
     var rooms: [DiscoverRoom]
+    /// What just happened in halls and public rooms; missing from servers older than the feed.
+    var activity: [FeedItem]?
 }
 
 extension LibraryLayout {

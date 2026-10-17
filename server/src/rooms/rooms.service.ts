@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Glyph } from '../common/glyph.js';
+import { RedisService } from '../infra/redis.service.js';
 import { DeskStore } from '../library/desk-store.js';
 import { readTimer } from '../library/desk-timer.js';
 import {
@@ -21,6 +22,11 @@ import { PublicUser } from '../users/user.js';
 import { RoomActivity, RoomActivityRepository } from './room-activity.js';
 
 const MAX_OWNED_ROOMS = 10;
+/** Keşfet is the same for everyone apart from bans and the reader's own desk, so it is built once per window. */
+const DISCOVER_CACHE_KEY = 'discover:shared';
+const DISCOVER_CACHE_SECONDS = 15;
+
+type SharedDiscover = Pick<DiscoverResult, 'halls' | 'rooms'>;
 
 export interface RoomSummary {
   id: string;
@@ -94,19 +100,16 @@ export class RoomsService {
     private readonly directory: RoomDirectory,
     private readonly desks: DeskStore,
     private readonly activity: RoomActivityRepository,
+    private readonly redis: RedisService,
   ) {}
 
   async overview(userId: string, now: number): Promise<RoomsOverview> {
-    const [hallIds, publicRooms, myRooms, seat] = await Promise.all([
-      this.directory.hallIds(),
-      this.rooms.listPublic(),
+    // The open library's head count comes from the shared Keşfet cache, not a fresh scan.
+    const [shared, myRooms, seat] = await Promise.all([
+      this.sharedDiscover(now),
       this.rooms.listMine(userId),
       this.desks.seatOf(userId),
     ]);
-    const openCounts = await this.directory.liveCounts(
-      [...hallIds, ...publicRooms.map((room) => room.id)],
-      now,
-    );
     return {
       layout: LIBRARY_LAYOUT,
       layouts: LAYOUTS_BY_THEME,
@@ -115,21 +118,42 @@ export class RoomsService {
         now,
       ),
       seatedRoomId: seat?.roomId ?? null,
-      focusingNow: [...openCounts.values()].reduce(
-        (sum, count) => sum + count.occupiedCount,
-        0,
+      focusingNow: shared.rooms.reduce(
+        (sum, room) => sum + room.occupiedCount,
+        shared.halls.occupiedCount,
       ),
     };
   }
 
   async discover(userId: string, now: number): Promise<DiscoverResult> {
-    const [hallIds, listed, seat, bannedIds] = await Promise.all([
-      this.directory.hallIds(),
-      this.rooms.listPublic(),
+    const [shared, seat, bannedIds] = await Promise.all([
+      this.sharedDiscover(now),
       this.desks.seatOf(userId),
       this.rooms.bannedRoomIds(userId),
     ]);
-    const publicRooms = listed.filter((room) => !bannedIds.has(room.id));
+    return {
+      layout: LIBRARY_LAYOUT,
+      layouts: LAYOUTS_BY_THEME,
+      seatedRoomId: seat?.roomId ?? null,
+      halls: shared.halls,
+      rooms: shared.rooms.filter((room) => !bannedIds.has(room.id)),
+    };
+  }
+
+  /** Rooms appeared, changed or went away: rebuild Keşfet on the next request. */
+  private async forgetDiscover(): Promise<void> {
+    await this.redis.client.del(DISCOVER_CACHE_KEY);
+  }
+
+  /** Every public room ranked, plus the halls' totals; cached briefly in Redis for all readers. */
+  private async sharedDiscover(now: number): Promise<SharedDiscover> {
+    const cached = await this.redis.client.get(DISCOVER_CACHE_KEY);
+    if (cached) return JSON.parse(cached) as SharedDiscover;
+
+    const [hallIds, publicRooms] = await Promise.all([
+      this.directory.hallIds(),
+      this.rooms.listPublic(),
+    ]);
     const roomIds = publicRooms.map((room) => room.id);
     const [summaries, hallCounts, activity, members] = await Promise.all([
       this.summaries(
@@ -166,10 +190,7 @@ export class RoomsService {
     });
 
     const hallTotals = [...hallCounts.values()];
-    return {
-      layout: LIBRARY_LAYOUT,
-      layouts: LAYOUTS_BY_THEME,
-      seatedRoomId: seat?.roomId ?? null,
+    const shared: SharedDiscover = {
       halls: {
         occupiedCount: hallTotals.reduce(
           (sum, count) => sum + count.occupiedCount,
@@ -182,6 +203,13 @@ export class RoomsService {
       },
       rooms: rooms.sort((a, b) => b.score - a.score),
     };
+    await this.redis.client.set(
+      DISCOVER_CACHE_KEY,
+      JSON.stringify(shared),
+      'EX',
+      DISCOVER_CACHE_SECONDS,
+    );
+    return shared;
   }
 
   /** A room's card, blurb, owner and who is inside, for deciding whether to join. */
@@ -275,7 +303,7 @@ export class RoomsService {
         `At most ${MAX_OWNED_ROOMS} rooms per reader`,
       );
     }
-    return RoomsService.identity(
+    const created = RoomsService.identity(
       await this.rooms.create(
         ownerId,
         name,
@@ -285,6 +313,8 @@ export class RoomsService {
         description,
       ),
     );
+    await this.forgetDiscover();
+    return created;
   }
 
   /**
@@ -328,7 +358,11 @@ export class RoomsService {
     >,
   ): Promise<RoomIdentity> {
     await this.owned(ownerId, roomId);
-    return RoomsService.identity(await this.rooms.update(roomId, changes));
+    const updated = RoomsService.identity(
+      await this.rooms.update(roomId, changes),
+    );
+    await this.forgetDiscover();
+    return updated;
   }
 
   /** Removes a reader from the owner's room and keeps them out. */
@@ -369,6 +403,7 @@ export class RoomsService {
 
   async delete(roomId: string): Promise<void> {
     await this.rooms.delete(roomId);
+    await this.forgetDiscover();
   }
 
   private async resolveById(

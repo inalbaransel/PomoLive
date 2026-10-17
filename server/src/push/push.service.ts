@@ -70,13 +70,6 @@ export class PushService {
     await this.redis.client.zrem(onlineKey(userId), connectionId);
   }
 
-  private async isOnline(userId: string): Promise<boolean> {
-    return (
-      (await this.redis.client.zcount(onlineKey(userId), Date.now(), '+inf')) >
-      0
-    );
-  }
-
   // MARK: Notifications
 
   /** Tells offline followers that `user` sat down to focus. */
@@ -86,18 +79,36 @@ export class PushService {
       where: { followeeId: user.id },
       select: { followerId: true },
     });
-    const recipients: string[] = [];
-    for (const { followerId } of followers) {
-      if (await this.isOnline(followerId)) continue;
-      const fresh = await this.redis.client.set(
-        `push:friend:${followerId}:${user.id}`,
-        '1',
-        'EX',
-        FRIEND_PUSH_COOLDOWN_SECONDS,
-        'NX',
-      );
-      if (fresh) recipients.push(followerId);
-    }
+    if (!followers.length) return;
+    // Two pipelined round-trips however many followers: who is offline, then who is off cooldown.
+    const now = Date.now();
+    const presence = await followers
+      .reduce(
+        (batch, { followerId }) =>
+          batch.zcount(onlineKey(followerId), now, '+inf'),
+        this.redis.client.pipeline(),
+      )
+      .exec();
+    const offline = followers
+      .map(({ followerId }) => followerId)
+      .filter((_, index) => Number(presence?.[index]?.[1] ?? 0) === 0);
+    if (!offline.length) return;
+    const cooldowns = await offline
+      .reduce(
+        (batch, followerId) =>
+          batch.set(
+            `push:friend:${followerId}:${user.id}`,
+            '1',
+            'EX',
+            FRIEND_PUSH_COOLDOWN_SECONDS,
+            'NX',
+          ),
+        this.redis.client.pipeline(),
+      )
+      .exec();
+    const recipients = offline.filter(
+      (_, index) => cooldowns?.[index]?.[1] === 'OK',
+    );
     if (!recipients.length) return;
     // Localised on the device from these keys, so each reader reads it in their own language.
     await this.deliver(recipients, {

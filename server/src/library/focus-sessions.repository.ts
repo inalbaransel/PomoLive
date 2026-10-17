@@ -1,14 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../infra/prisma.service.js';
+import { RedisService } from '../infra/redis.service.js';
 import { readTimer } from './desk-timer.js';
 import { DeskRecord, VacateReason } from './library.types.js';
+import { RedisKeys } from './redis-keys.js';
 
 /** Sessions shorter than this are treated as accidental sits and not recorded. */
 const MINIMUM_RECORDED_FOCUS_MS = 60_000;
 
 @Injectable()
 export class FocusSessionsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+  ) {}
 
   async record(
     room: { id: string; name: string },
@@ -36,6 +41,7 @@ export class FocusSessionsRepository {
         endReason: reason === 'LEASE_EXPIRED' ? 'LEASE_EXPIRED' : 'STOOD_UP',
       },
     });
+    await this.redis.client.del(RedisKeys.statsSummary(desk.userId));
   }
 
   /** Recorded focus per reader in one room since `since`. */

@@ -252,15 +252,21 @@ export class LibraryGateway
     );
   }
 
+  /** Public rooms plus what just happened in them, in one round-trip for the Odalar tab. */
   @SubscribeMessage(ClientEvent.discoverRooms)
   async onDiscoverRooms(
     @ConnectedSocket() socket: WebSocket,
     @MessageBody() data: Payload,
   ) {
-    return reply(
-      data,
-      await this.rooms.discover(this.sessionOf(socket).user.id, Date.now()),
-    );
+    const me = this.sessionOf(socket).user.id;
+    const [discover, separated] = await Promise.all([
+      this.rooms.discover(me, Date.now()),
+      this.moderation.separatedIds(me),
+    ]);
+    return reply(data, {
+      ...discover,
+      activity: await this.feed.recent(me, separated),
+    });
   }
 
   @SubscribeMessage(ClientEvent.joinRoom)
@@ -701,17 +707,6 @@ export class LibraryGateway
   }
 
   // MARK: Liveliness
-
-  @SubscribeMessage(ClientEvent.recentActivity)
-  async onRecentActivity(
-    @ConnectedSocket() socket: WebSocket,
-    @MessageBody() data: Payload,
-  ) {
-    const me = this.sessionOf(socket).user.id;
-    return reply(data, {
-      items: await this.feed.recent(me, await this.moderation.separatedIds(me)),
-    });
-  }
 
   @SubscribeMessage(ClientEvent.react)
   async onReact(

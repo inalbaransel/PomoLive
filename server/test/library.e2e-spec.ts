@@ -1060,7 +1060,7 @@ describe('Library realtime protocol (e2e)', () => {
       categoryKey: 'software',
     });
 
-    const feed = (await guest.send('feed:recent')).result.items;
+    const feed = (await guest.send('room:discover')).result.activity;
     expect(feed[0]).toMatchObject({
       kind: 'STARTED',
       user: { id: ownerId },
@@ -1068,7 +1068,7 @@ describe('Library realtime protocol (e2e)', () => {
       category: { key: 'software' },
     });
     expect(
-      (await owner.send('feed:recent')).result.items.some(
+      (await owner.send('room:discover')).result.activity.some(
         (item: { user: { id: string } }) => item.user.id === ownerId,
       ),
     ).toBe(false);
@@ -1107,7 +1107,7 @@ describe('Library realtime protocol (e2e)', () => {
       categoryKey: 'study',
     });
     expect(
-      (await guest.send('feed:recent')).result.items.some(
+      (await guest.send('room:discover')).result.activity.some(
         (item: { roomId: string }) => item.roomId === hidden.result.room.id,
       ),
     ).toBe(false);

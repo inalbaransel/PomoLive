@@ -6,8 +6,6 @@ import Observation
 final class RoomsStore {
     private(set) var overview: RoomsOverview?
     private(set) var discover: DiscoverResult?
-    /// Who just sat down or finished a long session in the open library, newest first.
-    private(set) var activity: [FeedItem] = []
     var error: LibraryError?
 
     @ObservationIgnored private let socket: LibrarySocket
@@ -37,9 +35,8 @@ final class RoomsStore {
         }
     }
 
-    func refreshActivity() async {
-        if let items = try? await socket.send(RecentActivityCommand()).items { activity = items }
-    }
+    /// Who just sat down or finished a long session in the open library, newest first.
+    var activity: [FeedItem] { discover?.activity ?? [] }
 
     func forget(_ room: RoomSummary) async {
         do {
@@ -63,6 +60,5 @@ final class RoomsStore {
     func reset() {
         overview = nil
         discover = nil
-        activity = []
     }
 }
