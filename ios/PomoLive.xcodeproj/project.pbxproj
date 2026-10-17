@@ -42,28 +42,16 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0CDE536F016C08599F322308 /* PomoLive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = PomoLive;
 			sourceTree = "<group>";
 		};
 		80576E7920CD76F230F1D782 /* PomoLiveWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = PomoLiveWidgets;
 			sourceTree = "<group>";
 		};
 		EA427FFBF83BD91B7C9F0D5D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};

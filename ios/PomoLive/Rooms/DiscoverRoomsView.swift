@@ -1,113 +1,63 @@
 import SwiftUI
 
-/// Public rooms, ranked by the server's discover score: a one-tap start in a system hall, then the
-/// most active rooms right now, the week's most popular, new ones and everything else, searchable
-/// by name and description. Tapping a room shows its details before joining.
+/// Every public room, best first by the server's discover score, searchable by name and
+/// description and narrowed by topic. Tapping a room shows its details before joining.
 struct DiscoverRoomsView: View {
-    let openRoom: (HallStore.Target) -> Void
+    let onPreview: (String) -> Void
     let onCreate: () -> Void
 
     @Environment(AppModel.self) private var app
     @State private var query = ""
-    @State private var previewRoom: PreviewTarget?
-
-    private struct PreviewTarget: Identifiable {
-        let id: String
-    }
-
-    private static let newRoomWindowMs: Int64 = 72 * 3_600_000
-    private static let sectionLimit = 6
+    @State private var topic: String?
 
     var body: some View {
         ScrollView {
             if let result = app.rooms.discover {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    if isFiltering {
-                        let matches = filtered(result)
-                        section("Sonuçlar", rooms: matches, result: result)
-                        if matches.isEmpty {
-                            ContentUnavailableView.search(text: query)
-                                .padding(.top, 40)
+                let rooms = filtered(result.rooms)
+                VStack(alignment: .leading, spacing: 14) {
+                    let topics = discoverTopics(result.rooms)
+                    if topics.count > 1 {
+                        TopicChips(topics: topics, selection: $topic)
+                            .padding(.horizontal, -16)
+                    }
+                    ForEach(rooms) { room in
+                        Button { onPreview(room.id) } label: {
+                            RoomCard(
+                                room: room.summary,
+                                layout: .forTheme(room.theme, in: result.layouts, fallback: result.layout),
+                                isSeatedHere: room.id == result.seatedRoomId,
+                                detail: detail(for: room)
+                            )
                         }
-                    } else {
-                        QuickStartCard(halls: result.halls) { openRoom(.automatic) }
-                        let live = result.rooms
-                            .filter { $0.occupiedCount + $0.presenceCount > 0 }
-                            .sorted { ($0.occupiedCount, $0.presenceCount) > ($1.occupiedCount, $1.presenceCount) }
-                        let liveIds = Set(live.prefix(Self.sectionLimit).map(\.id))
-                        let popular = result.rooms
-                            .filter { !liveIds.contains($0.id) && $0.weeklyFocusMs > 0 }
-                            .sorted { $0.weeklyFocusMs > $1.weeklyFocusMs }
-                        let shownIds = liveIds.union(popular.prefix(Self.sectionLimit).map(\.id))
-                        let fresh = result.rooms
-                            .filter { !shownIds.contains($0.id) && isNew($0) }
-                            .sorted { $0.createdAt > $1.createdAt }
-                        let rest = result.rooms.filter { !shownIds.contains($0.id) && !isNew($0) }
-
-                        section("Şu An En Aktif", rooms: Array(live.prefix(Self.sectionLimit)), result: result)
-                        section("Bu Hafta Popüler", rooms: Array(popular.prefix(Self.sectionLimit)), result: result)
-                        section("Yeni Açılanlar", rooms: Array(fresh.prefix(Self.sectionLimit)), result: result)
-                        section("Tüm Odalar", rooms: rest, result: result)
-                        if result.rooms.isEmpty { emptyState }
+                        .buttonStyle(.plain)
+                    }
+                    if result.rooms.isEmpty {
+                        emptyState
+                    } else if rooms.isEmpty {
+                        ContentUnavailableView.search(text: query)
+                            .padding(.top, 40)
                     }
                 }
                 .padding(16)
-                .animation(.snappy, value: isFiltering)
+                .animation(.smooth, value: rooms.map(\.id))
             } else {
                 ProgressView()
                     .padding(.top, 120)
             }
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Keşfet")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle("Tüm Odalar")
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Oda adı veya açıklama ara")
-        .sheet(item: $previewRoom) { target in
-            RoomDetailSheet(roomId: target.id) { openRoom(.room(id: target.id)) }
-                .presentationDetents([.large])
-        }
         .refreshable { await app.rooms.refreshDiscover() }
-        .task(id: app.connection) {
-            guard app.connection == .online else { return }
-            while !Task.isCancelled {
-                await app.rooms.refreshDiscover()
-                try? await Task.sleep(for: .seconds(20))
-            }
-        }
     }
 
-    private var isFiltering: Bool {
-        !query.trimmingCharacters(in: .whitespaces).isEmpty
-    }
-
-    private func filtered(_ result: DiscoverResult) -> [DiscoverRoom] {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        return result.rooms.filter { room in
-            room.displayName.localizedStandardContains(trimmed)
-                || (room.description?.localizedStandardContains(trimmed) ?? false)
-        }
-    }
-
-    private func isNew(_ room: DiscoverRoom) -> Bool {
-        ServerClock.deviceNow() - room.createdAt < Self.newRoomWindowMs
-    }
-
-    @ViewBuilder
-    private func section(_ title: LocalizedStringKey, rooms: [DiscoverRoom], result: DiscoverResult) -> some View {
-        if !rooms.isEmpty {
-            SectionTitle(title)
-                .padding(.top, 10)
-            ForEach(rooms) { room in
-                Button { previewRoom = PreviewTarget(id: room.id) } label: {
-                    RoomCard(
-                        room: room.summary,
-                        layout: .forTheme(room.theme, in: result.layouts, fallback: result.layout),
-                        isSeatedHere: room.id == result.seatedRoomId,
-                        detail: detail(for: room)
-                    )
-                }
-                .buttonStyle(.plain)
-            }
+    private func filtered(_ rooms: [DiscoverRoom]) -> [DiscoverRoom] {
+        let text = query.trimmingCharacters(in: .whitespaces)
+        return rooms.filter { room in
+            (topic == nil || room.topic?.key == topic)
+                && (text.isEmpty
+                    || room.displayName.localizedStandardContains(text)
+                    || (room.description?.localizedStandardContains(text) ?? false))
         }
     }
 
@@ -120,7 +70,9 @@ struct DiscoverRoomsView: View {
         if let topic = room.topic { parts.append(String(localized: "\(topic.displayName) ağırlıklı")) }
         if room.weeklyFocusMs >= 60 * 60_000 { parts.append(String(localized: "bu hafta \(formattedFocus(room.weeklyFocusMs))")) }
         if room.memberCount > 1 { parts.append(String(localized: "\(room.memberCount) üye")) }
-        if parts.isEmpty, isNew(room) { parts.append(String(localized: "Yeni açıldı")) }
+        if parts.isEmpty, ServerClock.deviceNow() - room.createdAt < DiscoverShelves.newRoomWindowMs {
+            parts.append(String(localized: "Yeni açıldı"))
+        }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
@@ -128,7 +80,7 @@ struct DiscoverRoomsView: View {
         ContentUnavailableView {
             Label("Henüz açık oda yok", systemImage: "globe.europe.africa")
         } description: {
-            Text("İlk herkese açık odayı sen aç; Keşfet'te herkes görsün.")
+            Text("İlk herkese açık odayı sen aç; herkes görsün.")
         } actions: {
             Button("Oda Oluştur", action: onCreate)
                 .buttonStyle(.borderedProminent)
@@ -136,37 +88,6 @@ struct DiscoverRoomsView: View {
         .padding(.vertical, 24)
         .frame(maxWidth: .infinity)
         .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
-    }
-}
-
-/// One tap to a desk in whichever system hall has space.
-private struct QuickStartCard: View {
-    let halls: DiscoverResult.Halls
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                GlyphIcon(symbol: "bolt.fill", color: .indigo, size: 44)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Hemen Başla")
-                        .font(.headline)
-                    Text(halls.occupiedCount > 0
-                        ? "Genel salonda \(halls.occupiedCount) kişi çalışıyor"
-                        : "Boş yeri olan genel salona otur")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.forward")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(14)
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
-            .contentShape(.rect(cornerRadius: 22))
-        }
-        .buttonStyle(.plain)
     }
 }
 

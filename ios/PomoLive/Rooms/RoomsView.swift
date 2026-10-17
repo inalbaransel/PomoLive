@@ -1,6 +1,8 @@
 import SwiftUI
 
-/// The home tab: a way into public rooms, then the reader's own community of rooms as live cards.
+/// The home tab, alive with whoever is focusing right now: a one-tap start in a hall, friends at
+/// their desks, shelves of public rooms (busy now, popular this week, new), then the reader's own
+/// rooms. Searching or picking a topic narrows everything to matching rooms.
 struct RoomsView: View {
     let openRoom: (HallStore.Target) -> Void
 
@@ -8,62 +10,43 @@ struct RoomsView: View {
     @State private var sheet: Sheet?
     /// Opened once the sheet has finished dismissing, so two presentations never overlap.
     @State private var pendingRoom: HallStore.Target?
-
-    private enum Sheet: String, Identifiable {
-        case create, joinByCode
-        var id: String { rawValue }
-    }
-
     @State private var roomToDelete: RoomSummary?
     @State private var showsFriends = false
+    @State private var query = ""
+    @State private var topic: String?
+
+    private enum Sheet: Identifiable {
+        case create, joinByCode, preview(roomId: String)
+
+        var id: String {
+            switch self {
+            case .create: "create"
+            case .joinByCode: "code"
+            case .preview(let roomId): roomId
+            }
+        }
+    }
 
     var body: some View {
         @Bindable var rooms = app.rooms
 
         NavigationStack {
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    NavigationLink {
-                        DiscoverRoomsView(openRoom: openRoom, onCreate: { sheet = .create })
-                    } label: {
-                        DiscoverBanner(focusingNow: app.rooms.overview?.focusingNow)
-                    }
-                    .buttonStyle(.plain)
-
-                    Button { showsFriends = true } label: {
-                        FriendsBanner(friends: app.friends.focusingFriends, hasFriends: !(app.friends.overview?.friends.isEmpty ?? true))
-                    }
-                    .buttonStyle(.plain)
-
-                    SectionTitle("Odalarım")
-                        .padding(.top, 12)
-
-                    if let overview = app.rooms.overview {
-                        if overview.myRooms.isEmpty {
-                            emptyState
-                        }
-                        ForEach(overview.myRooms) { room in
-                            Button { openRoom(.room(id: room.id)) } label: {
-                                RoomCard(
-                                    room: room,
-                                    layout: .forTheme(room.theme, in: overview.layouts, fallback: overview.layout),
-                                    isSeatedHere: room.id == overview.seatedRoomId
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .contextMenu { menu(for: room) }
-                        }
+                VStack(alignment: .leading, spacing: 28) {
+                    if isNarrowed {
+                        results
                     } else {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 60)
+                        home
                     }
                 }
-                .padding(16)
+                .padding(.vertical, 12)
+                .animation(.smooth, value: isNarrowed)
+                .animation(.smooth, value: topic)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Odalar")
-            .navigationSubtitle(app.user.map { "Merhaba, \($0.displayName)" } ?? "")
+            .navigationSubtitle(greeting)
+            .searchable(text: $query, prompt: "Oda ara")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Oda", systemImage: "plus") {
@@ -81,12 +64,12 @@ struct RoomsView: View {
                 app.push.pendingRoute = nil
                 showsFriends = true
             }
-            .refreshable { await app.rooms.refresh() }
+            .refreshable { await refresh() }
             .task(id: app.connection) {
                 // Live counts change while the tab is visible; poll gently instead of streaming every room.
                 guard app.connection == .online else { return }
                 while !Task.isCancelled {
-                    await app.rooms.refresh()
+                    await refresh()
                     try? await Task.sleep(for: .seconds(20))
                 }
             }
@@ -99,6 +82,9 @@ struct RoomsView: View {
                 case .joinByCode:
                     JoinByCodeSheet { code in pendingRoom = .code(code) }
                         .presentationDetents([.height(280)])
+                case .preview(let roomId):
+                    RoomDetailSheet(roomId: roomId) { pendingRoom = .room(id: roomId) }
+                        .presentationDetents([.large])
                 }
             }
             .confirmationDialog(
@@ -115,6 +101,182 @@ struct RoomsView: View {
             }
             .errorAlert($rooms.error)
         }
+    }
+
+    // MARK: Home
+
+    @ViewBuilder
+    private var home: some View {
+        let discover = app.rooms.discover
+        VStack(alignment: .leading, spacing: 12) {
+            LiveCount(count: app.rooms.overview?.focusingNow ?? 0)
+                .padding(.horizontal, 20)
+            if let layout = discover?.layout ?? app.rooms.overview?.layout {
+                QuickStartCard(layout: layout, halls: discover?.halls) { openRoom(.automatic) }
+                    .padding(.horizontal, 16)
+            }
+        }
+
+        FriendsStrip(
+            friends: app.friends.focusingFriends,
+            hasFriends: !(app.friends.overview?.friends.isEmpty ?? true),
+            showAll: { showsFriends = true }
+        )
+
+        if let discover {
+            let topics = discoverTopics(discover.rooms)
+            let rooms = topic.map { key in discover.rooms.filter { $0.topic?.key == key } } ?? discover.rooms
+            let shelves = DiscoverShelves(rooms, now: ServerClock.deviceNow())
+            if topics.count > 1 {
+                TopicChips(topics: topics, selection: $topic)
+            }
+            shelf("Şu An Canlı", detail: "Masalarda biri var", rooms: shelves.live, in: discover)
+            shelf("Bu Hafta Popüler", rooms: shelves.popular, in: discover)
+            shelf("Yeni Açılanlar", rooms: shelves.fresh, in: discover)
+            if topic != nil, shelves.live.isEmpty, shelves.popular.isEmpty, shelves.fresh.isEmpty {
+                Text("Bu konuda şu an öne çıkan oda yok. Tüm odalara göz at.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 20)
+            }
+        }
+
+        myRooms
+
+        NavigationLink {
+            DiscoverRoomsView(onPreview: { sheet = .preview(roomId: $0) }, onCreate: { sheet = .create })
+        } label: {
+            HStack(spacing: 14) {
+                GlyphIcon(symbol: "globe.europe.africa.fill", color: .indigo, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tüm Herkese Açık Odalar")
+                        .font(.headline)
+                    Text("\(app.rooms.discover?.rooms.count ?? 0) oda")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
+            .contentShape(.rect(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+    }
+
+    @ViewBuilder
+    private func shelf(_ title: LocalizedStringKey, detail: LocalizedStringKey? = nil, rooms: [DiscoverRoom], in result: DiscoverResult) -> some View {
+        RoomShelf(title, detail: detail, items: rooms) { room in
+            Button { sheet = .preview(roomId: room.id) } label: {
+                CompactRoomCard(
+                    room: room,
+                    layout: .forTheme(room.theme, in: result.layouts, fallback: result.layout),
+                    isSeatedHere: room.id == result.seatedRoomId
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    @ViewBuilder
+    private var myRooms: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionTitle("Odalarım")
+            if let overview = app.rooms.overview {
+                if overview.myRooms.isEmpty {
+                    emptyState
+                }
+                ForEach(overview.myRooms) { room in
+                    Button { openRoom(.room(id: room.id)) } label: {
+                        RoomCard(
+                            room: room,
+                            layout: .forTheme(room.theme, in: overview.layouts, fallback: overview.layout),
+                            isSeatedHere: room.id == overview.seatedRoomId
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .contextMenu { menu(for: room) }
+                }
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 40)
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+
+    // MARK: Search and topics
+
+    private var isNarrowed: Bool {
+        !query.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// Public rooms whose name or description match, then the reader's own matching rooms.
+    @ViewBuilder
+    private var results: some View {
+        let text = query.trimmingCharacters(in: .whitespaces)
+        let publicRooms = (app.rooms.discover?.rooms ?? []).filter { room in
+            room.displayName.localizedStandardContains(text) || (room.description?.localizedStandardContains(text) ?? false)
+        }
+        let mine = (app.rooms.overview?.myRooms ?? []).filter { $0.displayName.localizedStandardContains(text) }
+        VStack(alignment: .leading, spacing: 12) {
+            if publicRooms.isEmpty, mine.isEmpty {
+                ContentUnavailableView.search(text: text)
+                    .padding(.top, 40)
+            }
+            if let discover = app.rooms.discover, !publicRooms.isEmpty {
+                SectionTitle("Herkese Açık")
+                ForEach(publicRooms) { room in
+                    Button { sheet = .preview(roomId: room.id) } label: {
+                        RoomCard(
+                            room: room.summary,
+                            layout: .forTheme(room.theme, in: discover.layouts, fallback: discover.layout),
+                            isSeatedHere: room.id == discover.seatedRoomId,
+                            detail: room.description
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            if let overview = app.rooms.overview, !mine.isEmpty {
+                SectionTitle("Odalarım")
+                ForEach(mine) { room in
+                    Button { openRoom(.room(id: room.id)) } label: {
+                        RoomCard(
+                            room: room,
+                            layout: .forTheme(room.theme, in: overview.layouts, fallback: overview.layout),
+                            isSeatedHere: room.id == overview.seatedRoomId
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+
+    // MARK: Helpers
+
+    /// "Günaydın, Baransel" and so on through the day.
+    private var greeting: String {
+        guard let name = app.user?.displayName else { return "" }
+        switch Calendar.current.component(.hour, from: .now) {
+        case 5..<12: return String(localized: "Günaydın, \(name)")
+        case 12..<18: return String(localized: "İyi günler, \(name)")
+        case 18..<23: return String(localized: "İyi akşamlar, \(name)")
+        default: return String(localized: "İyi geceler, \(name)")
+        }
+    }
+
+    private func refresh() async {
+        async let overview: Void = app.rooms.refresh()
+        async let discover: Void = app.rooms.refreshDiscover()
+        _ = await (overview, discover)
     }
 
     private var emptyState: some View {
@@ -158,73 +320,5 @@ struct RoomsView: View {
     private func createRoom(_ draft: RoomEditorSheet.Draft) async throws -> String {
         try await app.hall.create(draft)
         return app.hall.room?.id ?? ""
-    }
-}
-
-/// The way into public rooms, with how many people are focusing in them right now.
-private struct DiscoverBanner: View {
-    let focusingNow: Int?
-
-    var body: some View {
-        HStack(spacing: 14) {
-            GlyphIcon(symbol: "globe.europe.africa.fill", color: .indigo, size: 44)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Keşfet")
-                    .font(.headline)
-                Text(focusingNow.map { $0 > 0 ? "Şu an \($0) kişi odaklanıyor" : "Herkese açık odalara göz at" } ?? " ")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .contentTransition(.numericText())
-            }
-            Spacer(minLength: 0)
-            Image(systemName: "chevron.forward")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-        }
-        .padding(14)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
-        .contentShape(.rect(cornerRadius: 22))
-    }
-}
-
-/// Who the reader follows is focusing right now, as overlapping avatars.
-private struct FriendsBanner: View {
-    let friends: [Friend]
-    let hasFriends: Bool
-
-    var body: some View {
-        HStack(spacing: 14) {
-            GlyphIcon(symbol: "person.2.fill", color: .teal, size: 44)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Arkadaşlar")
-                    .font(.headline)
-                Text(friends.isEmpty
-                     ? (hasFriends ? String(localized: "Şu an kimse çalışmıyor") : String(localized: "Arkadaşlarını bul, birlikte çalış"))
-                     : String(localized: "\(friends.count) arkadaşın şu an çalışıyor"))
-                    .font(.subheadline)
-                    .foregroundStyle(friends.isEmpty ? AnyShapeStyle(.secondary) : AnyShapeStyle(.green))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    .contentTransition(.numericText())
-            }
-            Spacer(minLength: 0)
-            HStack(spacing: -10) {
-                ForEach(friends.prefix(3)) { friend in
-                    Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: friend.user.avatarSpriteId)), scale: 1)
-                        .resizable()
-                        .interpolation(.none)
-                        .frame(width: 22, height: 22)
-                        .frame(width: 32, height: 32)
-                        .background(Color(.tertiarySystemFill), in: .circle)
-                        .overlay(Circle().stroke(Color(.secondarySystemGroupedBackground), lineWidth: 2))
-                }
-            }
-            Image(systemName: "chevron.forward")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-        }
-        .padding(14)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 22))
-        .contentShape(.rect(cornerRadius: 22))
     }
 }

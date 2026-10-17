@@ -12,17 +12,6 @@
       },
       "shouldTranslate" : false
     },
-    " " : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " "
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
     "%%%lld tamamlandı" : {
       "localizations" : {
         "en" : {
@@ -254,16 +243,6 @@
       },
       "shouldTranslate" : false
     },
-    "%lld arkadaşın şu an çalışıyor" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld friends focusing now"
-          }
-        }
-      }
-    },
     "%lld dakika odak, %lld dakika mola" : {
       "localizations" : {
         "en" : {
@@ -420,6 +399,26 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld kişi şu an odaklanıyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld people focusing right now"
+          }
+        }
+      }
+    },
+    "%lld oda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld rooms"
           }
         }
       }
@@ -768,6 +767,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponytail"
+          }
+        }
+      }
+    },
+    "Ayarlar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
           }
         }
       }
@@ -1162,6 +1171,16 @@
         }
       }
     },
+    "Bu konuda şu an öne çıkan oda yok. Tüm odalara göz at." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No featured rooms on this topic right now. Browse all rooms."
+          }
+        }
+      }
+    },
     "Bu kullanıcı adı alınmış. Başka bir tane dene." : {
       "localizations" : {
         "en" : {
@@ -1294,6 +1313,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today's Focus"
+          }
+        }
+      }
+    },
+    "Bul" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find"
           }
         }
       }
@@ -1980,6 +2009,16 @@
         }
       }
     },
+    "Günaydın, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good morning, %@"
+          }
+        }
+      }
+    },
     "Günlük Hedef" : {
       "localizations" : {
         "en" : {
@@ -2240,16 +2279,6 @@
         }
       }
     },
-    "Herkese açık odalara göz at" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Browse public rooms"
-          }
-        }
-      }
-    },
     "Hesabı Sil" : {
       "localizations" : {
         "en" : {
@@ -2260,12 +2289,32 @@
         }
       }
     },
+    "Hesap" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        }
+      }
+    },
     "Hesap Oluştur" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create Account"
+          }
+        }
+      }
+    },
+    "Hesap, çıkış ve hesap silme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account, sign out and deletion"
           }
         }
       }
@@ -2502,16 +2551,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Self-harm"
-          }
-        }
-      }
-    },
-    "Keşfet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discover"
           }
         }
       }
@@ -2854,6 +2893,16 @@
         }
       }
     },
+    "Masalarda biri var" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Someone is at a desk"
+          }
+        }
+      }
+    },
     "Masama Odaklan" : {
       "localizations" : {
         "en" : {
@@ -2940,16 +2989,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Setting"
-          }
-        }
-      }
-    },
-    "Merhaba, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hi, %@"
           }
         }
       }
@@ -3210,6 +3249,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search room names or descriptions"
+          }
+        }
+      }
+    },
+    "Oda ara" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search rooms"
           }
         }
       }
@@ -3574,6 +3623,16 @@
         }
       }
     },
+    "Oturum Geçmişi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session History"
+          }
+        }
+      }
+    },
     "Oturum bitsin mi?" : {
       "localizations" : {
         "en" : {
@@ -3584,12 +3643,12 @@
         }
       }
     },
-    "Oturum geçmişin, kategorilerin ve açtığın odalar kalıcı olarak silinir." : {
+    "Oturum geçmişin, kategorilerin, mesajların ve açtığın odalar kalıcı olarak silinir. Bu işlem geri alınamaz." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your session history, categories and the rooms you created will be permanently deleted."
+            "value" : "Your session history, categories, messages and the rooms you opened are permanently deleted. This cannot be undone."
           }
         }
       }
@@ -3808,16 +3867,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Profile"
-          }
-        }
-      }
-    },
-    "Profilimi Gör" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View My Profile"
           }
         }
       }
@@ -4183,16 +4232,6 @@
         }
       }
     },
-    "Sonuçlar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Results"
-          }
-        }
-      }
-    },
     "Spam ya da reklam" : {
       "localizations" : {
         "en" : {
@@ -4313,6 +4352,16 @@
         }
       }
     },
+    "Takip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Following"
+          }
+        }
+      }
+    },
     "Takip Et" : {
       "localizations" : {
         "en" : {
@@ -4339,6 +4388,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Following"
+          }
+        }
+      }
+    },
+    "Takipçi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Followers"
           }
         }
       }
@@ -4503,12 +4562,32 @@
         }
       }
     },
+    "Tüm Herkese Açık Odalar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Public Rooms"
+          }
+        }
+      }
+    },
     "Tüm Odalar" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "All Rooms"
+          }
+        }
+      }
+    },
+    "Tümü" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
           }
         }
       }
@@ -5039,12 +5118,12 @@
         }
       }
     },
-    "İlk herkese açık odayı sen aç; Keşfet'te herkes görsün." : {
+    "İlk herkese açık odayı sen aç; herkes görsün." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open the first public room so everyone can find it in Discover."
+            "value" : "Open the first public room so everyone can see it."
           }
         }
       }
@@ -5095,6 +5174,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Stats Are Getting Ready"
+          }
+        }
+      }
+    },
+    "İyi akşamlar, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good evening, %@"
+          }
+        }
+      }
+    },
+    "İyi geceler, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good night, %@"
+          }
+        }
+      }
+    },
+    "İyi günler, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good afternoon, %@"
           }
         }
       }
@@ -5169,12 +5278,12 @@
         }
       }
     },
-    "Şu An En Aktif" : {
+    "Şu An Canlı" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Most Active Now"
+            "value" : "Live Now"
           }
         }
       }
@@ -5251,12 +5360,12 @@
         }
       }
     },
-    "Şu an kimse çalışmıyor" : {
+    "Şu an kimse çalışmıyor. İlk sen başla!" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nobody is focusing right now"
+            "value" : "No one is focusing right now. Be the first!"
           }
         }
       }
