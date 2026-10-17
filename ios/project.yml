@@ -16,7 +16,9 @@ settings:
     SWIFT_EMIT_LOC_STRINGS: YES
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: ""
+    # Personal Team for now; replace with the paid Apple Developer Program team before App Store builds.
+    DEVELOPMENT_TEAM: KD4P6PGZRN
+    CODE_SIGN_STYLE: Automatic
     # Point at ws://localhost:3000/ws when running the server locally.
     POMOLIVE_SERVER_URL: "wss://api.pomolive.harbidigital.com/ws"
 

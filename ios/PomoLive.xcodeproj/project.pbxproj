@@ -42,16 +42,28 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0CDE536F016C08599F322308 /* PomoLive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = PomoLive;
 			sourceTree = "<group>";
 		};
 		80576E7920CD76F230F1D782 /* PomoLiveWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = PomoLiveWidgets;
 			sourceTree = "<group>";
 		};
 		EA427FFBF83BD91B7C9F0D5D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
@@ -136,10 +148,12 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					5A7E0C0962B86FF521CF572E = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = KD4P6PGZRN;
+						ProvisioningStyle = Automatic;
 					};
 					AC327E516EA4844079D8D61A = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = KD4P6PGZRN;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -239,10 +253,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = KD4P6PGZRN;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -347,10 +362,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = KD4P6PGZRN;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
