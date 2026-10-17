@@ -22,6 +22,16 @@
         }
       }
     },
+    "%%%lld tasarruf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save %lld%%"
+          }
+        }
+      }
+    },
     "%@ 10 dakika sonra" : {
       "localizations" : {
         "en" : {
@@ -258,6 +268,26 @@
         }
       }
     },
+    "%@/ay" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/month"
+          }
+        }
+      }
+    },
+    "%@/yıl" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/year"
+          }
+        }
+      }
+    },
     "%lld" : {
       "localizations" : {
         "en" : {
@@ -268,6 +298,16 @@
         }
       },
       "shouldTranslate" : false
+    },
+    "%lld Gün Ücretsiz Başla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start %lld-Day Free Trial"
+          }
+        }
+      }
     },
     "%lld dakika odak, %lld dakika mola" : {
       "localizations" : {
@@ -333,6 +373,32 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld-day streak"
+          }
+        }
+      }
+    },
+    "%lld gün ücretsiz dene" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld-day free trial"
+          }
+        }
+      }
+    },
+    "%lld gün ücretsiz, sonra %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld days free, then %@."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld gün ücretsiz, sonra %2$@."
           }
         }
       }
@@ -628,6 +694,16 @@
       },
       "shouldTranslate" : false
     },
+    "1 yıl" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 year"
+          }
+        }
+      }
+    },
     "10 Saat" : {
       "localizations" : {
         "en" : {
@@ -694,6 +770,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Finish 50 sessions."
+          }
+        }
+      }
+    },
+    "7 gün" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 days"
           }
         }
       }
@@ -769,6 +855,16 @@
       },
       "shouldTranslate" : false
     },
+    "Abone Ol · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe · %@"
+          }
+        }
+      }
+    },
     "Adın" : {
       "localizations" : {
         "en" : {
@@ -815,6 +911,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Focus on %lld different days to unlock meaningful charts. Finish at least one session each day."
+          }
+        }
+      }
+    },
+    "App Store'a ulaşılamadı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't reach the App Store"
           }
         }
       }
@@ -925,6 +1031,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Ayda %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ per month"
+          }
+        }
+      }
+    },
+    "Aylık" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly"
           }
         }
       }
@@ -1617,6 +1743,16 @@
         }
       }
     },
+    "CSV dışa aktarma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV export"
+          }
+        }
+      }
+    },
     "Cinsel içerik" : {
       "localizations" : {
         "en" : {
@@ -1647,12 +1783,12 @@
         }
       }
     },
-    "Dalgalar, şömine ve pembe gürültü." : {
+    "Dalgalar, şömine ve pembe gürültü; halka ve kadran saatler, renkler ve gece haritası." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Waves, fireplace and pink noise."
+            "value" : "Waves, fireplace and pink noise; ring and dial clocks, colours and the night map."
           }
         }
       }
@@ -1827,6 +1963,16 @@
         }
       }
     },
+    "Dönem bitmeden en az 24 saat önce iptal etmezsen otomatik yenilenir. Apple Hesabı ayarlarından istediğin zaman yönetebilirsin." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renews automatically unless cancelled at least 24 hours before the period ends. Manage it any time in your Apple Account settings."
+          }
+        }
+      }
+    },
     "Dün" : {
       "localizations" : {
         "en" : {
@@ -1863,6 +2009,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Incorrect email, username or password."
+          }
+        }
+      }
+    },
+    "EN AVANTAJLI" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BEST VALUE"
           }
         }
       }
@@ -2135,6 +2291,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Geri Yükle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore"
           }
         }
       }
@@ -2499,16 +2665,6 @@
         }
       }
     },
-    "Halka ve kadran saatler, renkler ve gece haritası." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ring and dial clocks, colours and the night map."
-          }
-        }
-      }
-    },
     "Harika" : {
       "localizations" : {
         "en" : {
@@ -2749,6 +2905,26 @@
         }
       }
     },
+    "Karakterler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characters"
+          }
+        }
+      }
+    },
+    "Karşılaştır" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare"
+          }
+        }
+      }
+    },
     "Kategori" : {
       "localizations" : {
         "en" : {
@@ -2921,6 +3097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Amber"
+          }
+        }
+      }
+    },
+    "Kendi odaların" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your rooms"
           }
         }
       }
@@ -3743,6 +3929,16 @@
         }
       }
     },
+    "Oda temaları" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room themes"
+          }
+        }
+      }
+    },
     "Odadaki Kişiler" : {
       "localizations" : {
         "en" : {
@@ -3869,6 +4065,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open focus panel"
+          }
+        }
+      }
+    },
+    "Odak sesleri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus sounds"
           }
         }
       }
@@ -4223,6 +4429,16 @@
         }
       }
     },
+    "Plus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus"
+          }
+        }
+      }
+    },
     "Plus Karakterleri" : {
       "localizations" : {
         "en" : {
@@ -4462,6 +4678,16 @@
         }
       }
     },
+    "Saat yüzleri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clock faces"
+          }
+        }
+      }
+    },
     "Sabah 05–08 arası 5 oturum başlat." : {
       "localizations" : {
         "en" : {
@@ -4572,6 +4798,16 @@
         }
       }
     },
+    "Satın alma tamamlanamadı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase didn't go through"
+          }
+        }
+      }
+    },
     "Sen" : {
       "localizations" : {
         "en" : {
@@ -4628,6 +4864,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sound keeps playing while your phone is locked and alongside music from other apps."
+          }
+        }
+      }
+    },
+    "Sesler ve Odak Modu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sounds and Focus Mode"
           }
         }
       }
@@ -4982,16 +5228,6 @@
         }
       }
     },
-    "Tam Odak Modu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Full Focus Mode"
-          }
-        }
-      }
-    },
     "Tamam" : {
       "localizations" : {
         "en" : {
@@ -5198,16 +5434,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All Room Themes"
-          }
-        }
-      }
-    },
-    "Tüm Odak Sesleri" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All Focus Sounds"
           }
         }
       }
@@ -5472,6 +5698,16 @@
         }
       }
     },
+    "Yıllık" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yearly"
+          }
+        }
+      }
+    },
     "Yıllık ısı haritası, aylık trendler, en verimli saatin ve CSV dışa aktarma." : {
       "localizations" : {
         "en" : {
@@ -5498,6 +5734,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I Already Have an Account"
+          }
+        }
+      }
+    },
+    "aylık" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "monthly"
           }
         }
       }
@@ -5584,6 +5830,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ çalışmaya başladı"
+          }
+        }
+      }
+    },
+    "yıllık" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "yearly"
           }
         }
       }
@@ -5748,6 +6004,16 @@
         }
       }
     },
+    "Örnek odak haritası" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sample focus map"
+          }
+        }
+      }
+    },
     "Özel" : {
       "localizations" : {
         "en" : {
@@ -5774,6 +6040,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Student"
+          }
+        }
+      }
+    },
+    "Ücretsiz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free"
           }
         }
       }
@@ -5878,6 +6154,16 @@
         }
       }
     },
+    "İstatistik geçmişi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stats history"
+          }
+        }
+      }
+    },
     "İstatistik'te halkalar hedefe ne kadar yaklaştığını gösterir." : {
       "localizations" : {
         "en" : {
@@ -5894,6 +6180,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your Stats Are Getting Ready"
+          }
+        }
+      }
+    },
+    "İstediğin zaman iptal et" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel any time"
           }
         }
       }

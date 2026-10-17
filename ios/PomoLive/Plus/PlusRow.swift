@@ -13,11 +13,7 @@ struct PlusRow: View {
             if app.plus.isActive { managesSubscription = true } else { showsPaywall = true }
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: "sparkles")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 40, height: 40)
-                    .background(Color.accentColor.gradient, in: .rect(cornerRadius: 10))
+                PlusEmblem(size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(app.plus.isActive ? "PomoLive Plus" : "PomoLive Plus'a Geç")
                         .font(.headline)

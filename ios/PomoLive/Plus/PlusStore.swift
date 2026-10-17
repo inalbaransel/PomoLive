@@ -13,6 +13,10 @@ final class PlusStore {
 
     private(set) var status = PlusStatus(active: false)
     private(set) var hasLocalEntitlement = false
+    /// Yearly first; empty until the App Store answers.
+    private(set) var products: [Product] = []
+    private(set) var isEligibleForTrial = true
+    private(set) var productsFailed = false
 
     @ObservationIgnored private let socket: LibrarySocket
     @ObservationIgnored private var updates: Task<Void, Never>?
@@ -34,6 +38,32 @@ final class PlusStore {
     func signedIn() async {
         if let result = try? await socket.send(PlusStatusCommand()) { status = result.status }
         await syncEntitlements()
+    }
+
+    func loadProducts() async {
+        guard products.isEmpty else { return }
+        productsFailed = false
+        do {
+            let loaded = try await Product.products(for: Self.productIds)
+            products = Self.productIds.compactMap { id in loaded.first { $0.id == id } }
+            productsFailed = products.isEmpty
+            if let yearly = products.first { isEligibleForTrial = await yearly.subscription?.isEligibleForIntroOffer ?? false }
+        } catch {
+            productsFailed = true
+        }
+    }
+
+    /// Buys `product`; true once it went through. Pending (Ask to Buy) and cancelled return false.
+    func purchase(_ product: Product) async throws -> Bool {
+        switch try await product.purchase() {
+        case .success(let result):
+            await handle(result)
+            return true
+        case .pending, .userCancelled:
+            return false
+        @unknown default:
+            return false
+        }
     }
 
     /// "Satın Alımları Geri Yükle": re-reads the Apple Account's purchases.
