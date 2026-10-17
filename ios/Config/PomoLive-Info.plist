@@ -36,11 +36,15 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Haftalık özet kartını Fotoğraflar'a kaydetmek için.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>PomoLiveServerURL</key>

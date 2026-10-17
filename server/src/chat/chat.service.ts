@@ -3,6 +3,8 @@ import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../infra/prisma.service.js';
 import { RedisService } from '../infra/redis.service.js';
 import { ReaderSession } from '../library/library.service.js';
+import { ModerationService } from '../moderation/moderation.service.js';
+import { maskProfanity } from '../moderation/profanity.js';
 import { RoomDirectory } from '../library/room-directory.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import { ServerEvent } from '../realtime/protocol.js';
@@ -64,6 +66,7 @@ export class ChatService {
     private readonly redis: RedisService,
     private readonly bus: RoomEventBus,
     private readonly rooms: RoomsRepository,
+    private readonly moderation: ModerationService,
   ) {}
 
   async send(
@@ -81,7 +84,12 @@ export class ChatService {
 
     await this.enforceRateLimit(session.user.id);
     const row = await this.prisma.chatMessage.create({
-      data: { roomId, userId: session.user.id, body, clientId },
+      data: {
+        roomId,
+        userId: session.user.id,
+        body: maskProfanity(body),
+        clientId,
+      },
       select: messageSelect,
     });
     const message = ChatService.view(row);
@@ -89,12 +97,17 @@ export class ChatService {
     return message;
   }
 
-  /** The latest page, or the page before `before` (ms epoch) when scrolling back. */
+  /**
+   * The latest page, or the page before `before` (ms epoch) when scrolling back. Lines from
+   * readers separated from this one by a block are left out; live ones the device filters itself.
+   */
   async history(session: ReaderSession, before?: number): Promise<ChatPage> {
     const roomId = this.requireRoom(session);
+    const separated = await this.moderation.separatedIds(session.user.id);
     const rows = await this.prisma.chatMessage.findMany({
       where: {
         roomId,
+        ...(separated.length ? { userId: { notIn: separated } } : {}),
         ...(before ? { createdAt: { lt: new Date(before) } } : {}),
       },
       orderBy: { createdAt: 'desc' },

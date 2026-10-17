@@ -53,6 +53,13 @@ struct StatsView: View {
                 }
             }
             .navigationTitle("İstatistik")
+            .toolbar {
+                if let user = app.user, let summary = app.stats.summary, summary.isUnlocked {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        ShareWeekButton(user: user, summary: summary)
+                    }
+                }
+            }
             .refreshable { await app.stats.refresh() }
             // Reload whenever the tab appears, the connection comes back or a session ends.
             .task(id: RefreshKey(connection: app.connection, deskId: app.seat.desk?.deskId)) {

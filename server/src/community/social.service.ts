@@ -5,6 +5,7 @@ import { DeskStore } from '../library/desk-store.js';
 import { readTimer } from '../library/desk-timer.js';
 import { RoomDirectory } from '../library/room-directory.js';
 import { startOfLocalWeek } from '../library/local-day.js';
+import { ModerationService } from '../moderation/moderation.service.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import { PublicUser } from '../users/user.js';
 
@@ -49,13 +50,14 @@ export class SocialService {
     private readonly prisma: PrismaService,
     private readonly desks: DeskStore,
     private readonly rooms: RoomDirectory,
+    private readonly moderation: ModerationService,
   ) {}
 
   async follow(followerId: string, followeeId: string): Promise<void> {
     if (followerId === followeeId)
       ProtocolError.throw('FORBIDDEN', 'You cannot follow yourself');
     const exists = await this.prisma.user.count({ where: { id: followeeId } });
-    if (!exists)
+    if (!exists || (await this.moderation.isSeparated(followerId, followeeId)))
       ProtocolError.throw('USER_NOT_FOUND', 'No reader with this id');
     const count = await this.prisma.follow.count({ where: { followerId } });
     if (count >= MAX_FOLLOWING)
@@ -97,11 +99,12 @@ export class SocialService {
     return { followers, following };
   }
 
-  /** Readers whose username or name starts with `query`, excluding the searcher. */
+  /** Readers whose username or name starts with `query`, excluding the searcher and blocks. */
   async search(viewerId: string, query: string): Promise<PublicUser[]> {
+    const separated = await this.moderation.separatedIds(viewerId);
     return this.prisma.user.findMany({
       where: {
-        id: { not: viewerId },
+        id: { notIn: [viewerId, ...separated] },
         OR: [
           { username: { startsWith: query.toLowerCase() } },
           { displayName: { startsWith: query, mode: 'insensitive' } },

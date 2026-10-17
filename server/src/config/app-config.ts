@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+/** Compose passes unset variables as empty strings; treat those as absent. */
+const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    schema.optional(),
+  );
+
 const environmentSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
@@ -16,7 +23,22 @@ const environmentSchema = z.object({
     .int()
     .min(60)
     .default(45 * 60),
+  /** APNs token auth (a .p8 key from the Apple Developer account). Push stays off without all three. */
+  APNS_KEY_ID: optional(z.string().length(10)),
+  APNS_TEAM_ID: optional(z.string().length(10)),
+  /** The .p8 file's contents; `\n` escapes are accepted for one-line environment UIs. */
+  APNS_PRIVATE_KEY: optional(z.string()),
+  APNS_BUNDLE_ID: z.string().default('com.baransel.pomolive'),
+  /** Shown on the support page; the page leaves contact details out without it. */
+  SUPPORT_EMAIL: optional(z.email()),
 });
+
+export interface ApnsCredentials {
+  keyId: string;
+  teamId: string;
+  privateKey: string;
+  bundleId: string;
+}
 
 /** Validated, typed runtime configuration. Injected by class token. */
 export class AppConfig {
@@ -28,6 +50,8 @@ export class AppConfig {
   readonly shardThreshold: number;
   readonly foregroundLeaseMs: number;
   readonly backgroundLeaseMs: number;
+  readonly apns: ApnsCredentials | null;
+  readonly supportEmail: string | null;
 
   static fromEnvironment(source: NodeJS.ProcessEnv): AppConfig {
     const result = environmentSchema.safeParse(source);
@@ -44,6 +68,16 @@ export class AppConfig {
       shardThreshold: env.SHARD_THRESHOLD,
       foregroundLeaseMs: env.FOREGROUND_LEASE_SECONDS * 1000,
       backgroundLeaseMs: env.BACKGROUND_LEASE_SECONDS * 1000,
+      apns:
+        env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY
+          ? {
+              keyId: env.APNS_KEY_ID,
+              teamId: env.APNS_TEAM_ID,
+              privateKey: env.APNS_PRIVATE_KEY.replaceAll('\\n', '\n'),
+              bundleId: env.APNS_BUNDLE_ID,
+            }
+          : null,
+      supportEmail: env.SUPPORT_EMAIL ?? null,
     });
   }
 }

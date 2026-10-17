@@ -413,3 +413,48 @@ struct DeleteAccountCommand: LibraryCommand {
     static let event = "account:delete"
     var password: String
 }
+
+struct BlockCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "user:block"
+    var userId: String
+}
+
+struct UnblockCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "user:unblock"
+    var userId: String
+}
+
+struct BlockedUsersCommand: LibraryCommand {
+    typealias Result = UserSearchResult
+    static let event = "user:blocked"
+}
+
+struct ReportCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "report:create"
+    var userId: String
+    var reason: ReportReason
+    var note: String?
+    var messageId: String?
+}
+
+struct RegisterPushCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "push:register"
+
+    enum Environment: String, Encodable, Sendable {
+        case sandbox = "SANDBOX"
+        case production = "PRODUCTION"
+    }
+
+    var token: String
+    var environment: Environment
+}
+
+struct UnregisterPushCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "push:unregister"
+    var token: String
+}

@@ -34,6 +34,11 @@ model User {
   following      Follow[]         @relation("follower")
   followers      Follow[]         @relation("followee")
   eventRsvps     RoomEventRsvp[]
+  blocking       UserBlock[]      @relation("blocker")
+  blockedBy      UserBlock[]      @relation("blocked")
+  reportsFiled   Report[]         @relation("reporter")
+  reportsAgainst Report[]         @relation("reported")
+  pushDevices    PushDevice[]
 }
 
 enum RoomVisibility {
@@ -192,5 +197,67 @@ model RoomEventRsvp {
   createdAt DateTime  @default(now())
 
   @@id([eventId, userId])
+  @@index([userId])
+}
+
+/// A reader who never wants to see or hear from another: no chat, follows, search or profile.
+model UserBlock {
+  blockerId String   @db.Uuid
+  blocker   User     @relation("blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String   @db.Uuid
+  blocked   User     @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  HATE
+  SEXUAL
+  SELF_HARM
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
+/// A complaint about a reader or one of their chat messages, kept for review.
+/// The message text is copied in, so evidence survives the message being deleted.
+model Report {
+  id           String       @id @default(uuid()) @db.Uuid
+  reporterId   String       @db.Uuid
+  reporter     User         @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId   String       @db.Uuid
+  reported     User         @relation("reported", fields: [reportedId], references: [id], onDelete: Cascade)
+  reason       ReportReason
+  note         String?      @db.VarChar(300)
+  messageId    String?      @db.Uuid
+  messageBody  String?      @db.VarChar(500)
+  roomId       String?      @db.VarChar(64)
+  status       ReportStatus @default(OPEN)
+  createdAt    DateTime     @default(now())
+
+  @@index([status, createdAt])
+  @@index([messageId])
+}
+
+enum PushEnvironment {
+  SANDBOX
+  PRODUCTION
+}
+
+/// An APNs device token, for reaching a reader while the app is closed.
+model PushDevice {
+  token       String          @id @db.VarChar(200)
+  userId      String          @db.Uuid
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  environment PushEnvironment
+  updatedAt   DateTime        @updatedAt
+
   @@index([userId])
 }

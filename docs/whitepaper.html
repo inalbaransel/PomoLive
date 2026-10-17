@@ -1,0 +1,322 @@
+<title>PomoLive Whitepaper</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: tek sütunlu okuma metni, solda bölüm künyesi; piksel yazı yalnızca başlıklarda */
+:root {
+  --bg: #F6F6FB;
+  --surface: #FFFFFF;
+  --fg: #1B1A2E;
+  --muted: #5D5B78;
+  --line: #DEDDEE;
+  --accent: #4B47D6;
+  --accent-soft: #E7E6FB;
+  --lamp: #C98A1E;
+  --good: #1F8A5B;
+  --display: "Pixelify Sans", "Courier New", monospace;
+  --body: "Figtree", -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F0F1A; --surface: #171727; --fg: #E9E8F7; --muted: #A09EC0; --line: #2A2940;
+  --accent: #8C8CFF; --accent-soft: #23224A; --lamp: #F0B44E; --good: #4FD59A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0F0F1A; --surface: #171727; --fg: #E9E8F7; --muted: #A09EC0; --line: #2A2940;
+  --accent: #8C8CFF; --accent-soft: #23224A; --lamp: #F0B44E; --good: #4FD59A; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font: 16px/1.65 var(--body); }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 56px 96px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font: 700 clamp(40px, 8vw, 64px)/1.05 var(--display); letter-spacing: .01em; }
+h2 { font: 700 28px/1.2 var(--display); color: var(--fg); }
+h3 { font: 600 18px/1.3 var(--body); margin-top: 8px; }
+p, li { max-width: 65ch; }
+p { margin: 0; }
+a { color: var(--accent); }
+.eyebrow { font: 600 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 20px; color: var(--muted); margin-top: 16px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 24px; font: 13px var(--mono); color: var(--muted); }
+
+.hero { display: grid; gap: 28px; padding-bottom: 40px; border-bottom: 1px solid var(--line); }
+.desks { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; max-width: 420px; }
+.desks i { aspect-ratio: 1; background: var(--line); image-rendering: pixelated; }
+.desks i.on { background: var(--lamp); box-shadow: 0 0 0 2px color-mix(in srgb, var(--lamp) 35%, transparent); }
+.desks i.me { background: var(--accent); }
+.legend { font: 12px var(--mono); color: var(--muted); }
+
+section { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px 32px; padding-block: 48px; border-bottom: 1px solid var(--line); }
+section > .num { font: 700 14px var(--mono); color: var(--muted); padding-top: 8px; }
+section > .body { display: grid; gap: 18px; min-width: 0; }
+@media (max-width: 640px) { section { grid-template-columns: 1fr; } }
+
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 8px; align-content: start; }
+.card h3 { margin: 0; }
+.card p, .card li { font-size: 15px; color: var(--muted); }
+.callout { background: var(--accent-soft); border-radius: 10px; padding: 18px 20px; }
+.tag { display: inline-block; font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+.tag.done { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+
+.table { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td.n { text-align: right; white-space: nowrap; }
+.note { font-size: 13.5px; color: var(--muted); }
+code { font: 13.5px var(--mono); }
+.timeline { display: grid; gap: 0; }
+.step { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-top: 1px dashed var(--line); }
+.step:first-child { border-top: 0; }
+.step b { font: 600 13px var(--mono); color: var(--accent); }
+@media (max-width: 480px) { .step { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Whitepaper · Ekim 2026 · Sürüm 1.0</div>
+    <h1>PomoLive</h1>
+    <p class="lede">Telefonundaki sessiz kütüphane. İnsanlar 16-bit bir okuma salonunda masalara oturuyor, kendi sayaçlarıyla çalışıyor ve aynı anda odaklanan başkalarını görüyor. Kimse konuşmak zorunda değil; yalnız çalışmamak yetiyor.</p>
+    <div>
+      <div class="desks" aria-hidden="true">
+        <i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i>
+        <i></i><i class="on"></i><i></i><i class="me"></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i>
+      </div>
+      <p class="legend" style="margin-top:8px">■ sarı: odaklanan masa · ■ çivit: sen · ■ gri: boş masa</p>
+    </div>
+    <div class="meta"><span>Platform: iOS 26+</span><span>Backend: NestJS · WebSocket</span><span>Pazar: önce Türkiye, sonra global</span></div>
+  </header>
+
+  <section id="ozet">
+    <div class="num">00</div>
+    <div class="body">
+      <h2>Özet</h2>
+      <p>Uzaktan çalışma ve evden ders çalışma kalıcı hale geldi, ama motivasyonun büyük kısmı hâlâ "başkaları da çalışıyor" hissinden geliyor. Kütüphaneler, kafeler ve YouTube'daki "study with me" yayınları bu ihtiyacı karşılıyor. PomoLive aynı hissi kamera açmadan, konuşmadan ve dikkat dağıtmadan cebe taşıyor.</p>
+      <p>Ürün bugün çalışır durumda. Gerçek zamanlı salonlar, kullanıcı odaları, pomodoro ve kronometre, istatistik ve hedefler, rozetler, arkadaşlık, oda etkinlikleri, odak sesleri, OLED odak modu, Live Activity ve widget'lar hazır. Gelir modeli <b>freemium abonelik (PomoLive Plus)</b>. Çekirdek deneyim, yani masaya oturup başkalarıyla çalışmak, her zaman ücretsiz kalacak. Reklam hiç olmayacak.</p>
+      <div class="callout"><b>Tek cümlede:</b> Instagram'ı açma isteğinin yerine bir kütüphane masası koyan, Apple-native bir sosyal odak uygulaması.</div>
+    </div>
+  </section>
+
+  <section id="problem">
+    <div class="num">01</div>
+    <div class="body">
+      <h2>Problem</h2>
+      <div class="grid2">
+        <div class="card"><h3>Yalnızlık odağı bozuyor</h3><p>Evde tek başına çalışan biri dikkatini kolayca kaybediyor. Kütüphanede ise etraftaki insanlar sessizce bir norm koyuyor ve herkes çalışıyor.</p></div>
+        <div class="card"><h3>Mevcut çözümler ağır</h3><p>Görüntülü çalışma platformları kamera, takvim ve eşleşme istiyor. YouTube yayınları pasif kalıyor ve seni kimse görmüyor.</p></div>
+        <div class="card"><h3>Sayaçlar tek başına sıkıcı</h3><p>Pomodoro uygulamaları işe yarıyor ama sosyal değil. Birkaç gün sonra bırakılıyorlar.</p></div>
+        <div class="card"><h3>Telefon hem sorun hem araç</h3><p>Dikkati dağıtan cihaz aynı zamanda herkesin elinde. Çözüm de orada olmalı ve kilit ekranından yönetilebilmeli.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cozum">
+    <div class="num">02</div>
+    <div class="body">
+      <h2>Ürün</h2>
+      <p>PomoLive bir piksel kütüphane salonu. Her masa bir kişi. Masaya oturduğunda lamban yanıyor, sayacın başlıyor ve salondaki herkes senin çalıştığını görüyor. Mola verince lamban sönüyor. Mesaj atmak zorunlu değil; sadece orada olmak yeterli.</p>
+      <h3>Bugün yayında olan özellikler</h3>
+      <div class="table"><table>
+        <thead><tr><th>Alan</th><th>Özellik</th><th>Durum</th></tr></thead>
+        <tbody>
+          <tr><td>Salon</td><td>Gerçek zamanlı genel salonlar (25 kişide yeni salon), 16-bit harita, animasyonlu masalar</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Odalar</td><td>Kullanıcı odaları, özel/açık, 6 haneli kod, 5 tema (klasik, kafe, orman, sahil, uzay), Keşfet, önizleme</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Sayaç</td><td>Kişisel pomodoro ve kronometre, sunucu tick'i olmadan senkron saat, haptik, faz bildirimleri</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Odak modu</td><td>OLED siyah tam ekran: dijital/halka/kadran saat, gece haritası, burn-in koruması</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Sesler</td><td>Cihazda sentezlenen 6 ses (yağmur, dalga, şömine, kahverengi/pembe/beyaz gürültü), arka planda çalar</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>İlerleme</td><td>İstatistik, seri, günlük ve haftalık hedef halkaları, 10 rozet, görev listesi</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Sosyal</td><td>Oda sohbeti, takip, "arkadaşın çalışmaya başladı" bildirimi, haftalık sıralama</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Etkinlik</td><td>Oda etkinlikleri, katılım, 10 dk önce ve başlangıçta yerel hatırlatma</td><td><span class="tag done">Hazır</span></td></tr>
+          <tr><td>Sistem</td><td>Live Activity ve Dynamic Island, ana ekran ve kilit ekranı widget'ları, TR/EN dil desteği</td><td><span class="tag done">Hazır</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="kullanici">
+    <div class="num">03</div>
+    <div class="body">
+      <h2>Kime hitap ediyor</h2>
+      <div class="grid2">
+        <div class="card"><span class="tag">Birincil</span><h3>Sınava hazırlanan öğrenci</h3><p>YKS, KPSS, ALES ve üniversite öğrencileri. Uzun ve tekrar eden çalışma seansları, seri motivasyonu, arkadaşlarla "kütüphane buluşması". Türkiye'de çok büyük ve dijitale açık bir kitle.</p></div>
+        <div class="card"><span class="tag">İkincil</span><h3>Uzaktan çalışan profesyonel</h3><p>Yazılımcılar, tasarımcılar ve yazarlar. Derin çalışma blokları, sessiz eşlik, istatistik ve ses. Ödeme gücü daha yüksek, Plus'a dönüşme ihtimali daha fazla.</p></div>
+        <div class="card"><span class="tag">Topluluk</span><h3>Oda kuranlar</h3><p>Dershane grupları, Discord toplulukları, YouTube'da "study with me" yayıncıları. Kendi odalarını kurup etkinlik planlıyorlar. Büyümenin taşıyıcısı onlar.</p></div>
+        <div class="card"><span class="tag">Sonra</span><h3>Kurumlar</h3><p>Dershaneler, üniversite kulüpleri, uzaktan çalışan ekipler. Grup lisansı ve yönetici paneliyle (bkz. yol haritası).</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rekabet">
+    <div class="num">04</div>
+    <div class="body">
+      <h2>Rekabet ve fark</h2>
+      <div class="table"><table>
+        <thead><tr><th>Kategori</th><th>Örnekler</th><th>Güçlü yanı</th><th>PomoLive farkı</th></tr></thead>
+        <tbody>
+          <tr><td>Görüntülü eşli çalışma</td><td>Focusmate</td><td>Güçlü sorumluluk hissi</td><td>Kamera ve randevu yok, istediğin an otur</td></tr>
+          <tr><td>Odak/ağaç uygulamaları</td><td>Forest, Flora</td><td>Basit, oyunlaştırılmış</td><td>Gerçek insanlarla canlı varlık hissi</td></tr>
+          <tr><td>Sanal çalışma odaları</td><td>StudyStream, Study Together</td><td>Büyük topluluk</td><td>Native iOS, Live Activity, widget, kilit ekranı</td></tr>
+          <tr><td>Study with me yayınları</td><td>YouTube</td><td>Ücretsiz, atmosferik</td><td>Pasif izleme yerine aktif katılım ve kendi istatistiğin</td></tr>
+        </tbody>
+      </table></div>
+      <p><b>Savunulabilir taraflar:</b> (1) Tamamen Apple-native deneyim: Liquid Glass, Live Activity, widget ve haptik. Web tabanlı rakiplerin kolayca kopyalayamayacağı bir his. (2) Kendine özgü piksel kütüphane kimliği. Tüm grafikler kodla üretiliyor, bu yüzden yeni temalar ucuz. (3) Kullanıcı odaları ve etkinliklerle topluluk ağı etkisi. (4) Türkçe-öncelikli lansman; yerel sınav kültürüne odaklı.</p>
+    </div>
+  </section>
+
+  <section id="gelir">
+    <div class="num">05</div>
+    <div class="body">
+      <h2>Gelir modeli</h2>
+      <p>Model freemium abonelik. Kural basit: <b>başkalarıyla çalışmak ücretsiz, kendi deneyimini özelleştirmek ve derinleştirmek ücretli.</b> Salonu boşaltacak bir ödeme duvarı, ağ etkisini öldürür. Bu yüzden masaya oturmak, oda kurmak ve sosyal özellikler hep ücretsiz kalıyor.</p>
+      <div class="table"><table>
+        <thead><tr><th>Özellik</th><th>Ücretsiz</th><th>PomoLive Plus</th></tr></thead>
+        <tbody>
+          <tr><td>Salonlar, masa, sayaç, sohbet, takip</td><td>Sınırsız</td><td>Sınırsız</td></tr>
+          <tr><td>Kendi odaların</td><td>2 oda, 25 masa</td><td>Sınırsız oda, 50 masaya kadar</td></tr>
+          <tr><td>Oda temaları</td><td>Klasik, Kafe</td><td>Tüm temalar ve sezonluk temalar</td></tr>
+          <tr><td>Avatarlar ve masa süsleri</td><td>Temel set</td><td>Plus avatarları, lamba ve masa kozmetikleri</td></tr>
+          <tr><td>İstatistik</td><td>Son 7 gün, seri, hedef</td><td>Tüm geçmiş, yıllık ısı haritası, kategori trendleri, CSV dışa aktarma</td></tr>
+          <tr><td>Odak sesleri</td><td>3 ses</td><td>Tüm sesler ve ses karıştırma</td></tr>
+          <tr><td>Odak modu</td><td>Dijital saat</td><td>Tüm saat yüzleri, renkler, gece haritası</td></tr>
+          <tr><td>Oda etkinlikleri</td><td>Katılma</td><td>Tekrarlayan etkinlik planlama</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Fiyatlandırma (öneri)</h3>
+      <div class="table"><table>
+        <thead><tr><th>Plan</th><th>Türkiye</th><th>Global</th><th>Not</th></tr></thead>
+        <tbody>
+          <tr><td>Aylık</td><td class="n">₺79,99</td><td class="n">$3,99</td><td>Giriş seviyesi</td></tr>
+          <tr><td>Yıllık</td><td class="n">₺499,99</td><td class="n">$24,99</td><td>~%48 indirim, 7 gün ücretsiz deneme. Varsayılan plan.</td></tr>
+          <tr><td>Ömür boyu</td><td class="n">₺1.499,99</td><td class="n">$69,99</td><td>Lansman dönemine özel, sınırlı</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Satış StoreKit 2 ile yapılacak. Yıllık gelir 1 milyon doların altındayken Apple Small Business Program kapsamında komisyon %15. Öğrenci kitlesi fiyata hassas olduğundan Türkiye fiyatı satın alma gücüne göre ayrı belirleniyor. Sınav dönemlerinde (YKS öncesi) kampanya yapılabilir.</p>
+
+      <h3>Ek gelir kanalları</h3>
+      <ul>
+        <li><b>Kozmetik tek seferlik satın alımlar:</b> sezonluk oda temaları ve avatar paketleri. Plus olmayanlar için de açık.</li>
+        <li><b>PomoLive for Teams / Kampüs (2027):</b> dershane ve şirketlere koltuk başı lisans, özel salon, yönetici istatistikleri.</li>
+        <li><b>Yaratıcı ortaklıkları:</b> "study with me" yayıncılarına markalı resmi odalar. Gelir paylaşımı modeli araştırılacak.</li>
+      </ul>
+      <div class="callout"><b>Bilinçli olarak yapmadıklarımız:</b> reklam yok, kullanıcı verisi satışı yok, odak sırasında satış ekranı yok. Ürünün vaadi dikkati korumak. Reklam bu vaadi bozar.</div>
+    </div>
+  </section>
+
+  <section id="ekonomi">
+    <div class="num">06</div>
+    <div class="body">
+      <h2>Birim ekonomisi ve senaryolar</h2>
+      <p>Aşağıdaki rakamlar <b>tahmindir, ölçülmüş veri değildir</b>. Lansmandan sonra gerçek dönüşüm ve tutma verisiyle güncellenecek. Abonelik uygulamalarında ücretsizden ücretliye dönüşüm genelde birkaç yüzde aralığında; senaryolar buna göre kuruldu.</p>
+      <p class="note">Varsayım: Ödeme yapan kullanıcı başına aylık net gelir ≈ $2,00. Yıllık plan ağırlıklı karışım, Türkiye fiyatlaması ve %15 Apple komisyonu sonrası.</p>
+      <div class="table"><table>
+        <thead><tr><th>Senaryo</th><th>Aylık aktif kullanıcı</th><th>Dönüşüm</th><th>Ödeyen</th><th>Aylık net gelir</th><th>Tahmini altyapı</th></tr></thead>
+        <tbody>
+          <tr><td>Temkinli (ilk 6 ay)</td><td class="n">10.000</td><td class="n">%3</td><td class="n">300</td><td class="n">≈ $600</td><td class="n">≈ $40</td></tr>
+          <tr><td>Hedef (ilk yıl sonu)</td><td class="n">50.000</td><td class="n">%4</td><td class="n">2.000</td><td class="n">≈ $4.000</td><td class="n">≈ $150</td></tr>
+          <tr><td>İyimser (2. yıl)</td><td class="n">200.000</td><td class="n">%5</td><td class="n">10.000</td><td class="n">≈ $20.000</td><td class="n">≈ $800</td></tr>
+        </tbody>
+      </table></div>
+      <p>Maliyet tarafı çok hafif. Sunucu yalnızca masa durumunu ve olayları taşıyor; sayaçlar istemcide hesaplanıyor, sunucuda saniyelik tick yok. Grafikler ve sesler cihazda üretiliyor, CDN gerekmiyor. Bu yüzden brüt marj çok yüksek kalıyor. Asıl maliyet kalemi ileride kullanıcı edinme olacak.</p>
+    </div>
+  </section>
+
+  <section id="buyume">
+    <div class="num">07</div>
+    <div class="body">
+      <h2>Büyüme stratejisi</h2>
+      <div class="grid2">
+        <div class="card"><h3>Oda kuranlar = dağıtım</h3><p>Her oda bir davet linki ve 6 haneli kod. Dershane grubu, Discord sunucusu ya da sınıf tek tıkla taşınıyor. Etkinlikler insanları belirli saatte geri getiriyor.</p></div>
+        <div class="card"><h3>Paylaşılabilir ilerleme</h3><p>Haftalık özet, rozet ve seri kartları. Instagram hikâyesine uygun, piksel görünümlü paylaşım görselleri.</p></div>
+        <div class="card"><h3>Study-with-me içerik üreticileri</h3><p>TikTok ve YouTube'daki çalışma yayıncılarına resmi oda. İzleyici yayını açıp aynı anda kendi masasında çalışıyor.</p></div>
+        <div class="card"><h3>Sınav takvimi</h3><p>YKS, KPSS ve vize-final dönemlerinde sezonluk salonlar, ortak geri sayım etkinlikleri ve kampanyalar.</p></div>
+        <div class="card"><h3>App Store görünürlüğü</h3><p>Live Activity, widget ve Liquid Glass ile Apple'ın öne çıkarma kriterlerine uygun bir uygulama. Editör seçkisi için güçlü aday.</p></div>
+        <div class="card"><h3>Ağ etkisi</h3><p>Salon ne kadar doluysa o kadar değerli. Lansmanda kullanıcıları tek salonda toplayarak "boş salon" hissini önlemek kritik.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="teknoloji">
+    <div class="num">08</div>
+    <div class="body">
+      <h2>Teknoloji</h2>
+      <pre class="mermaid">
+flowchart LR
+  A[iOS uygulaması<br/>SwiftUI · Swift 6] -- WebSocket /ws --> B[NestJS gateway]
+  W[Widget ve Live Activity] -. App Group .- A
+  B --> R[(Redis<br/>masa durumu · pub/sub)]
+  B --> P[(PostgreSQL<br/>kullanıcı · oda · seans)]
+  B -. çoklu instance .- B2[NestJS gateway 2]
+  B2 --> R
+      </pre>
+      <ul>
+        <li><b>Tek WebSocket kanalı:</b> tüm komutlar ve canlı olaylar aynı bağlantıdan geçiyor. Kontrat zod şemalarıyla tipli.</li>
+        <li><b>Sunucu tick'i yok:</b> her masa kendi sayaç tanımını taşıyor. Faz ve kalan süre sunucuda ve iOS'ta aynı formülle hesaplanıyor; saat farkı NTP tarzı ölçülüyor. Böylece binlerce eşzamanlı masa ucuza taşınıyor.</li>
+        <li><b>Tutarlılık:</b> masa durumu Redis'te atomik Lua script'leriyle tutuluyor. Lease sistemi kilitli telefonda masayı 45 dakika koruyor. Biten seanslar Postgres'e yazılıyor.</li>
+        <li><b>Yatay ölçek:</b> instance'lar arası yayın Redis pub/sub ile yapılıyor. Docker Compose ile Coolify'da tek komutla dağıtılıyor.</li>
+        <li><b>Güvenlik ve gizlilik:</b> scrypt parola hash'i, giriş deneme sınırı, Keychain'de oturum, hesap silme. Takipçiden istatistik gizleme seçeneği var. Konum, kamera veya mikrofon istenmiyor.</li>
+        <li><b>Kalite:</b> sunucuda birim ve uçtan uca testler. iOS'ta Swift 6 strict concurrency.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="yol">
+    <div class="num">09</div>
+    <div class="body">
+      <h2>Yol haritası</h2>
+      <div class="timeline">
+        <div class="step"><b>Q4 2026</b><div><b>Lansman.</b> TestFlight kapalı beta (300–500 öğrenci). Uzaktan push bildirimleri (APNs), App Store yayını, Türkiye odaklı tanıtım.</div></div>
+        <div class="step"><b>Q1 2027</b><div><b>Gelir.</b> StoreKit 2 ile PomoLive Plus, ücretsiz deneme, paylaşım kartları, ilk sezonluk tema (YKS salonu).</div></div>
+        <div class="step"><b>Q2 2027</b><div><b>Genişleme.</b> iPad ve Mac (SwiftUI ortak kod), Apple Watch'ta sayaç, İngilizce pazar için ASO ve içerik üretici ortaklıkları.</div></div>
+        <div class="step"><b>Q3 2027</b><div><b>Topluluk.</b> Tekrarlayan etkinlikler, oda moderasyon araçları, resmi yayıncı odaları, kozmetik mağazası.</div></div>
+        <div class="step"><b>Q4 2027</b><div><b>Kurumsal.</b> PomoLive for Teams / Kampüs pilotu. Android'e açılma kararı, iOS metriklerine göre verilecek.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="metrik">
+    <div class="num">10</div>
+    <div class="body">
+      <h2>Başarı metrikleri</h2>
+      <div class="table"><table>
+        <thead><tr><th>Metrik</th><th>Neyi gösterir</th><th>İlk yıl hedefi</th></tr></thead>
+        <tbody>
+          <tr><td>Haftalık odak dakikası / kullanıcı</td><td>Ürünün asıl değeri (kuzey yıldızı)</td><td class="n">300+ dk</td></tr>
+          <tr><td>D1 / D7 / D30 tutma</td><td>Alışkanlık oluşuyor mu</td><td class="n">%40 / %20 / %10</td></tr>
+          <tr><td>Eşzamanlı oturan masa (zirve)</td><td>Salon dolu hissi</td><td class="n">500+</td></tr>
+          <tr><td>Oda kuran kullanıcı oranı</td><td>Topluluk ve dağıtım gücü</td><td class="n">%8</td></tr>
+          <tr><td>Ücretsizden Plus'a dönüşüm</td><td>Gelir sağlığı</td><td class="n">%3–5</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Hedefler başlangıç varsayımlarıdır. Beta verisi geldikten sonra yeniden belirlenecek.</p>
+    </div>
+  </section>
+
+  <section id="risk">
+    <div class="num">11</div>
+    <div class="body">
+      <h2>Riskler ve önlemler</h2>
+      <div class="table"><table>
+        <thead><tr><th>Risk</th><th>Önlem</th></tr></thead>
+        <tbody>
+          <tr><td>Boş salon: ilk kullanıcılar kimseyi görmez ve gider</td><td>Lansmanda tek genel salon, beta topluluğu, etkinliklerle saat yoğunlaştırma, "şu an X kişi çalışıyor" vurgusu</td></tr>
+          <tr><td>Yalnızca iOS: Türkiye'de Android payı yüksek</td><td>Önce iOS'ta ürün-pazar uyumunu kanıtla. Android kararını Q4 2027'de metriklerle ver.</td></tr>
+          <tr><td>Sohbette taciz veya spam</td><td>Raporlama, engelleme, oda sahibi moderasyonu, hız sınırları</td></tr>
+          <tr><td>Düşük ödeme isteği (öğrenci kitlesi)</td><td>Bölgesel fiyat, yıllık plan, ömür boyu lansman fırsatı, kozmetik IAP</td></tr>
+          <tr><td>Rakiplerin özelliği kopyalaması</td><td>Native kalite, kendine özgü kimlik ve topluluk ağı. Bunlar özellik listesinden daha zor kopyalanır.</td></tr>
+          <tr><td>Tek geliştirici bağımlılığı</td><td>Temiz mimari, testler, dokümantasyon ve otomatik dağıtım</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="sonuc" style="border-bottom:0">
+    <div class="num">12</div>
+    <div class="body">
+      <h2>Sonuç</h2>
+      <p>PomoLive, "birlikte ama sessizce çalışma" ihtiyacını Apple ekosisteminin en iyi araçlarıyla karşılıyor. Ürün çekirdeği hazır, altyapısı düşük maliyetle ölçeklenebiliyor ve gelir modeli kullanıcının dikkatini satmak yerine deneyimini zenginleştirmeye dayanıyor. Sıradaki adımlar beta, APNs ve Plus lansmanı. Bundan sonraki her karar gerçek kullanım verisine göre verilecek.</p>
+    </div>
+  </section>
+</div>

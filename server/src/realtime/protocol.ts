@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { GLYPH_COLORS, GLYPH_SYMBOLS } from '../common/glyph.js';
 import { ROOM_THEMES } from '../library/layout/library-layout.js';
+import { isClean } from '../moderation/profanity.js';
 import { AVATAR_SPRITE_IDS } from '../users/avatar-catalog.js';
 import { ProtocolError } from './protocol-error.js';
 
@@ -53,6 +54,12 @@ export const ClientEvent = {
   createTask: 'task:create',
   setTaskDone: 'task:done',
   deleteTask: 'task:delete',
+  block: 'user:block',
+  unblock: 'user:unblock',
+  blockedUsers: 'user:blocked',
+  report: 'report:create',
+  registerPush: 'push:register',
+  unregisterPush: 'push:unregister',
 } as const;
 
 export const ServerEvent = {
@@ -71,13 +78,24 @@ export const ServerEvent = {
   roomEventsChanged: 'room:events',
 } as const;
 
-const displayName = z.string().trim().min(2).max(24);
+/** Shown in place of the validator's report when only the wording was wrong. */
+const INAPPROPRIATE = 'inappropriate';
+
+/** Refuses public text (names, titles, bios) that contains a listed swear. */
+const clean = <T extends z.ZodType<string | null>>(schema: T) =>
+  schema.refine((text) => text === null || isClean(text), {
+    message: INAPPROPRIATE,
+  });
+
+const displayName = clean(z.string().trim().min(2).max(24));
 /** Lowercase letters, digits, `_` and `.`; no leading, trailing or doubled dot. */
-const username = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .regex(/^(?!\.)(?!.*\.\.)[a-z0-9._]{3,20}(?<!\.)$/);
+const username = clean(
+  z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^(?!\.)(?!.*\.\.)[a-z0-9._]{3,20}(?<!\.)$/),
+);
 const timeZone = z
   .string()
   .refine(
@@ -112,12 +130,14 @@ const roomCode = z
   .regex(/^[A-Z0-9]{6}$/);
 
 /** A room's blurb: up to 200 characters, line breaks allowed; an empty string clears it. */
-const roomDescription = z
-  .string()
-  .trim()
-  .max(200)
-  .regex(/^(?:[^\p{Cc}\p{Cf}]|\n)*$/u)
-  .transform((text) => text || null);
+const roomDescription = clean(
+  z
+    .string()
+    .trim()
+    .max(200)
+    .regex(/^(?:[^\p{Cc}\p{Cf}]|\n)*$/u)
+    .transform((text) => text || null),
+);
 
 export const refSchema = z.object({ ref: z.string().min(1).max(64) });
 
@@ -153,7 +173,7 @@ export const joinRoomSchema = z
   });
 
 export const createRoomSchema = z.object({
-  name: label(2, 32),
+  name: clean(label(2, 32)),
   ...glyph,
   visibility: z.enum(['PUBLIC', 'PRIVATE']),
   theme: z.enum(ROOM_THEMES).default('classic'),
@@ -167,7 +187,7 @@ export const previewRoomSchema = z.object({ roomId: uuid });
 export const updateRoomSchema = z
   .object({
     roomId: uuid,
-    name: label(2, 32).optional(),
+    name: clean(label(2, 32)).optional(),
     symbol: glyph.symbol.optional(),
     color: glyph.color.optional(),
     visibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
@@ -214,13 +234,14 @@ export const updateProfileSchema = z
     displayName: displayName.optional(),
     avatarSpriteId: z.enum(AVATAR_SPRITE_IDS).optional(),
     /** An empty string clears the bio. */
-    bio: z
-      .string()
-      .trim()
-      .max(80)
-      .regex(/^[^\p{Cc}\p{Cf}]*$/u)
-      .transform((bio) => bio || null)
-      .optional(),
+    bio: clean(
+      z
+        .string()
+        .trim()
+        .max(80)
+        .regex(/^[^\p{Cc}\p{Cf}]*$/u)
+        .transform((bio) => bio || null),
+    ).optional(),
     statsVisible: z.boolean().optional(),
     /** 0 clears the goal. */
     dailyGoalMinutes: z
@@ -284,7 +305,7 @@ export const listEventsSchema = z.object({ roomId: uuid });
 
 export const createEventSchema = z.object({
   roomId: uuid,
-  title: label(2, 60),
+  title: clean(label(2, 60)),
   startsAt: z.number().int().positive(),
   durationMinutes: z
     .number()
@@ -297,6 +318,29 @@ export const eventSchema = z.object({ eventId: uuid });
 
 export const rsvpEventSchema = z.object({ eventId: uuid, going: z.boolean() });
 
+export const reportSchema = z.object({
+  userId: uuid,
+  reason: z.enum([
+    'SPAM',
+    'HARASSMENT',
+    'HATE',
+    'SEXUAL',
+    'SELF_HARM',
+    'OTHER',
+  ]),
+  note: label(1, 300).optional(),
+  messageId: uuid.optional(),
+});
+
+export const registerPushSchema = z.object({
+  token: z.string().regex(/^[0-9a-f]{64,200}$/),
+  environment: z.enum(['SANDBOX', 'PRODUCTION']),
+});
+
+export const unregisterPushSchema = z.object({
+  token: z.string().regex(/^[0-9a-f]{64,200}$/),
+});
+
 export const deleteAccountSchema = z.object({ password });
 
 export type AuthCommand = z.infer<typeof authCommandSchema>;
@@ -306,7 +350,10 @@ export function parsePayload<T extends z.ZodType>(
   data: unknown,
 ): z.infer<T> {
   const result = schema.safeParse(data ?? {});
-  if (!result.success)
+  if (!result.success) {
+    if (result.error.issues.some((issue) => issue.message === INAPPROPRIATE))
+      ProtocolError.throw('INAPPROPRIATE', 'Please choose different words');
     ProtocolError.throw('INVALID_PAYLOAD', z.prettifyError(result.error));
+  }
   return result.data;
 }

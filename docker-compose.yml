@@ -9,6 +9,11 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-pomolive}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-pomolive}?schema=public
       REDIS_URL: redis://redis:6379
       SESSION_SECRET: ${SESSION_SECRET:?}
+      # Push notifications; leave empty to run without them. The key is the .p8 file's contents.
+      APNS_KEY_ID: ${APNS_KEY_ID:-}
+      APNS_TEAM_ID: ${APNS_TEAM_ID:-}
+      APNS_PRIVATE_KEY: ${APNS_PRIVATE_KEY:-}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
     expose:
       - "3000"
     depends_on:

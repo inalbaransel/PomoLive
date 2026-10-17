@@ -926,6 +926,124 @@ describe('Library realtime protocol (e2e)', () => {
     friend.close();
   });
 
+  it('keeps readers safe: filtered words, reports, blocks and push tokens', async () => {
+    const { client: owner, userId: ownerId } = await signedInWithId('Koruyan');
+    const { client: troll, userId: trollId } = await signedInWithId('Trol');
+    const { client: witness, userId: witnessId } =
+      await signedInWithId('Tanik');
+    const { client: third } = await signedInWithId('Ucuncu');
+
+    expect(
+      await troll.send('profile:update', { displayName: 'Orospu Cocugu' }),
+    ).toMatchObject({ ok: false, error: { code: 'INAPPROPRIATE' } });
+    const { result } = await owner.send('room:create', {
+      name: 'Güvenli Oda',
+      symbol: 'books.vertical.fill',
+      color: 'teal',
+      visibility: 'PUBLIC',
+    });
+    for (const reader of [troll, witness, third])
+      await reader.send('room:join', { roomId: result.room.id });
+
+    const rude = (
+      await troll.send('chat:send', {
+        body: 'siktir git',
+        clientId: 'c-rude-001',
+      })
+    ).result.message;
+    expect(rude.body).toBe('s***** git');
+
+    expect(
+      await troll.send('report:create', { userId: trollId, reason: 'SPAM' }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    expect(
+      await owner.send('report:create', {
+        userId: witnessId,
+        reason: 'HARASSMENT',
+        messageId: rude.id,
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'MESSAGE_NOT_FOUND' } });
+    for (const reporter of [owner, witness])
+      expect(
+        (
+          await reporter.send('report:create', {
+            userId: trollId,
+            reason: 'HARASSMENT',
+            messageId: rude.id,
+            note: 'Odada küfür ediyor',
+          })
+        ).ok,
+      ).toBe(true);
+    expect(
+      (await owner.send('chat:history')).result.messages.map(
+        (message: { id: string }) => message.id,
+      ),
+    ).toContain(rude.id);
+    // A third reporter takes the line down for everyone without waiting for review.
+    await third.send('report:create', {
+      userId: trollId,
+      reason: 'HARASSMENT',
+      messageId: rude.id,
+    });
+    const removed = await witness.next(
+      (frame) =>
+        frame.event === 'chat:deleted' && frame.data.messageId === rude.id,
+    );
+    expect(removed.data.messageId).toBe(rude.id);
+
+    await troll.send('chat:send', {
+      body: 'hâlâ buradayım',
+      clientId: 'c-still-01',
+    });
+    expect((await owner.send('user:follow', { userId: trollId })).ok).toBe(
+      true,
+    );
+    expect((await troll.send('user:follow', { userId: ownerId })).ok).toBe(
+      true,
+    );
+    expect((await owner.send('user:block', { userId: trollId })).ok).toBe(true);
+    expect((await owner.send('user:blocked')).result.users).toMatchObject([
+      { id: trollId },
+    ]);
+    expect((await owner.send('friends:list')).result.friends).toEqual([]);
+    expect(
+      (await owner.send('chat:history')).result.messages.some(
+        (message: { user: { id: string } }) => message.user.id === trollId,
+      ),
+    ).toBe(false);
+    expect(await troll.send('user:profile', { userId: ownerId })).toMatchObject(
+      {
+        ok: false,
+        error: { code: 'USER_NOT_FOUND' },
+      },
+    );
+    expect(await troll.send('user:follow', { userId: ownerId })).toMatchObject({
+      ok: false,
+      error: { code: 'USER_NOT_FOUND' },
+    });
+    expect(
+      (await owner.send('user:profile', { userId: trollId })).result.profile,
+    ).toMatchObject({ isBlocked: true });
+    expect((await owner.send('user:unblock', { userId: trollId })).ok).toBe(
+      true,
+    );
+    expect((await owner.send('user:blocked')).result.users).toEqual([]);
+
+    const token = 'ab'.repeat(32);
+    expect(
+      (await owner.send('push:register', { token, environment: 'SANDBOX' })).ok,
+    ).toBe(true);
+    expect(
+      await owner.send('push:register', {
+        token: 'nope',
+        environment: 'SANDBOX',
+      }),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_PAYLOAD' } });
+    expect((await owner.send('push:unregister', { token })).ok).toBe(true);
+
+    for (const reader of [owner, troll, witness, third]) reader.close();
+  });
+
   it('schedules room events that readers can join', async () => {
     const { client: owner } = await signedInWithId('Planlayan');
     const { client: guest } = await signedInWithId('Katilan');

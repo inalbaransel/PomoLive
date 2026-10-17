@@ -6,6 +6,8 @@ enum Preferences {
     static let lastCategoryKey = "lastCategoryKey"
     static let phaseNotifications = "phaseNotificationsEnabled"
     static let haptics = "hapticsEnabled"
+    static let friendNotifications = "friendNotificationsEnabled"
+    static let hasSeenOnboarding = "hasSeenOnboarding"
     static let appearance = "appearance"
     static let focusModeStyle = "focusModeStyle"
     static let clockFace = "focusModeClockFace"

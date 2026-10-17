@@ -8,6 +8,9 @@ struct UserProfileView: View {
     @Environment(AppModel.self) private var app
     @State private var profile: PublicProfile?
     @State private var error: LibraryError?
+    @State private var isReporting = false
+    @State private var blocking: PublicUser?
+    @State private var actionError: LibraryError?
 
     var body: some View {
         List {
@@ -18,7 +21,13 @@ struct UserProfileView: View {
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
 
-                if !profile.isSelf {
+                if profile.isBlocked == true {
+                    Section {
+                        Button("Engeli Kaldır", systemImage: "hand.raised.slash") { unblock(profile) }
+                    } footer: {
+                        Text("\(profile.displayName) kişisini engelledin. Mesajlarını görmüyorsun ve birbirinizi takip edemiyorsunuz.")
+                    }
+                } else if !profile.isSelf {
                     Section {
                         HStack {
                             Label("\(profile.followerCount ?? 0) takipçi", systemImage: "person.2.fill")
@@ -85,9 +94,53 @@ struct UserProfileView: View {
         }
         .navigationTitle(profile.map { "@\($0.username)" } ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let profile, !profile.isSelf {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu("Seçenekler", systemImage: "ellipsis") {
+                        Button("Bildir…", systemImage: "exclamationmark.bubble") { isReporting = true }
+                        if profile.isBlocked == true {
+                            Button("Engeli Kaldır", systemImage: "hand.raised.slash") { unblock(profile) }
+                        } else {
+                            Button("Engelle", systemImage: "hand.raised", role: .destructive) {
+                                blocking = profile.publicUser
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isReporting, onDismiss: { Task { await load() } }) {
+            if let profile {
+                ReportSheet(user: profile.publicUser)
+                    .presentationDetents([.large])
+            }
+        }
+        .blockConfirmation($blocking) { user in
+            Task {
+                do {
+                    try await app.block(user)
+                    await load()
+                } catch {
+                    actionError = LibraryError(error)
+                }
+            }
+        }
+        .errorAlert($actionError)
         .animation(.smooth, value: profile)
         .refreshable { await load() }
         .task { await load() }
+    }
+
+    private func unblock(_ profile: PublicProfile) {
+        Task {
+            do {
+                try await app.safety.unblock(profile.id)
+                await load()
+            } catch {
+                actionError = LibraryError(error)
+            }
+        }
     }
 
     private func load() async {

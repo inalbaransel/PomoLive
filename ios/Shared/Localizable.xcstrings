@@ -73,6 +73,36 @@
         }
       }
     },
+    "%@ engellensin mi?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block %@?"
+          }
+        }
+      }
+    },
+    "%@ kişisini engelle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block %@"
+          }
+        }
+      }
+    },
+    "%@ kişisini engelledin. Mesajlarını görmüyorsun ve birbirinizi takip edemiyorsunuz." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You blocked %@. You don't see their messages and you can't follow each other."
+          }
+        }
+      }
+    },
     "%@ odak sürelerini yalnızca kendisi görüyor." : {
       "localizations" : {
         "en" : {
@@ -682,12 +712,42 @@
         }
       }
     },
+    "Arkadaşlarınla daha kolay" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easier with friends"
+          }
+        }
+      }
+    },
     "Arkadaşlarını bul, birlikte çalış" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Find friends and focus together"
+          }
+        }
+      }
+    },
+    "Arkadaşlarını takip et, çalışmaya başladıklarında haberin olsun ve yanlarına otur. Haftalık sıralamada kimin daha çok odaklandığını gör." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow your friends, hear when they start focusing and sit down next to them. See who focused most in the weekly ranking."
+          }
+        }
+      }
+    },
+    "Arkadaşım Çalışmaya Başlayınca" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When a Friend Starts Focusing"
           }
         }
       }
@@ -762,6 +822,16 @@
         }
       }
     },
+    "Başka bir şey" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something else"
+          }
+        }
+      }
+    },
     "Başla" : {
       "localizations" : {
         "en" : {
@@ -812,6 +882,16 @@
         }
       }
     },
+    "Bildirilen Mesaj" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reported Message"
+          }
+        }
+      }
+    },
     "Bildirimler" : {
       "localizations" : {
         "en" : {
@@ -822,12 +902,52 @@
         }
       }
     },
+    "Bildirimleri Aç ve Başla" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On Notifications and Start"
+          }
+        }
+      }
+    },
+    "Bildir…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report…"
+          }
+        }
+      }
+    },
     "Bilim İnsanı" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scientist"
+          }
+        }
+      }
+    },
+    "Bir kişiyi profilinden ya da sohbette mesajına basılı tutarak engelleyebilirsin." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can block someone from their profile, or by touching and holding their message in a chat."
+          }
+        }
+      }
+    },
+    "Bir masaya otur, lamban yansın. Salondaki herkes kendi işine odaklanırken sen de yalnız değilsin. Konuşmak zorunda değilsin." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a desk and your lamp lights up. Everyone in the hall focuses on their own work, so you're never alone. No need to talk."
           }
         }
       }
@@ -858,6 +978,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Take a breather. Your desk will be waiting."
+          }
+        }
+      }
+    },
+    "Biri şu an tehlikedeyse beklemeden 112'yi ara." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If someone is in danger right now, call your local emergency number."
           }
         }
       }
@@ -982,6 +1112,16 @@
         }
       }
     },
+    "Bu hafta odaklandım" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This week I focused"
+          }
+        }
+      }
+    },
     "Bu haftaki odak süresine göre sıralı. Süresini gizleyenler en sonda." : {
       "localizations" : {
         "en" : {
@@ -1052,6 +1192,16 @@
         }
       }
     },
+    "Bu metinde uygunsuz bir kelime var. Lütfen başka bir şey yaz." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This text contains an inappropriate word. Please write something else."
+          }
+        }
+      }
+    },
     "Bu oda için önerilen: %@" : {
       "localizations" : {
         "en" : {
@@ -1088,6 +1238,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today"
+          }
+        }
+      }
+    },
+    "Bugün %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today %@"
           }
         }
       }
@@ -1158,6 +1318,16 @@
         }
       }
     },
+    "Cinsel içerik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexual content"
+          }
+        }
+      }
+    },
     "Dakika" : {
       "localizations" : {
         "en" : {
@@ -1204,6 +1374,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Studying"
+          }
+        }
+      }
+    },
+    "Destek" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support"
+          }
+        }
+      }
+    },
+    "Devam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
           }
         }
       }
@@ -1318,6 +1508,16 @@
         }
       }
     },
+    "Dynamic Island" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dynamic Island"
+          }
+        }
+      }
+    },
     "Dün" : {
       "localizations" : {
         "en" : {
@@ -1368,6 +1568,16 @@
         }
       }
     },
+    "Eklemek istediğin bir şey (isteğe bağlı)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anything to add (optional)"
+          }
+        }
+      }
+    },
     "Elli Seans" : {
       "localizations" : {
         "en" : {
@@ -1404,6 +1614,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unblock"
+          }
+        }
+      }
+    },
+    "Engelle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block"
+          }
+        }
+      }
+    },
+    "Engellediğin kişinin mesajlarını görmezsin; seni takip edemez ve profilini açamaz." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You won't see their messages; they can't follow you or open your profile."
+          }
+        }
+      }
+    },
+    "Engellenenler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocked"
           }
         }
       }
@@ -1550,6 +1790,16 @@
         }
       }
     },
+    "Geç" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        }
+      }
+    },
     "Geçmiş" : {
       "localizations" : {
         "en" : {
@@ -1586,6 +1836,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Privacy"
+          }
+        }
+      }
+    },
+    "Gizlilik Politikası" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
           }
         }
       }
@@ -1770,6 +2030,16 @@
         }
       }
     },
+    "Güvenlik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safety"
+          }
+        }
+      }
+    },
     "Haftalık Hedef" : {
       "localizations" : {
         "en" : {
@@ -1796,6 +2066,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly Ranking"
+          }
+        }
+      }
+    },
+    "Haftamı Paylaş" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share My Week"
           }
         }
       }
@@ -2206,6 +2486,26 @@
         }
       }
     },
+    "Kendi sayacın, ortak sessizlik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your own timer, a shared quiet"
+          }
+        }
+      }
+    },
+    "Kendine zarar verme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-harm"
+          }
+        }
+      }
+    },
     "Keşfet" : {
       "localizations" : {
         "en" : {
@@ -2232,6 +2532,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sit down in a room from Discover, or open your own with friends."
+          }
+        }
+      }
+    },
+    "Kilit Ekranı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen"
+          }
+        }
+      }
+    },
+    "Kimseyi engellemedin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven't blocked anyone"
           }
         }
       }
@@ -2272,6 +2592,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couldn't Load People"
+          }
+        }
+      }
+    },
+    "Kişiyi Bildir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report Person"
           }
         }
       }
@@ -2362,6 +2692,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Available"
+          }
+        }
+      }
+    },
+    "Kullanım Şartları" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of Use"
           }
         }
       }
@@ -2634,6 +2974,26 @@
         }
       }
     },
+    "Mesajlarını görmezsin, birbirinizi takip edemezsiniz ve profilini açamaz. Ona haber verilmez." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You won't see their messages, you can't follow each other and they can't open your profile. They won't be told."
+          }
+        }
+      }
+    },
+    "Mesajı Bildir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report Message"
+          }
+        }
+      }
+    },
     "Mini Harita" : {
       "localizations" : {
         "en" : {
@@ -2780,6 +3140,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What are you working on?"
+          }
+        }
+      }
+    },
+    "Neden bildiriyorsun?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why are you reporting this?"
+          }
+        }
+      }
+    },
+    "Nefret söylemi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hate speech"
           }
         }
       }
@@ -3335,6 +3715,16 @@
       },
       "shouldTranslate" : false
     },
+    "PomoLive haftam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My PomoLive week"
+          }
+        }
+      }
+    },
     "PomoLive oda kodu" : {
       "localizations" : {
         "en" : {
@@ -3382,6 +3772,16 @@
         }
       }
     },
+    "Pomodoro ya da kronometre seç. Sayacın kilit ekranında, Dynamic Island'da ve widget'larda seninle kalır; telefonu kilitlesen de masan korunur." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a pomodoro or a stopwatch. Your timer stays with you on the Lock Screen, in the Dynamic Island and in widgets, and your desk is kept while the phone is locked."
+          }
+        }
+      }
+    },
     "Profil" : {
       "localizations" : {
         "en" : {
@@ -3418,6 +3818,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View My Profile"
+          }
+        }
+      }
+    },
+    "Raporun bize ulaştı. Topluluğu güvenli tutmamıza yardım ettiğin için teşekkürler." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We got your report. Thank you for helping keep the community safe."
+          }
+        }
+      }
+    },
+    "Raporun gizlidir, %@ kimin bildirdiğini görmez. Raporları 24 saat içinde inceleriz." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reports are confidential; %@ won't see who reported them. We review reports within 24 hours."
           }
         }
       }
@@ -3523,6 +3943,16 @@
         }
       }
     },
+    "Salonlar seni bekliyor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The halls are waiting for you"
+          }
+        }
+      }
+    },
     "Salonu Ortala" : {
       "localizations" : {
         "en" : {
@@ -3603,12 +4033,32 @@
         }
       }
     },
+    "Sessiz bir kütüphane" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A quiet library"
+          }
+        }
+      }
+    },
     "Sessiz bir kütüphane, her an açık." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A quiet library, always open."
+          }
+        }
+      }
+    },
+    "Sessiz kütüphanede birlikte odaklan." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus together in a quiet library."
           }
         }
       }
@@ -3673,6 +4123,16 @@
         }
       }
     },
+    "Sohbette bir mesaja ya da bir profildeki ••• menüsüne dokunarak kişileri bildirebilir ve engelleyebilirsin." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report or block people by touching and holding a chat message, or from the ••• menu on a profile."
+          }
+        }
+      }
+    },
     "Son 30 gün" : {
       "localizations" : {
         "en" : {
@@ -3729,6 +4189,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Results"
+          }
+        }
+      }
+    },
+    "Spam ya da reklam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam or advertising"
           }
         }
       }
@@ -3833,6 +4303,16 @@
         }
       }
     },
+    "Taciz ya da zorbalık" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harassment or bullying"
+          }
+        }
+      }
+    },
     "Takip Et" : {
       "localizations" : {
         "en" : {
@@ -3919,6 +4399,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send Again"
+          }
+        }
+      }
+    },
+    "Teşekkürler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank You"
           }
         }
       }
@@ -4049,6 +4539,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Widget" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget"
           }
         }
       }
@@ -4279,6 +4779,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "username"
+          }
+        }
+      }
+    },
+    "push.friendStarted.body" : {
+      "comment" : "Push notification sent by the server (loc-key).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a desk and focus together."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sen de bir masaya otur, birlikte çalışın."
+          }
+        }
+      }
+    },
+    "push.friendStarted.title" : {
+      "comment" : "Push notification sent by the server (loc-key).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ started focusing"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ çalışmaya başladı"
           }
         }
       }
@@ -4619,6 +5155,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your password must be at least %lld characters."
+          }
+        }
+      }
+    },
+    "Şimdi Değil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Now"
           }
         }
       }

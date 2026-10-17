@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CategoryInfo } from '../categories/built-in-categories.js';
 import { DeskStore } from '../library/desk-store.js';
 import { ReaderSession } from '../library/library.service.js';
+import { ModerationService } from '../moderation/moderation.service.js';
 import { ProtocolError } from '../realtime/protocol-error.js';
 import { StatsService, StatsSummary } from '../stats/stats.service.js';
 import { PublicUser } from '../users/user.js';
@@ -21,6 +22,8 @@ export interface PublicProfile extends PublicUser {
   dailyGoalMinutes: number | null;
   weeklyGoalMinutes: number | null;
   isFollowing: boolean;
+  /** Whether the viewer blocked this reader. */
+  isBlocked: boolean;
   followerCount: number;
   followingCount: number;
 }
@@ -33,11 +36,15 @@ export class ProfilesService {
     private readonly stats: StatsService,
     private readonly desks: DeskStore,
     private readonly social: SocialService,
+    private readonly moderation: ModerationService,
   ) {}
 
   async profile(viewer: ReaderSession, userId: string): Promise<PublicProfile> {
+    // Someone who blocked the viewer is simply not there for them.
     const card =
-      (await this.users.findCard(userId)) ??
+      ((await this.moderation.hasBlocked(userId, viewer.user.id))
+        ? null
+        : await this.users.findCard(userId)) ??
       ProtocolError.throw('USER_NOT_FOUND', 'No reader with this id');
     const isSelf = userId === viewer.user.id;
     const showsStats = card.statsVisible || isSelf;
@@ -48,8 +55,9 @@ export class ProfilesService {
         ])
       : [null, null];
     const desk = seat ? await this.desks.get(seat) : null;
-    const [isFollowing, counts] = await Promise.all([
+    const [isFollowing, isBlocked, counts] = await Promise.all([
       this.social.isFollowing(viewer.user.id, userId),
+      this.moderation.hasBlocked(viewer.user.id, userId),
       this.social.counts(userId),
     ]);
 
@@ -62,6 +70,7 @@ export class ProfilesService {
       dailyGoalMinutes: showsStats ? card.dailyGoalMinutes : null,
       weeklyGoalMinutes: showsStats ? card.weeklyGoalMinutes : null,
       isFollowing,
+      isBlocked,
       followerCount: counts.followers,
       followingCount: counts.following,
       stats,

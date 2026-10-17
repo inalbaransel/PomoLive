@@ -12,6 +12,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
+import { randomUUID } from 'node:crypto';
 import { WebSocket } from 'ws';
 import { AccountService } from '../account/account.service.js';
 import { AuthService } from '../auth/auth.service.js';
@@ -22,6 +23,8 @@ import { ProfilesService } from '../community/profiles.service.js';
 import { RoomMembersService } from '../community/room-members.service.js';
 import { SocialService } from '../community/social.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
+import { ModerationService } from '../moderation/moderation.service.js';
+import { PushService } from '../push/push.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { RoomEventsService } from '../rooms/room-events.service.js';
 import { StatsService } from '../stats/stats.service.js';
@@ -56,6 +59,9 @@ import {
   roomMembersSchema,
   searchUsersSchema,
   previewRoomSchema,
+  registerPushSchema,
+  reportSchema,
+  unregisterPushSchema,
   sendChatSchema,
   setTaskDoneSchema,
   ServerEvent,
@@ -71,8 +77,12 @@ const PING_INTERVAL_MS = 25_000;
 const CLOSE_UNAUTHORIZED = 4401;
 const MAX_BUFFERED_BYTES = 2 * 1024 * 1024;
 const CLOSE_ACCOUNT_DELETED = 4410;
+/** Bus-only frame telling every instance a follow ended because of a block; never sent to clients. */
+const FOLLOW_CUT = 'internal:follow-cut';
 
 interface Connection {
+  /** Identifies this socket in the reader's online set. */
+  id: string;
   session: ReaderSession | null;
   isAlive: boolean;
   authTimer: NodeJS.Timeout | undefined;
@@ -109,6 +119,8 @@ export class LibraryGateway
     private readonly tasks: TasksService,
     private readonly social: SocialService,
     private readonly events: RoomEventsService,
+    private readonly moderation: ModerationService,
+    private readonly push: PushService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -123,6 +135,7 @@ export class LibraryGateway
 
   handleConnection(socket: WebSocket): void {
     const connection: Connection = {
+      id: randomUUID(),
       session: null,
       isAlive: true,
       following: new Set(),
@@ -141,6 +154,9 @@ export class LibraryGateway
     if (!connection) return;
     clearTimeout(connection.authTimer);
     if (connection.session) {
+      await this.push
+        .markOffline(connection.session.user.id, connection.id)
+        .catch((error: Error) => this.logger.error(error.message));
       await this.library
         .stopViewing(connection.session)
         .catch((error: Error) => this.logger.error(error.message));
@@ -163,6 +179,7 @@ export class LibraryGateway
     clearTimeout(connection.authTimer);
     connection.session = { user, timeZone: command.timeZone, roomId: null };
     connection.following = new Set(await this.social.followingIds(user.id));
+    await this.push.markOnline(user.id, connection.id);
     return reply(data, {
       user,
       sessionToken: session.token,
@@ -375,9 +392,12 @@ export class LibraryGateway
     @MessageBody() data: Payload,
   ) {
     const request = parsePayload(sitSchema, data);
-    return reply(data, {
-      desk: await this.library.sit(this.sessionOf(socket), request),
-    });
+    const session = this.sessionOf(socket);
+    const desk = await this.library.sit(session, request);
+    void this.push
+      .friendStarted(session.user)
+      .catch((error: Error) => this.logger.error(error.message));
+    return reply(data, { desk });
   }
 
   @SubscribeMessage(ClientEvent.stand)
@@ -675,6 +695,77 @@ export class LibraryGateway
     );
   }
 
+  // MARK: Safety
+
+  @SubscribeMessage(ClientEvent.block)
+  async onBlock(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { userId } = parsePayload(userProfileSchema, data);
+    const me = this.sessionOf(socket).user.id;
+    await this.moderation.block(me, userId);
+    // Follows both ways are gone; every instance drops them from its cached follow sets.
+    await this.bus.publish(FOLLOW_CUT, FOLLOW_CUT, { a: me, b: userId });
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.unblock)
+  async onUnblock(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { userId } = parsePayload(userProfileSchema, data);
+    await this.moderation.unblock(this.sessionOf(socket).user.id, userId);
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.blockedUsers)
+  async onBlockedUsers(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    return reply(data, {
+      users: await this.moderation.blocked(this.sessionOf(socket).user.id),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.report)
+  async onReport(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const input = parsePayload(reportSchema, data);
+    await this.moderation.report(this.sessionOf(socket).user.id, input);
+    return reply(data, {});
+  }
+
+  // MARK: Push
+
+  @SubscribeMessage(ClientEvent.registerPush)
+  async onRegisterPush(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { token, environment } = parsePayload(registerPushSchema, data);
+    await this.push.register(
+      this.sessionOf(socket).user.id,
+      token,
+      environment,
+    );
+    return reply(data, {});
+  }
+
+  @SubscribeMessage(ClientEvent.unregisterPush)
+  async onUnregisterPush(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { token } = parsePayload(unregisterPushSchema, data);
+    await this.push.unregister(this.sessionOf(socket).user.id, token);
+    return reply(data, {});
+  }
+
   // MARK: Plumbing
 
   private sessionOf(socket: WebSocket): ReaderSession {
@@ -689,6 +780,7 @@ export class LibraryGateway
    * wherever they are, so a reader browsing other tabs still learns their desk was freed.
    */
   private fanOut(roomId: string, frame: Frame): void {
+    if (frame.event === FOLLOW_CUT) return this.cutFollow(frame.data);
     const message = JSON.stringify(frame);
     const friendStarted =
       frame.event === ServerEvent.deskOccupied
@@ -725,6 +817,15 @@ export class LibraryGateway
     }
   }
 
+  private cutFollow(data: object): void {
+    const { a, b } = data as { a: string; b: string };
+    for (const connection of this.connections.values()) {
+      const me = connection.session?.user.id;
+      if (me === a) connection.following.delete(b);
+      if (me === b) connection.following.delete(a);
+    }
+  }
+
   /** Detects half-open TCP connections (e.g. a phone that lost signal) that never sent a close frame. */
   private pingAll(): void {
     for (const [socket, connection] of this.connections) {
@@ -734,6 +835,10 @@ export class LibraryGateway
       }
       connection.isAlive = false;
       socket.ping();
+      if (connection.session)
+        void this.push
+          .markOnline(connection.session.user.id, connection.id)
+          .catch((error: Error) => this.logger.error(error.message));
     }
   }
 }

@@ -8,6 +8,7 @@ struct ProfileView: View {
     @AppStorage(Preferences.pomodoroBreakMinutes) private var breakMinutes = 5
     @AppStorage(Preferences.phaseNotifications) private var phaseNotifications = true
     @AppStorage(Preferences.haptics) private var haptics = true
+    @AppStorage(Preferences.friendNotifications) private var friendNotifications = true
     @AppStorage(Preferences.appearance) private var appearance = Appearance.system
     @Environment(\.openURL) private var openURL
     @State private var confirmsSignOut = false
@@ -129,11 +130,50 @@ struct ProfileView: View {
                     Toggle(isOn: $phaseNotifications) {
                         SettingsLabel(title: "Mola ve Odak Hatırlatmaları", systemName: "bell.badge.fill", color: .red)
                     }
+                    Toggle(isOn: $friendNotifications) {
+                        SettingsLabel(title: "Arkadaşım Çalışmaya Başlayınca", systemName: "person.2.wave.2.fill", color: .green)
+                    }
                     Toggle(isOn: $haptics) {
                         SettingsLabel(title: "Titreşim", systemName: "iphone.radiowaves.left.and.right", color: .pink)
                     }
                 }
                 .onChange(of: phaseNotifications) { app.seat.preferencesChanged() }
+                .onChange(of: friendNotifications) { _, isOn in
+                    Task { isOn ? await app.push.requestPermission() : await app.push.sync() }
+                }
+
+                Section {
+                    NavigationLink {
+                        BlockedUsersView()
+                    } label: {
+                        LabeledContent {
+                            Text("\(app.safety.blocked.count)")
+                        } label: {
+                            SettingsLabel(title: "Engellenenler", systemName: "hand.raised.fill", color: .red)
+                        }
+                    }
+                } header: {
+                    Text("Güvenlik")
+                } footer: {
+                    Text("Sohbette bir mesaja ya da bir profildeki ••• menüsüne dokunarak kişileri bildirebilir ve engelleyebilirsin.")
+                }
+
+                Section {
+                    Link(destination: app.website.appending(path: "support")) {
+                        SettingsLabel(title: "Destek", systemName: "questionmark.circle.fill", color: .blue)
+                    }
+                    Link(destination: app.website.appending(path: "privacy")) {
+                        SettingsLabel(title: "Gizlilik Politikası", systemName: "hand.raised.square.fill", color: .indigo)
+                    }
+                    Link(destination: app.website.appending(path: "terms")) {
+                        SettingsLabel(title: "Kullanım Şartları", systemName: "doc.text.fill", color: .gray)
+                    }
+                } header: {
+                    Text("Hakkında")
+                } footer: {
+                    Text(verbatim: "PomoLive \(Self.version)")
+                }
+                .tint(.primary)
 
                 Section {
                     Button("Çıkış Yap", role: .destructive) { confirmsSignOut = true }
@@ -162,6 +202,11 @@ struct ProfileView: View {
 }
 
 extension ProfileView {
+    fileprivate static var version: String {
+        let info = Bundle.main.infoDictionary
+        return "\(info?["CFBundleShortVersionString"] as? String ?? "") (\(info?["CFBundleVersion"] as? String ?? ""))"
+    }
+
     /// "Türkçe" / "English": the language the app is actually running in.
     fileprivate var currentLanguageName: String {
         let code = Bundle.main.preferredLocalizations.first ?? "tr"

@@ -106,6 +106,12 @@ final class ChatStore {
         }
     }
 
+    /// Drops everything a newly blocked reader said or is saying.
+    func hideMessages(from userId: String) {
+        entries.removeAll { $0.message.user.id == userId }
+        clearTyping(userId)
+    }
+
     /// Tells the room the reader is typing, at most once every couple of seconds.
     func userIsTyping() {
         guard Date.now.timeIntervalSince(lastTypingPing) > Self.typingPingInterval else { return }

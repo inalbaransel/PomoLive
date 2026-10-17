@@ -31,7 +31,11 @@ final class AppModel {
     let tasks: TaskStore
     let friends: FriendsStore
     let events: RoomEventsStore
+    let safety: SafetyStore
+    let push: PushNotifications
     let sounds = AmbientPlayer()
+    /// The server's web pages (privacy policy, terms, support) live next to its socket.
+    let website: URL
     @ObservationIgnored private let widgets = WidgetBridge()
 
     @ObservationIgnored private let socket: LibrarySocket
@@ -42,7 +46,9 @@ final class AppModel {
 
     init() {
         let address = Bundle.main.object(forInfoDictionaryKey: "PomoLiveServerURL") as? String
-        socket = LibrarySocket(url: URL(string: address ?? "")!)
+        let socketURL = URL(string: address ?? "")!
+        socket = LibrarySocket(url: socketURL)
+        website = Self.website(for: socketURL)
         seat = SeatStore(socket: socket, time: time)
         hall = HallStore(socket: socket, time: time, seat: seat)
         rooms = RoomsStore(socket: socket)
@@ -52,6 +58,8 @@ final class AppModel {
         tasks = TaskStore(socket: socket)
         friends = FriendsStore(socket: socket)
         events = RoomEventsStore(socket: socket)
+        safety = SafetyStore(socket: socket)
+        push = PushNotifications(socket: socket)
 
         // A profile cached by an older version may not decode; the session token alone is enough to reconnect.
         phase = sessionStore.token == nil ? .signedOut : .signedIn
@@ -71,6 +79,7 @@ final class AppModel {
     }
 
     func signOut() async {
+        await push.signOut()
         connectionTask?.cancel()
         heartbeatTask?.cancel()
         await socket.disconnect()
@@ -90,6 +99,13 @@ final class AppModel {
         let result = try await socket.send(changes)
         adopt(result.user)
         sessionStore.save(profile: result.user)
+    }
+
+    /// Blocks someone and takes them out of everything on screen at once.
+    func block(_ user: PublicUser) async throws {
+        try await safety.block(user)
+        chat.hideMessages(from: user.id)
+        await friends.refresh()
     }
 
     func profile(of userId: String) async throws -> PublicProfile {
@@ -125,6 +141,14 @@ final class AppModel {
 
     // MARK: - Private
 
+    /// `wss://host/ws` → `https://host`.
+    private static func website(for socketURL: URL) -> URL {
+        var components = URLComponents(url: socketURL, resolvingAgainstBaseURL: false)!
+        components.scheme = components.scheme == "ws" ? "http" : "https"
+        components.path = ""
+        return components.url!
+    }
+
     private func adopt(_ profile: UserProfile) {
         user = profile
         seat.userId = profile.id
@@ -143,6 +167,7 @@ final class AppModel {
         tasks.reset()
         friends.reset()
         events.reset()
+        safety.reset()
         sounds.stop()
         user = nil
         connection = .offline
@@ -157,10 +182,18 @@ final class AppModel {
             ensureConnected()
         case .broadcast(let event):
             hall.apply(event)
-            chat.apply(event)
+            if !isFromBlockedReader(event) { chat.apply(event) }
             friends.apply(event)
             events.apply(event)
             seat.apply(event)
+        }
+    }
+
+    private func isFromBlockedReader(_ event: LibraryEvent) -> Bool {
+        switch event {
+        case .chatMessage(let message): safety.isBlocked(message.user.id)
+        case .chatTyping(_, let user): safety.isBlocked(user.id)
+        default: false
         }
     }
 
@@ -177,8 +210,10 @@ final class AppModel {
             async let categoriesRefresh: Void = categories.refresh()
             async let tasksRefresh: Void = tasks.refresh()
             async let friendsRefresh: Void = friends.refresh()
+            async let safetyRefresh: Void = safety.refresh()
             async let hallRejoin: Void = hall.rejoin()
-            _ = await (seatRefresh, categoriesRefresh, tasksRefresh, friendsRefresh, hallRejoin)
+            async let pushSync: Void = push.signedIn()
+            _ = await (seatRefresh, categoriesRefresh, tasksRefresh, friendsRefresh, safetyRefresh, pushSync, hallRejoin)
             // The server forgot what this connection looked at; catch up on messages missed while offline.
             if let roomId = hall.room?.id { await chat.open(roomId: roomId) }
         } catch {

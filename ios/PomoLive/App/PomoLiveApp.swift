@@ -2,8 +2,10 @@ import SwiftUI
 
 @main
 struct PomoLiveApp: App {
-    @State private var model = AppModel()
+    @UIApplicationDelegateAdaptor private var delegate: AppDelegate
     @Environment(\.scenePhase) private var scenePhase
+
+    private var model: AppModel { delegate.model }
 
     var body: some Scene {
         WindowGroup {

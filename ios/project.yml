@@ -42,6 +42,9 @@ targets:
             CFBundleURLSchemes: [pomolive]
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSPhotoLibraryAddUsageDescription: Haftalık özet kartını Fotoğraflar'a kaydetmek için.
+        # Only TLS through the system; no export compliance documents needed.
+        ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     settings:

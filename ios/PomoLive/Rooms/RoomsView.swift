@@ -15,6 +15,7 @@ struct RoomsView: View {
     }
 
     @State private var roomToDelete: RoomSummary?
+    @State private var showsFriends = false
 
     var body: some View {
         @Bindable var rooms = app.rooms
@@ -29,9 +30,7 @@ struct RoomsView: View {
                     }
                     .buttonStyle(.plain)
 
-                    NavigationLink {
-                        FriendsView(openRoom: openRoom)
-                    } label: {
+                    Button { showsFriends = true } label: {
                         FriendsBanner(friends: app.friends.focusingFriends, hasFriends: !(app.friends.overview?.friends.isEmpty ?? true))
                     }
                     .buttonStyle(.plain)
@@ -72,6 +71,15 @@ struct RoomsView: View {
                         Button("Kodla Katıl", systemImage: "number") { sheet = .joinByCode }
                     }
                 }
+            }
+            .navigationDestination(isPresented: $showsFriends) {
+                FriendsView(openRoom: openRoom)
+            }
+            // A tapped "started focusing" notification lands on the friends list.
+            .onChange(of: app.push.pendingRoute, initial: true) { _, route in
+                guard route == .friends else { return }
+                app.push.pendingRoute = nil
+                showsFriends = true
             }
             .refreshable { await app.rooms.refresh() }
             .task(id: app.connection) {

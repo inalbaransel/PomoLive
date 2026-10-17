@@ -43,10 +43,16 @@ struct PublicProfile: Decodable, Hashable, Sendable, Identifiable {
     var weeklyGoalMinutes: Int?
     /// Missing from servers older than follows.
     var isFollowing: Bool?
+    /// Whether the viewer blocked this reader; missing from servers older than blocking.
+    var isBlocked: Bool?
     var followerCount: Int?
     var followingCount: Int?
     var focusingOn: FocusCategory?
     var stats: StatsSummary?
+
+    var publicUser: PublicUser {
+        PublicUser(id: id, username: username, displayName: displayName, avatarSpriteId: avatarSpriteId)
+    }
 }
 
 /// Someone who belongs to or is inside a room, as listed in its people sheet.
@@ -363,9 +369,9 @@ struct StatsSummary: Decodable, Hashable, Sendable {
     var streakDays: Int
     var last7Days: [DayTotal]
     var categories: [CategoryTotal]
-    /// Days with recorded focus; missing from older servers, which always count as unlocked.
     /// Missing from servers older than badges.
     var badges: [Badge]?
+    /// Days with recorded focus; missing from older servers, which always count as unlocked.
     var activeDays: Int?
     var requiredDays: Int?
 
@@ -484,4 +490,16 @@ enum LibraryEvent: Sendable {
     case friendStarted(roomId: String, desk: DeskRecord)
     /// A room's scheduled events changed; reload them.
     case roomEventsChanged(roomId: String)
+}
+
+/// Why a reader or a message is reported.
+enum ReportReason: String, Codable, CaseIterable, Identifiable, Sendable {
+    case spam = "SPAM"
+    case harassment = "HARASSMENT"
+    case hate = "HATE"
+    case sexual = "SEXUAL"
+    case selfHarm = "SELF_HARM"
+    case other = "OTHER"
+
+    var id: String { rawValue }
 }

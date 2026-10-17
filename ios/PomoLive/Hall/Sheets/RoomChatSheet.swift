@@ -8,6 +8,8 @@ struct RoomChatSheet: View {
     @State private var draft = ""
     @State private var scrollPosition = ScrollPosition(edge: .bottom)
     @State private var isNearBottom = true
+    @State private var reporting: ChatMessage?
+    @State private var blocking: PublicUser?
     @FocusState private var isFocused: Bool
 
     private static let groupingWindowMs: Int64 = 5 * 60_000
@@ -27,6 +29,19 @@ struct RoomChatSheet: View {
                     }
                 }
                 .errorAlert($chat.error)
+                .sheet(item: $reporting) { message in
+                    ReportSheet(user: message.user, message: message)
+                        .presentationDetents([.large])
+                }
+                .blockConfirmation($blocking) { user in
+                    Task {
+                        do {
+                            try await app.block(user)
+                        } catch {
+                            app.chat.error = LibraryError(error)
+                        }
+                    }
+                }
         }
         .onAppear { app.chat.isOpen = true }
         .onDisappear { app.chat.isOpen = false }
@@ -65,7 +80,9 @@ struct RoomChatSheet: View {
                             isMine: entry.message.user.id == app.user?.id,
                             startsGroup: !continues(previous, into: entry),
                             endsGroup: !continues(entry, into: next),
-                            canDelete: entry.message.user.id == app.user?.id || app.hall.isOwner
+                            canDelete: entry.message.user.id == app.user?.id || app.hall.isOwner,
+                            onReport: { reporting = entry.message },
+                            onBlock: { blocking = entry.message.user }
                         )
                         .id(entry.id)
                     }
@@ -166,6 +183,8 @@ private struct MessageRow: View {
     let startsGroup: Bool
     let endsGroup: Bool
     let canDelete: Bool
+    let onReport: () -> Void
+    let onBlock: () -> Void
 
     @Environment(AppModel.self) private var app
     @State private var confirmsDelete = false
@@ -215,6 +234,10 @@ private struct MessageRow: View {
                 Button("Kopyala", systemImage: "doc.on.doc") { UIPasteboard.general.string = entry.message.body }
                 if entry.state == .failed {
                     Button("Tekrar Gönder", systemImage: "arrow.clockwise") { app.chat.retry(entry) }
+                }
+                if !isMine, entry.state == .sent {
+                    Button("Bildir…", systemImage: "exclamationmark.bubble", action: onReport)
+                    Button("Engelle", systemImage: "hand.raised", role: .destructive, action: onBlock)
                 }
                 if canDelete {
                     Button("Sil", systemImage: "trash", role: .destructive) {
