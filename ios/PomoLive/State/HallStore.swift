@@ -23,6 +23,10 @@ final class HallStore {
     private(set) var room: RoomState?
     private(set) var layout: LibraryLayout?
     private(set) var desks: [String: DeskRecord] = [:]
+    /// Reactions rising over desks right now; each fades out on its own.
+    private(set) var reactions: [FloatingReaction] = []
+    /// Bumped when someone reacts to this reader's own desk, for a haptic.
+    private(set) var reactionsReceived = 0
     /// Why the reader was put out of the room they were looking at.
     private(set) var exit: Exit?
     var userId: String?
@@ -155,8 +159,24 @@ final class HallStore {
             guard roomId == room?.id, removedId == userId else { return }
             reset()
             exit = .removed
+        case .deskReaction(let roomId, let deskId, let ownerId, let reaction, _):
+            guard roomId == room?.id else { return }
+            show(FloatingReaction(deskId: deskId, reaction: reaction))
+            if ownerId == userId { reactionsReceived += 1 }
         case .chatMessage, .chatDeleted, .chatTyping, .friendStarted, .roomEventsChanged:
             break
+        }
+    }
+
+    func react(_ reaction: DeskReaction, to deskId: String) async throws {
+        _ = try await socket.send(ReactCommand(deskId: deskId, reaction: reaction))
+    }
+
+    private func show(_ reaction: FloatingReaction) {
+        reactions.append(reaction)
+        Task { [weak self] in
+            try? await Task.sleep(for: FloatingReaction.lifetime)
+            self?.reactions.removeAll { $0.id == reaction.id }
         }
     }
 
@@ -164,6 +184,7 @@ final class HallStore {
         room = nil
         layout = nil
         desks = [:]
+        reactions = []
         exit = nil
     }
 
@@ -182,4 +203,13 @@ final class HallStore {
         time.calibrate(serverTime: snapshot.serverTime, sentAt: sentAt)
         return snapshot
     }
+}
+
+/// A reaction on its way up from a desk on the map.
+struct FloatingReaction: Identifiable, Hashable {
+    static let lifetime = Duration.seconds(2.4)
+
+    let id = UUID()
+    let deskId: String
+    let reaction: DeskReaction
 }

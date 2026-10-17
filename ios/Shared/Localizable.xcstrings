@@ -154,6 +154,22 @@
         }
       }
     },
+    "%@ · %lld dk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %lld min"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld dk"
+          }
+        }
+      }
+    },
     "%@ · %lld dk odak" : {
       "localizations" : {
         "en" : {
@@ -549,6 +565,38 @@
         }
       }
     },
+    "**%@** %@ çalışmaya başladı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** started %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "**%1$@** %2$@ çalışmaya başladı"
+          }
+        }
+      }
+    },
+    "**%@** %lld dk %@ odaklandı" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**%@** focused %lld min on %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "**%1$@** %2$lld dk %3$@ odaklandı"
+          }
+        }
+      }
+    },
     "+%lld" : {
       "localizations" : {
         "en" : {
@@ -580,6 +628,16 @@
         }
       }
     },
+    "30 gün üst üste! 🔥" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 days in a row! 🔥"
+          }
+        }
+      }
+    },
     "3–20 karakter: küçük harf, rakam, alt çizgi ve nokta. Profilinde ve odalarda görünür." : {
       "localizations" : {
         "en" : {
@@ -606,6 +664,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Focus 7 days in a row."
+          }
+        }
+      }
+    },
+    "7 günlük seri! 🔥" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7-day streak! 🔥"
           }
         }
       }
@@ -1899,6 +1967,16 @@
         }
       }
     },
+    "Gönderildi. %@ görecek." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent. %@ will see it."
+          }
+        }
+      }
+    },
     "Gönderilemedi · Tekrar dene" : {
       "localizations" : {
         "en" : {
@@ -2135,6 +2213,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ring"
+          }
+        }
+      }
+    },
+    "Harika" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awesome"
           }
         }
       }
@@ -3123,6 +3211,16 @@
         }
       }
     },
+    "Molada · %lld dk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On a break · %lld min"
+          }
+        }
+      }
+    },
     "Molaya Geç" : {
       "localizations" : {
         "en" : {
@@ -3871,6 +3969,16 @@
         }
       }
     },
+    "Profili Gör" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Profile"
+          }
+        }
+      }
+    },
     "Raporun bize ulaştı. Topluluğu güvenli tutmamıza yardım ettiğin için teşekkürler." : {
       "localizations" : {
         "en" : {
@@ -4108,6 +4216,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Focus together in a quiet library."
+          }
+        }
+      }
+    },
+    "Sessizce destek ol; masasının üstünde belirir." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cheer them on quietly; it appears above their desk."
           }
         }
       }
@@ -4752,6 +4870,16 @@
         }
       }
     },
+    "Yeni rozet kazandın!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You earned a new badge!"
+          }
+        }
+      }
+    },
     "Yeşil" : {
       "localizations" : {
         "en" : {
@@ -5114,6 +5242,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "First Step"
+          }
+        }
+      }
+    },
+    "İlk adım atıldı!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First step taken!"
           }
         }
       }

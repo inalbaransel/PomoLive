@@ -6,6 +6,7 @@ import { RoomActivityRepository } from '../rooms/room-activity.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { RoomEventsService } from '../rooms/room-events.service.js';
 import { UsersModule } from '../users/users.module.js';
+import { ActivityFeed } from './activity-feed.js';
 import { DeskStore } from './desk-store.js';
 import { FocusSessionsRepository } from './focus-sessions.repository.js';
 import { LeaseReaper } from './lease-reaper.service.js';
@@ -16,6 +17,7 @@ import { RoomDirectory } from './room-directory.js';
   imports: [UsersModule, CategoriesModule],
   providers: [
     LibraryService,
+    ActivityFeed,
     RoomDirectory,
     DeskStore,
     FocusSessionsRepository,
@@ -28,6 +30,7 @@ import { RoomDirectory } from './room-directory.js';
   ],
   exports: [
     LibraryService,
+    ActivityFeed,
     RoomsService,
     RoomEventBus,
     RoomDirectory,

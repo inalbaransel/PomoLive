@@ -490,6 +490,53 @@ enum LibraryEvent: Sendable {
     case friendStarted(roomId: String, desk: DeskRecord)
     /// A room's scheduled events changed; reload them.
     case roomEventsChanged(roomId: String)
+    /// Someone left a reaction on the desk `deskId`, which `ownerId` holds.
+    case deskReaction(roomId: String, deskId: String, ownerId: String, reaction: DeskReaction, from: FeedActor)
+}
+
+/// Silent encouragement left on someone's desk.
+enum DeskReaction: String, Codable, CaseIterable, Identifiable, Sendable {
+    case clap = "CLAP"
+    case coffee = "COFFEE"
+    case fire = "FIRE"
+    case strong = "STRONG"
+    case star = "STAR"
+
+    var id: String { rawValue }
+
+    var emoji: String {
+        switch self {
+        case .clap: "👏"
+        case .coffee: "☕️"
+        case .fire: "🔥"
+        case .strong: "💪"
+        case .star: "⭐️"
+        }
+    }
+}
+
+/// Who did something in the feed or left a reaction.
+struct FeedActor: Decodable, Hashable, Sendable {
+    var id: String
+    var displayName: String
+    var avatarSpriteId: String
+}
+
+/// Something that just happened in a hall or public room.
+struct FeedItem: Decodable, Hashable, Sendable, Identifiable {
+    enum Kind: String, Decodable, Sendable {
+        case started = "STARTED"
+        case finished = "FINISHED"
+    }
+
+    var id: String
+    var kind: Kind
+    var user: FeedActor
+    var category: FocusCategory
+    var roomId: String
+    var roomName: String
+    var minutes: Int?
+    var at: Int64
 }
 
 /// Why a reader or a message is reported.

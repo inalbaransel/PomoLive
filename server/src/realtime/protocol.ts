@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { GLYPH_COLORS, GLYPH_SYMBOLS } from '../common/glyph.js';
 import { ROOM_THEMES } from '../library/layout/library-layout.js';
 import { isClean } from '../moderation/profanity.js';
+import { REACTIONS } from '../reactions/reactions.js';
 import { AVATAR_SPRITE_IDS } from '../users/avatar-catalog.js';
 import { ProtocolError } from './protocol-error.js';
 
@@ -60,6 +61,8 @@ export const ClientEvent = {
   report: 'report:create',
   registerPush: 'push:register',
   unregisterPush: 'push:unregister',
+  recentActivity: 'feed:recent',
+  react: 'desk:react',
 } as const;
 
 export const ServerEvent = {
@@ -76,6 +79,7 @@ export const ServerEvent = {
   chatTyping: 'chat:typing',
   friendStarted: 'friend:started',
   roomEventsChanged: 'room:events',
+  deskReaction: 'desk:reaction',
 } as const;
 
 /** Shown in place of the validator's report when only the wording was wrong. */
@@ -339,6 +343,11 @@ export const registerPushSchema = z.object({
 
 export const unregisterPushSchema = z.object({
   token: z.string().regex(/^[0-9a-f]{64,200}$/),
+});
+
+export const reactSchema = z.object({
+  deskId: z.string().regex(/^desk_\d{1,3}$/),
+  reaction: z.enum(REACTIONS),
 });
 
 export const deleteAccountSchema = z.object({ password });

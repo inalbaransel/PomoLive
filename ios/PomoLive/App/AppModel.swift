@@ -154,6 +154,7 @@ final class AppModel {
         seat.userId = profile.id
         hall.userId = profile.id
         chat.userId = profile.id
+        stats.userId = profile.id
     }
 
     private func endSession() {

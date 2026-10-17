@@ -335,3 +335,71 @@ struct TopicChips: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
+
+/// What just happened in the open library, one line at a time, rolling to the next every few
+/// seconds: "Elif · Yazılım çalışmaya başladı", "Mert 50 dk odaklandı". Tap to go there.
+struct ActivityTicker: View {
+    let items: [FeedItem]
+    let onOpen: (FeedItem) -> Void
+
+    @State private var index = 0
+
+    private static let interval = Duration.seconds(4)
+
+    var body: some View {
+        if let item = items.isEmpty ? nil : items[index % items.count] {
+            Button { onOpen(item) } label: {
+                // The card stays put; only the line inside rolls to the next item.
+                HStack(spacing: 10) {
+                    Image(decorative: SpriteCache.shared.avatar(AvatarSprite(id: item.user.avatarSpriteId)), scale: 1)
+                        .resizable()
+                        .interpolation(.none)
+                        .frame(width: 20, height: 20)
+                        .frame(width: 30, height: 30)
+                        .background(.fill.tertiary, in: .circle)
+                    VStack(alignment: .leading, spacing: 1) {
+                        line(for: item)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Text("\(item.roomDisplayName) · \(Date(timeIntervalSince1970: Double(item.at) / 1000), format: .relative(presentation: .named).locale(.app))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: item.kind == .started ? item.category.symbol : "checkmark.seal.fill")
+                        .foregroundStyle(item.kind == .started ? item.category.color.color : .green)
+                }
+                .id(item.id)
+                .transition(.push(from: .bottom))
+                .padding(.horizontal, 14)
+                .frame(maxWidth: .infinity, minHeight: 56, maxHeight: 56, alignment: .leading)
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 18))
+                .contentShape(.rect(cornerRadius: 18))
+            }
+            .buttonStyle(.plain)
+            .animation(.smooth(duration: 0.5), value: item.id)
+            .task(id: items.count) {
+                while !Task.isCancelled, items.count > 1 {
+                    try? await Task.sleep(for: Self.interval)
+                    index += 1
+                }
+            }
+        }
+    }
+
+    private func line(for item: FeedItem) -> Text {
+        switch item.kind {
+        case .started:
+            Text("**\(item.user.displayName)** \(item.category.displayName) çalışmaya başladı")
+        case .finished:
+            Text("**\(item.user.displayName)** \(item.minutes ?? 0) dk \(item.category.displayName) odaklandı")
+        }
+    }
+}
+
+private extension FeedItem {
+    var roomDisplayName: String { localizedRoomName(id: roomId, name: roomName) }
+}

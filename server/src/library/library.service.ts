@@ -7,8 +7,9 @@ import { RoomEventBus } from '../realtime/room-event-bus.js';
 import { RoomsRepository } from '../rooms/rooms.repository.js';
 import { ProfileChanges, UserProfile } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
+import { ActivityFeed } from './activity-feed.js';
 import { DeskStore, LeaseRef } from './desk-store.js';
-import { DeskTimer, resumeFocus, startBreak } from './desk-timer.js';
+import { DeskTimer, readTimer, resumeFocus, startBreak } from './desk-timer.js';
 import { FocusSessionsRepository } from './focus-sessions.repository.js';
 import {
   findLayoutDesk,
@@ -58,6 +59,7 @@ export class LibraryService {
     private readonly categories: CategoriesRepository,
     private readonly roomCatalogue: RoomsRepository,
     private readonly users: UsersRepository,
+    private readonly feed: ActivityFeed,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -127,6 +129,11 @@ export class LibraryService {
           await this.roomCatalogue.touchMembership(session.user.id, roomId);
         }
         await this.bus.publish(roomId, ServerEvent.deskOccupied, { desk });
+        await this.feed.started(
+          await this.rooms.roomState(roomId, now),
+          desk,
+          now,
+        );
         return desk;
       case 'DESK_TAKEN':
         return ProtocolError.throw(
@@ -291,6 +298,25 @@ export class LibraryService {
       userId: desk.userId,
       reason,
     });
+    await this.feed.finished(
+      room,
+      desk,
+      readTimer(desk.timer, now).focusedMs,
+      now,
+    );
+  }
+
+  /** The occupied desk `deskId` in the room this connection is looking at. */
+  async occupiedDesk(
+    session: ReaderSession,
+    deskId: string,
+  ): Promise<DeskRecord> {
+    const roomId =
+      session.roomId ?? ProtocolError.throw('NOT_IN_ROOM', 'Join a room first');
+    return (
+      (await this.desks.get({ roomId, deskId })) ??
+      ProtocolError.throw('DESK_NOT_FOUND', 'Nobody sits at this desk')
+    );
   }
 
   private async patchAndPublish(

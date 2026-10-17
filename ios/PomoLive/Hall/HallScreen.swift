@@ -20,8 +20,8 @@ struct HallScreen: View {
 
     private enum Sheet: Identifiable {
         case sit(LayoutDesk)
+        case peek(DeskRecord)
         case people
-        case profile(userId: String)
         case editRoom(RoomState)
         case chat
         case tasks
@@ -31,8 +31,8 @@ struct HallScreen: View {
         var id: String {
             switch self {
             case .sit(let desk): "sit-\(desk.deskId)"
+            case .peek(let desk): "peek-\(desk.deskId)"
             case .people: "people"
-            case .profile(let userId): "profile-\(userId)"
             case .editRoom: "edit"
             case .chat: "chat"
             case .tasks: "tasks"
@@ -58,19 +58,12 @@ struct HallScreen: View {
                             return didSit
                         }
                         .presentationDetents([.large])
+                    case .peek(let desk):
+                        DeskPeekSheet(desk: desk)
+                            .presentationDetents([.height(340), .large])
                     case .people:
                         RoomPeopleSheet()
                             .presentationDetents([.medium, .large])
-                    case .profile(let userId):
-                        NavigationStack {
-                            UserProfileView(userId: userId)
-                                .toolbar {
-                                    ToolbarItem(placement: .topBarLeading) {
-                                        Button("Kapat", systemImage: "xmark", role: .close) { self.sheet = nil }
-                                    }
-                                }
-                        }
-                        .presentationDetents([.medium, .large])
                     case .events(let room):
                         NavigationStack {
                             ScrollView {
@@ -182,6 +175,7 @@ struct HallScreen: View {
                 PixelLibraryCanvasView(
                     layout: layout,
                     desks: hall.desks,
+                    reactions: hall.reactions,
                     myUserId: app.user?.id,
                     clock: app.time.clock,
                     camera: camera,
@@ -191,10 +185,11 @@ struct HallScreen: View {
                         if desk.userId == app.user?.id {
                             isDeckExpanded = true
                         } else {
-                            sheet = .profile(userId: desk.userId)
+                            sheet = .peek(desk)
                         }
                     }
                 )
+                .sensoryFeedback(.impact(weight: .medium), trigger: hall.reactionsReceived)
                 .ignoresSafeArea()
                 .safeAreaBar(edge: .top, alignment: .trailing) {
                     if showsMiniMap {

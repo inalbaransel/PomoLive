@@ -1044,6 +1044,77 @@ describe('Library realtime protocol (e2e)', () => {
     for (const reader of [owner, troll, witness, third]) reader.close();
   });
 
+  it('shows a live feed of public rooms and lets readers react to desks', async () => {
+    const { client: owner, userId: ownerId } = await signedInWithId('Canli');
+    const { client: guest } = await signedInWithId('Alkis');
+    const { result } = await owner.send('room:create', {
+      name: 'Canlı Oda',
+      symbol: 'books.vertical.fill',
+      color: 'green',
+      visibility: 'PUBLIC',
+    });
+    await guest.send('room:join', { roomId: result.room.id });
+    await owner.send('desk:sit', {
+      deskId: 'desk_4',
+      timer: stopwatch,
+      categoryKey: 'software',
+    });
+
+    const feed = (await guest.send('feed:recent')).result.items;
+    expect(feed[0]).toMatchObject({
+      kind: 'STARTED',
+      user: { id: ownerId },
+      roomId: result.room.id,
+      category: { key: 'software' },
+    });
+    expect(
+      (await owner.send('feed:recent')).result.items.some(
+        (item: { user: { id: string } }) => item.user.id === ownerId,
+      ),
+    ).toBe(false);
+
+    expect(
+      (await guest.send('desk:react', { deskId: 'desk_4', reaction: 'CLAP' }))
+        .ok,
+    ).toBe(true);
+    const reaction = await owner.next(
+      (frame) => frame.event === 'desk:reaction',
+    );
+    expect(reaction.data).toMatchObject({
+      deskId: 'desk_4',
+      reaction: 'CLAP',
+      from: { displayName: 'Alkis' },
+    });
+    expect(
+      await guest.send('desk:react', { deskId: 'desk_4', reaction: 'FIRE' }),
+    ).toMatchObject({ ok: false, error: { code: 'RATE_LIMITED' } });
+    expect(
+      await owner.send('desk:react', { deskId: 'desk_4', reaction: 'STAR' }),
+    ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
+    expect(
+      await guest.send('desk:react', { deskId: 'desk_9', reaction: 'STAR' }),
+    ).toMatchObject({ ok: false, error: { code: 'DESK_NOT_FOUND' } });
+
+    const hidden = await owner.send('room:create', {
+      name: 'Gizli Oda',
+      symbol: 'books.vertical.fill',
+      color: 'gray',
+      visibility: 'PRIVATE',
+    });
+    await owner.send('desk:sit', {
+      deskId: 'desk_2',
+      timer: stopwatch,
+      categoryKey: 'study',
+    });
+    expect(
+      (await guest.send('feed:recent')).result.items.some(
+        (item: { roomId: string }) => item.roomId === hidden.result.room.id,
+      ),
+    ).toBe(false);
+    owner.close();
+    guest.close();
+  });
+
   it('schedules room events that readers can join', async () => {
     const { client: owner } = await signedInWithId('Planlayan');
     const { client: guest } = await signedInWithId('Katilan');

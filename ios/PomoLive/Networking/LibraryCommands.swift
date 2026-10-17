@@ -458,3 +458,19 @@ struct UnregisterPushCommand: LibraryCommand {
     static let event = "push:unregister"
     var token: String
 }
+
+struct FeedResult: Decodable, Sendable {
+    var items: [FeedItem]
+}
+
+struct RecentActivityCommand: LibraryCommand {
+    typealias Result = FeedResult
+    static let event = "feed:recent"
+}
+
+struct ReactCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "desk:react"
+    var deskId: String
+    var reaction: DeskReaction
+}

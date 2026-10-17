@@ -111,6 +111,8 @@ struct RoomsView: View {
         VStack(alignment: .leading, spacing: 12) {
             LiveCount(count: app.rooms.overview?.focusingNow ?? 0)
                 .padding(.horizontal, 20)
+            ActivityTicker(items: app.rooms.activity) { item in openRoom(.room(id: item.roomId)) }
+                .padding(.horizontal, 16)
             if let layout = discover?.layout ?? app.rooms.overview?.layout {
                 QuickStartCard(layout: layout, halls: discover?.halls) { openRoom(.automatic) }
                     .padding(.horizontal, 16)
@@ -276,7 +278,8 @@ struct RoomsView: View {
     private func refresh() async {
         async let overview: Void = app.rooms.refresh()
         async let discover: Void = app.rooms.refreshDiscover()
-        _ = await (overview, discover)
+        async let activity: Void = app.rooms.refreshActivity()
+        _ = await (overview, discover, activity)
     }
 
     private var emptyState: some View {

@@ -14,6 +14,11 @@ final class FriendsStore {
 
     @ObservationIgnored private let socket: LibrarySocket
     @ObservationIgnored private var searchTask: Task<Void, Never>?
+    /// When each friend last triggered a notification, so standing up and sitting back down
+    /// does not ping again; matches the server's push cooldown.
+    @ObservationIgnored private var lastNotified: [String: Date] = [:]
+
+    private static let notificationCooldown: TimeInterval = 30 * 60
 
     init(socket: LibrarySocket) {
         self.socket = socket
@@ -61,6 +66,8 @@ final class FriendsStore {
         guard case .friendStarted(_, let desk) = event else { return }
         Task { await refresh() }
         guard UserDefaults.standard.object(forKey: Preferences.friendNotifications) as? Bool ?? true else { return }
+        if let last = lastNotified[desk.userId], Date.now.timeIntervalSince(last) < Self.notificationCooldown { return }
+        lastNotified[desk.userId] = .now
         let content = UNMutableNotificationContent()
         content.title = String(localized: "\(desk.userName) çalışmaya başladı")
         content.body = String(localized: "\(desk.category.displayName) · Katılmak için Arkadaşlar'a bak.")
@@ -76,6 +83,7 @@ final class FriendsStore {
     }
 
     func reset() {
+        lastNotified = [:]
         overview = nil
         searchResults = []
     }

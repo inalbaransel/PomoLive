@@ -8,6 +8,8 @@ enum Preferences {
     static let haptics = "hapticsEnabled"
     static let friendNotifications = "friendNotificationsEnabled"
     static let hasSeenOnboarding = "hasSeenOnboarding"
+    /// Prefix; one list of already celebrated badge ids per account.
+    static let celebratedBadges = "celebratedBadges"
     static let appearance = "appearance"
     static let focusModeStyle = "focusModeStyle"
     static let clockFace = "focusModeClockFace"

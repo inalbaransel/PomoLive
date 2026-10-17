@@ -5,6 +5,7 @@ import SwiftUI
 struct PixelLibraryCanvasView: View {
     let layout: LibraryLayout
     let desks: [String: DeskRecord]
+    let reactions: [FloatingReaction]
     let myUserId: String?
     let clock: ServerClock
     let camera: MapCamera
@@ -40,6 +41,13 @@ struct PixelLibraryCanvasView: View {
             ForEach(desks.values.filter { showsAllBadges || $0.userId == myUserId || $0.deskId == selectedDeskId }) { desk in
                 DeskBadgeView(desk: desk, isMine: desk.userId == myUserId, isExpanded: desk.deskId == selectedDeskId, clock: clock)
                     .position(x: (CGFloat(desk.tileX) + 1) * tile, y: CGFloat(desk.tileY) * tile + tile * 0.1)
+            }
+
+            ForEach(reactions) { floating in
+                if let desk = desks[floating.deskId] {
+                    FloatingReactionView(reaction: floating.reaction, tile: tile)
+                        .position(x: (CGFloat(desk.tileX) + 1) * tile, y: CGFloat(desk.tileY) * tile)
+                }
             }
         }
         .offset(camera.offset)

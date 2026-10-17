@@ -24,7 +24,9 @@ import { RoomMembersService } from '../community/room-members.service.js';
 import { SocialService } from '../community/social.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
 import { ModerationService } from '../moderation/moderation.service.js';
+import { ActivityFeed } from '../library/activity-feed.js';
 import { PushService } from '../push/push.service.js';
+import { ReactionsService } from '../reactions/reactions.service.js';
 import { RoomsService } from '../rooms/rooms.service.js';
 import { RoomEventsService } from '../rooms/room-events.service.js';
 import { StatsService } from '../stats/stats.service.js';
@@ -59,6 +61,7 @@ import {
   roomMembersSchema,
   searchUsersSchema,
   previewRoomSchema,
+  reactSchema,
   registerPushSchema,
   reportSchema,
   unregisterPushSchema,
@@ -121,6 +124,8 @@ export class LibraryGateway
     private readonly events: RoomEventsService,
     private readonly moderation: ModerationService,
     private readonly push: PushService,
+    private readonly feed: ActivityFeed,
+    private readonly reactions: ReactionsService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -693,6 +698,29 @@ export class LibraryGateway
       data,
       await this.social.overview(session.user.id, session.timeZone, Date.now()),
     );
+  }
+
+  // MARK: Liveliness
+
+  @SubscribeMessage(ClientEvent.recentActivity)
+  async onRecentActivity(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const me = this.sessionOf(socket).user.id;
+    return reply(data, {
+      items: await this.feed.recent(me, await this.moderation.separatedIds(me)),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.react)
+  async onReact(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { deskId, reaction } = parsePayload(reactSchema, data);
+    await this.reactions.react(this.sessionOf(socket), deskId, reaction);
+    return reply(data, {});
   }
 
   // MARK: Safety

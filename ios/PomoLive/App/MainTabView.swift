@@ -44,6 +44,10 @@ struct MainTabView: View {
             }
             .presentationDetents([.large])
         }
+        .sheet(item: Bindable(app.stats).celebration) { celebration in
+            CelebrationSheet(celebration: celebration)
+                .presentationDetents([.medium])
+        }
         .onChange(of: app.push.pendingRoute) { _, route in
             if route == .friends { selection = .rooms }
         }
