@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Glyph } from '../common/glyph.js';
 import { RedisService } from '../infra/redis.service.js';
+import {
+  FREE_ROOM_LIMIT,
+  PLUS_ROOM_LIMIT,
+  PLUS_THEMES,
+} from '../plus/plus-catalog.js';
+import { PlusService } from '../plus/plus.service.js';
 import { DeskStore } from '../library/desk-store.js';
 import { readTimer } from '../library/desk-timer.js';
 import {
@@ -21,7 +27,6 @@ import { discoverScore } from './discover-score.js';
 import { PublicUser } from '../users/user.js';
 import { RoomActivity, RoomActivityRepository } from './room-activity.js';
 
-const MAX_OWNED_ROOMS = 10;
 /** Keşfet is the same for everyone apart from bans and the reader's own desk, so it is built once per window. */
 const DISCOVER_CACHE_KEY = 'discover:shared';
 const DISCOVER_CACHE_SECONDS = 15;
@@ -101,6 +106,7 @@ export class RoomsService {
     private readonly desks: DeskStore,
     private readonly activity: RoomActivityRepository,
     private readonly redis: RedisService,
+    private readonly plus: PlusService,
   ) {}
 
   async overview(userId: string, now: number): Promise<RoomsOverview> {
@@ -138,6 +144,10 @@ export class RoomsService {
       halls: shared.halls,
       rooms: shared.rooms.filter((room) => !bannedIds.has(room.id)),
     };
+  }
+
+  private static isPlusTheme(theme: string): boolean {
+    return (PLUS_THEMES as readonly string[]).includes(theme);
   }
 
   /** Rooms appeared, changed or went away: rebuild Keşfet on the next request. */
@@ -297,12 +307,22 @@ export class RoomsService {
     theme: string = 'classic',
     description: string | null = null,
   ): Promise<RoomIdentity> {
-    if ((await this.rooms.countOwned(ownerId)) >= MAX_OWNED_ROOMS) {
+    const [owned, isPlus] = await Promise.all([
+      this.rooms.countOwned(ownerId),
+      this.plus.isActive(ownerId),
+    ]);
+    if (owned >= PLUS_ROOM_LIMIT)
       ProtocolError.throw(
         'LIMIT_REACHED',
-        `At most ${MAX_OWNED_ROOMS} rooms per reader`,
+        `At most ${PLUS_ROOM_LIMIT} rooms per reader`,
       );
-    }
+    if (!isPlus && owned >= FREE_ROOM_LIMIT)
+      ProtocolError.throw(
+        'PLUS_REQUIRED',
+        `Free readers can own ${FREE_ROOM_LIMIT} rooms`,
+      );
+    if (!isPlus && RoomsService.isPlusTheme(theme))
+      ProtocolError.throw('PLUS_REQUIRED', 'This theme needs PomoLive Plus');
     const created = RoomsService.identity(
       await this.rooms.create(
         ownerId,
@@ -357,7 +377,14 @@ export class RoomsService {
       >
     >,
   ): Promise<RoomIdentity> {
-    await this.owned(ownerId, roomId);
+    const current = await this.owned(ownerId, roomId);
+    // A room keeps a Plus look it already has; switching to one needs Plus.
+    if (
+      changes.theme &&
+      changes.theme !== current.theme &&
+      RoomsService.isPlusTheme(changes.theme)
+    )
+      await this.plus.require(ownerId);
     const updated = RoomsService.identity(
       await this.rooms.update(roomId, changes),
     );

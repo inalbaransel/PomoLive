@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CategoriesModule } from '../categories/categories.module.js';
+import { PlusModule } from '../plus/plus.module.js';
 import { RoomEventBus } from '../realtime/room-event-bus.js';
 import { RoomsRepository } from '../rooms/rooms.repository.js';
 import { RoomActivityRepository } from '../rooms/room-activity.js';
@@ -14,7 +15,7 @@ import { LibraryService } from './library.service.js';
 import { RoomDirectory } from './room-directory.js';
 
 @Module({
-  imports: [UsersModule, CategoriesModule],
+  imports: [UsersModule, CategoriesModule, PlusModule],
   providers: [
     LibraryService,
     ActivityFeed,

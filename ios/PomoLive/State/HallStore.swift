@@ -163,7 +163,7 @@ final class HallStore {
             guard roomId == room?.id else { return }
             show(FloatingReaction(deskId: deskId, reaction: reaction))
             if ownerId == userId { reactionsReceived += 1 }
-        case .chatMessage, .chatDeleted, .chatTyping, .friendStarted, .roomEventsChanged:
+        case .chatMessage, .chatDeleted, .chatTyping, .friendStarted, .roomEventsChanged, .matchFound:
             break
         }
     }

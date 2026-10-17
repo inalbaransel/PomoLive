@@ -28,6 +28,7 @@ final class StatsStore {
             let (newSummary, newPage) = try await (summary, page)
             self.summary = newSummary
             noticeNewBadges(in: newSummary)
+            Task { await WeeklySummary.schedule(with: newSummary) }
             history = newPage.entries
             hasMoreHistory = newPage.hasMore
         } catch {
@@ -61,6 +62,7 @@ final class StatsStore {
     }
 
     func reset() {
+        WeeklySummary.cancel()
         celebration = nil
         summary = nil
         history = []

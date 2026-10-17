@@ -16,7 +16,19 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             SwiftUI.Tab("Odalar", systemImage: "books.vertical.fill", value: .rooms) {
-                RoomsView(openRoom: { openRoom = RoomRoute(target: $0) })
+                RoomsView(
+                    openRoom: { openRoom = RoomRoute(target: $0) },
+                    openMatch: { match in
+                        openRoom = RoomRoute(
+                            target: .room(id: match.roomId),
+                            sit: PendingSit(
+                                deskId: match.deskId,
+                                timer: .pomodoro(focusMinutes: match.focusMinutes, breakMinutes: match.breakMinutes),
+                                categoryKey: match.categoryKey
+                            )
+                        )
+                    }
+                )
             }
             SwiftUI.Tab("İstatistik", systemImage: "chart.bar.fill", value: .stats) {
                 StatsView()
@@ -49,10 +61,16 @@ struct MainTabView: View {
                 .presentationDetents([.medium])
         }
         .onChange(of: app.push.pendingRoute) { _, route in
-            if route == .friends { selection = .rooms }
+            switch route {
+            case .friends: selection = .rooms
+            case .stats:
+                selection = .stats
+                app.push.pendingRoute = nil
+            case nil: break
+            }
         }
         .fullScreenCover(item: $openRoom, onDismiss: refreshAfterRoom) { route in
-            HallScreen(target: route.target)
+            HallScreen(target: route.target, pendingSit: route.sit)
         }
         .errorAlert(Bindable(app.seat).error)
     }
@@ -71,4 +89,12 @@ struct MainTabView: View {
 struct RoomRoute: Identifiable {
     let id = UUID()
     let target: HallStore.Target
+    /// A desk to take as soon as the room opens, e.g. the one a study buddy match reserved.
+    var sit: PendingSit?
+}
+
+struct PendingSit: Hashable {
+    let deskId: String
+    let timer: TimerSetup
+    let categoryKey: String
 }

@@ -5,6 +5,15 @@ struct ThemePicker: View {
     @Binding var selection: RoomTheme
     /// Floor plans by theme raw value, as the server sends them with the room lists.
     let layouts: [String: LibraryLayout]
+    /// A theme the room already has stays available even without Plus.
+    var kept: RoomTheme?
+
+    @Environment(AppModel.self) private var app
+    @State private var showsPaywall = false
+
+    private func isLocked(_ theme: RoomTheme) -> Bool {
+        !app.plus.isActive && PlusCatalog.themes.contains(theme) && theme != kept
+    }
 
     private static let cardWidth: CGFloat = 220
 
@@ -23,11 +32,13 @@ struct ThemePicker: View {
         .contentMargins(.horizontal, 20, for: .scrollContent)
         .scrollPosition(id: Binding(get: { selection }, set: { _ in }), anchor: .center)
         .sensoryFeedback(.selection, trigger: selection)
+        .plusPaywall(isPresented: $showsPaywall)
     }
 
     private func card(for theme: RoomTheme) -> some View {
         let isSelected = theme == selection
         return Button {
+            if isLocked(theme) { return showsPaywall = true }
             withAnimation(.snappy) { selection = theme }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
@@ -36,6 +47,9 @@ struct ThemePicker: View {
                     .overlay {
                         RoundedRectangle(cornerRadius: 16)
                             .strokeBorder(isSelected ? Color.accentColor : Color.primary.opacity(0.08), lineWidth: isSelected ? 3 : 1)
+                    }
+                    .overlay(alignment: .topLeading) {
+                        if isLocked(theme) { PlusBadge().padding(8) }
                     }
                     .overlay(alignment: .topTrailing) {
                         if isSelected {

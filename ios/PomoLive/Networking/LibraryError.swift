@@ -12,6 +12,10 @@ enum LibraryError: LocalizedError, Equatable, Sendable {
         self = error as? LibraryError ?? .connectionFailed(reason: error.localizedDescription)
     }
 
+    var needsPlus: Bool {
+        if case .server(code: "PLUS_REQUIRED", _) = self { true } else { false }
+    }
+
     var isUnauthorized: Bool {
         if case .server(code: "UNAUTHORIZED", _) = self { true } else { false }
     }
@@ -42,6 +46,7 @@ enum LibraryError: LocalizedError, Equatable, Sendable {
             case "INVALID_PAYLOAD": String(localized: "Girdiğin bilgiler geçersiz.")
             case "INVALID_CREDENTIALS": String(localized: "E-posta, kullanıcı adı ya da şifre hatalı.")
             case "EMAIL_TAKEN": String(localized: "Bu e-posta ile zaten bir hesap var. Giriş yapmayı dene.")
+            case "PLUS_REQUIRED": String(localized: "Bu özellik PomoLive Plus ile açılır.")
             case "INAPPROPRIATE": String(localized: "Bu metinde uygunsuz bir kelime var. Lütfen başka bir şey yaz.")
             case "RATE_LIMITED": String(localized: "Çok fazla deneme yapıldı. Biraz sonra tekrar dene.")
             default: message

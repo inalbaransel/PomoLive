@@ -23,7 +23,10 @@ import { ProfilesService } from '../community/profiles.service.js';
 import { RoomMembersService } from '../community/room-members.service.js';
 import { SocialService } from '../community/social.service.js';
 import { LibraryService, ReaderSession } from '../library/library.service.js';
+import { MatchService } from '../match/match.service.js';
 import { ModerationService } from '../moderation/moderation.service.js';
+import { PLUS_AVATARS } from '../plus/plus-catalog.js';
+import { PlusService } from '../plus/plus.service.js';
 import { ActivityFeed } from '../library/activity-feed.js';
 import { PushService } from '../push/push.service.js';
 import { ReactionsService } from '../reactions/reactions.service.js';
@@ -62,6 +65,8 @@ import {
   searchUsersSchema,
   previewRoomSchema,
   reactSchema,
+  requestMatchSchema,
+  syncPlusSchema,
   registerPushSchema,
   reportSchema,
   unregisterPushSchema,
@@ -126,6 +131,8 @@ export class LibraryGateway
     private readonly push: PushService,
     private readonly feed: ActivityFeed,
     private readonly reactions: ReactionsService,
+    private readonly plus: PlusService,
+    private readonly match: MatchService,
     private readonly bus: RoomEventBus,
   ) {}
 
@@ -159,6 +166,9 @@ export class LibraryGateway
     if (!connection) return;
     clearTimeout(connection.authTimer);
     if (connection.session) {
+      await this.match
+        .cancel(connection.session.user.id)
+        .catch((error: Error) => this.logger.error(error.message));
       await this.push
         .markOffline(connection.session.user.id, connection.id)
         .catch((error: Error) => this.logger.error(error.message));
@@ -219,8 +229,16 @@ export class LibraryGateway
     @MessageBody() data: Payload,
   ) {
     const changes = parsePayload(updateProfileSchema, data);
+    const session = this.sessionOf(socket);
+    // A Plus character already worn is kept; picking one needs Plus.
+    if (
+      changes.avatarSpriteId &&
+      changes.avatarSpriteId !== session.user.avatarSpriteId &&
+      PLUS_AVATARS.includes(changes.avatarSpriteId)
+    )
+      await this.plus.require(session.user.id);
     return reply(data, {
-      user: await this.library.updateProfile(this.sessionOf(socket), changes),
+      user: await this.library.updateProfile(session, changes),
     });
   }
 
@@ -715,6 +733,83 @@ export class LibraryGateway
   ) {
     const { deskId, reaction } = parsePayload(reactSchema, data);
     await this.reactions.react(this.sessionOf(socket), deskId, reaction);
+    return reply(data, {});
+  }
+
+  // MARK: Plus
+
+  @SubscribeMessage(ClientEvent.plusStatus)
+  async onPlusStatus(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    return reply(data, {
+      status: await this.plus.status(this.sessionOf(socket).user.id),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.syncPlus)
+  async onSyncPlus(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { signedTransaction } = parsePayload(syncPlusSchema, data);
+    return reply(data, {
+      status: await this.plus.sync(
+        this.sessionOf(socket).user.id,
+        signedTransaction,
+      ),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.statsInsights)
+  async onStatsInsights(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const session = this.sessionOf(socket);
+    await this.plus.require(session.user.id);
+    return reply(data, {
+      insights: await this.stats.insights(session.user.id, session.timeZone),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.exportStats)
+  async onExportStats(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const me = this.sessionOf(socket).user.id;
+    await this.plus.require(me);
+    return reply(data, { sessions: await this.stats.export(me) });
+  }
+
+  // MARK: Study buddy
+
+  @SubscribeMessage(ClientEvent.requestMatch)
+  async onRequestMatch(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    const { focusMinutes, categoryKey } = parsePayload(
+      requestMatchSchema,
+      data,
+    );
+    return reply(data, {
+      status: await this.match.request(
+        this.sessionOf(socket),
+        focusMinutes,
+        categoryKey,
+      ),
+    });
+  }
+
+  @SubscribeMessage(ClientEvent.cancelMatch)
+  async onCancelMatch(
+    @ConnectedSocket() socket: WebSocket,
+    @MessageBody() data: Payload,
+  ) {
+    await this.match.cancel(this.sessionOf(socket).user.id);
     return reply(data, {});
   }
 

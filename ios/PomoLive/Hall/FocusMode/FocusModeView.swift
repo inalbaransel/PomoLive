@@ -13,6 +13,7 @@ struct FocusModeView: View {
     let myUserId: String?
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppModel.self) private var app
     @AppStorage(Preferences.focusModeStyle) private var style = FocusModeStyle.clock
     @AppStorage(Preferences.clockFace) private var face = ClockFace.digital
     @AppStorage(Preferences.clockTint) private var tint = ClockTint.white
@@ -22,6 +23,7 @@ struct FocusModeView: View {
     @State private var orientation = UIDevice.current.orientation
     @State private var burnInShift = CGSize.zero
     @State private var customizes = false
+    @State private var showsPaywall = false
 
     private static let controlsVisibleFor = Duration.seconds(3)
 
@@ -64,6 +66,12 @@ struct FocusModeView: View {
                 }
             }
         }
+        .onChange(of: style) { old, new in
+            guard new == .nightMap, !app.plus.isActive else { return }
+            style = old
+            showsPaywall = true
+        }
+        .plusPaywall(isPresented: $showsPaywall)
         .sheet(isPresented: $customizes) {
             FocusModeSettings(style: style, face: $face, tint: $tint, showsSeconds: $showsSeconds)
                 .presentationDetents([.medium])
@@ -173,6 +181,8 @@ private struct FocusModeSettings: View {
     @Binding var showsSeconds: Bool
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppModel.self) private var app
+    @State private var showsPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -189,7 +199,10 @@ private struct FocusModeSettings: View {
                 Section {
                     HStack(spacing: 14) {
                         ForEach(ClockTint.allCases) { option in
-                            Button { tint = option } label: {
+                            Button {
+                                if option != .white, !app.plus.isActive { return showsPaywall = true }
+                                tint = option
+                            } label: {
                                 Circle()
                                     .fill(option.color)
                                     .frame(width: 34, height: 34)
@@ -207,7 +220,10 @@ private struct FocusModeSettings: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
                 } header: {
-                    Text("Renk")
+                    HStack {
+                        Text("Renk")
+                        if !app.plus.isActive { PlusBadge() }
+                    }
                 } footer: {
                     Text("Gece Kırmızısı karanlıkta gözü en az yorar.")
                 }
@@ -218,6 +234,12 @@ private struct FocusModeSettings: View {
                 }
             }
             .navigationTitle("Odak Modu")
+            .onChange(of: face) { old, new in
+                guard new != .digital, !app.plus.isActive else { return }
+                face = old
+                showsPaywall = true
+            }
+            .plusPaywall(isPresented: $showsPaywall)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

@@ -17,6 +17,8 @@ struct ProfileView: View {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets())
 
+                    Section { PlusRow() }
+
                     if let summary = app.stats.summary {
                         Section("Bugün") {
                             StatsHeadline(summary: summary, dailyGoalMinutes: user.dailyGoalMinutes, weeklyGoalMinutes: user.weeklyGoalMinutes)

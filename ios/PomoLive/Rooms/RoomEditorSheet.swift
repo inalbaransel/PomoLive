@@ -72,7 +72,7 @@ struct RoomEditorSheet: View {
                 }
 
                 Section {
-                    ThemePicker(selection: $draft.theme, layouts: layouts)
+                    ThemePicker(selection: $draft.theme, layouts: layouts, kept: room?.roomTheme)
                         .listRowInsets(EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0))
                         .listRowBackground(Color.clear)
                 } header: {

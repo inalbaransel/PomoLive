@@ -29,6 +29,20 @@ const environmentSchema = z.object({
   /** The .p8 file's contents; `\n` escapes are accepted for one-line environment UIs. */
   APNS_PRIVATE_KEY: optional(z.string()),
   APNS_BUNDLE_ID: z.string().default('com.baransel.pomolive'),
+  /**
+   * SHA-256 fingerprint of Apple Root CA - G3, which signs App Store transactions. Pinned here so a
+   * forged certificate chain cannot unlock Plus; override only if Apple rotates its root.
+   */
+  APPLE_ROOT_CA_SHA256: z
+    .string()
+    .default(
+      '63:34:3A:BF:B8:9A:6A:03:EB:B5:7E:9B:3F:5F:A7:BE:7C:4F:5C:75:6F:30:17:B3:A8:C4:88:C3:65:3E:91:79',
+    ),
+  /** Accepts transactions signed by Xcode's local StoreKit testing. Never enable in production. */
+  ALLOW_XCODE_TRANSACTIONS: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   /** Shown on the support page; the page leaves contact details out without it. */
   SUPPORT_EMAIL: optional(z.email()),
 });
@@ -50,6 +64,9 @@ export class AppConfig {
   readonly shardThreshold: number;
   readonly foregroundLeaseMs: number;
   readonly backgroundLeaseMs: number;
+  readonly bundleId: string;
+  readonly appleRootFingerprint: string;
+  readonly allowsXcodeTransactions: boolean;
   readonly apns: ApnsCredentials | null;
   readonly supportEmail: string | null;
 
@@ -68,6 +85,9 @@ export class AppConfig {
       shardThreshold: env.SHARD_THRESHOLD,
       foregroundLeaseMs: env.FOREGROUND_LEASE_SECONDS * 1000,
       backgroundLeaseMs: env.BACKGROUND_LEASE_SECONDS * 1000,
+      bundleId: env.APNS_BUNDLE_ID,
+      appleRootFingerprint: env.APPLE_ROOT_CA_SHA256.toUpperCase(),
+      allowsXcodeTransactions: env.ALLOW_XCODE_TRANSACTIONS,
       apns:
         env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY
           ? {

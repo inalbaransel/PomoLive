@@ -5,24 +5,28 @@ import SwiftUI
 /// rooms. Searching or picking a topic narrows everything to matching rooms.
 struct RoomsView: View {
     let openRoom: (HallStore.Target) -> Void
+    let openMatch: (MatchFound) -> Void
 
     @Environment(AppModel.self) private var app
     @Environment(\.scenePhase) private var scenePhase
     @State private var sheet: Sheet?
     /// Opened once the sheet has finished dismissing, so two presentations never overlap.
     @State private var pendingRoom: HallStore.Target?
+    @State private var pendingMatch: MatchFound?
     @State private var roomToDelete: RoomSummary?
     @State private var showsFriends = false
+    @State private var showsPaywall = false
     @State private var query = ""
     @State private var topic: String?
 
     private enum Sheet: Identifiable {
-        case create, joinByCode, preview(roomId: String)
+        case create, joinByCode, studyBuddy, preview(roomId: String)
 
         var id: String {
             switch self {
             case .create: "create"
             case .joinByCode: "code"
+            case .studyBuddy: "buddy"
             case .preview(let roomId): roomId
             }
         }
@@ -51,11 +55,12 @@ struct RoomsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Oda", systemImage: "plus") {
-                        Button("Oda Oluştur", systemImage: "plus.rectangle.on.rectangle") { sheet = .create }
+                        Button("Oda Oluştur", systemImage: "plus.rectangle.on.rectangle", action: createRoom)
                         Button("Kodla Katıl", systemImage: "number") { sheet = .joinByCode }
                     }
                 }
             }
+            .plusPaywall(isPresented: $showsPaywall)
             .navigationDestination(isPresented: $showsFriends) {
                 FriendsView(openRoom: openRoom)
             }
@@ -84,6 +89,9 @@ struct RoomsView: View {
                 case .joinByCode:
                     JoinByCodeSheet { code in pendingRoom = .code(code) }
                         .presentationDetents([.height(280)])
+                case .studyBuddy:
+                    StudyBuddySheet(onMatched: { pendingMatch = $0 }, onSitAnyway: { pendingRoom = .automatic })
+                        .presentationDetents([.medium])
                 case .preview(let roomId):
                     RoomDetailSheet(roomId: roomId) { pendingRoom = .room(id: roomId) }
                         .presentationDetents([.large])
@@ -119,6 +127,8 @@ struct RoomsView: View {
                 QuickStartCard(layout: layout, halls: discover?.halls) { openRoom(.automatic) }
                     .padding(.horizontal, 16)
             }
+            StudyBuddyCard { sheet = .studyBuddy }
+                .padding(.horizontal, 16)
         }
 
         FriendsStrip(
@@ -148,7 +158,7 @@ struct RoomsView: View {
         myRooms
 
         NavigationLink {
-            DiscoverRoomsView(onPreview: { sheet = .preview(roomId: $0) }, onCreate: { sheet = .create })
+            DiscoverRoomsView(onPreview: { sheet = .preview(roomId: $0) }, onCreate: createRoom)
         } label: {
             HStack(spacing: 14) {
                 GlyphIcon(symbol: "globe.europe.africa.fill", color: .indigo, size: 40)
@@ -277,6 +287,16 @@ struct RoomsView: View {
         }
     }
 
+    /// Free readers own up to two rooms; the third one is a Plus feature.
+    private func createRoom() {
+        let owned = app.rooms.overview?.myRooms.filter { $0.ownerId == app.user?.id }.count ?? 0
+        if !app.plus.isActive, owned >= PlusCatalog.freeRoomLimit {
+            showsPaywall = true
+        } else {
+            sheet = .create
+        }
+    }
+
     private func refresh() async {
         async let overview: Void = app.rooms.refresh()
         async let discover: Void = app.rooms.refreshDiscover()
@@ -289,7 +309,7 @@ struct RoomsView: View {
         } description: {
             Text("Keşfet'ten bir odaya gidip masaya otur ya da arkadaşlarınla kendi odanı aç.")
         } actions: {
-            Button("Oda Oluştur") { sheet = .create }
+            Button("Oda Oluştur", action: createRoom)
                 .buttonStyle(.borderedProminent)
             Button("Kodla Katıl") { sheet = .joinByCode }
         }
@@ -315,6 +335,10 @@ struct RoomsView: View {
     }
 
     private func openPendingRoom() {
+        if let pendingMatch {
+            self.pendingMatch = nil
+            return openMatch(pendingMatch)
+        }
         guard let pendingRoom else { return }
         self.pendingRoom = nil
         openRoom(pendingRoom)

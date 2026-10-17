@@ -403,3 +403,31 @@ struct ActivityTicker: View {
 private extension FeedItem {
     var roomDisplayName: String { localizedRoomName(id: roomId, name: roomName) }
 }
+
+/// The way into study buddy matching.
+struct StudyBuddyCard: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                GlyphIcon(symbol: "person.2.wave.2.fill", color: .orange, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Çalışma Arkadaşı Bul")
+                        .font(.headline)
+                    Text("Biriyle eşleş, yan yana başlayın")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
+            .contentShape(.rect(cornerRadius: 20))
+        }
+        .buttonStyle(.plain)
+    }
+}

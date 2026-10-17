@@ -20,6 +20,7 @@ export type ProtocolErrorCode =
   | 'TASK_NOT_FOUND'
   | 'EVENT_NOT_FOUND'
   | 'INAPPROPRIATE'
+  | 'PLUS_REQUIRED'
   | 'INTERNAL';
 
 /** A failure the client is expected to handle; serialised into a `reply` with `ok: false`. */

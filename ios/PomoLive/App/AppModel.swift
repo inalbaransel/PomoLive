@@ -33,6 +33,8 @@ final class AppModel {
     let events: RoomEventsStore
     let safety: SafetyStore
     let push: PushNotifications
+    let plus: PlusStore
+    let match: MatchStore
     let sounds = AmbientPlayer()
     /// The server's web pages (privacy policy, terms, support) live next to its socket.
     let website: URL
@@ -60,6 +62,8 @@ final class AppModel {
         events = RoomEventsStore(socket: socket)
         safety = SafetyStore(socket: socket)
         push = PushNotifications(socket: socket)
+        plus = PlusStore(socket: socket)
+        match = MatchStore(socket: socket)
 
         // A profile cached by an older version may not decode; the session token alone is enough to reconnect.
         phase = sessionStore.token == nil ? .signedOut : .signedIn
@@ -106,6 +110,11 @@ final class AppModel {
         try await safety.block(user)
         chat.hideMessages(from: user.id)
         await friends.refresh()
+    }
+
+    /// One-off commands whose results belong to a single screen rather than a store.
+    func socketSend<Command: LibraryCommand>(_ command: Command) async throws -> Command.Result {
+        try await socket.send(command)
     }
 
     func profile(of userId: String) async throws -> PublicProfile {
@@ -169,6 +178,8 @@ final class AppModel {
         friends.reset()
         events.reset()
         safety.reset()
+        plus.reset()
+        match.reset()
         sounds.stop()
         user = nil
         connection = .offline
@@ -186,6 +197,7 @@ final class AppModel {
             if !isFromBlockedReader(event) { chat.apply(event) }
             friends.apply(event)
             events.apply(event)
+            match.apply(event)
             seat.apply(event)
         }
     }
@@ -214,7 +226,8 @@ final class AppModel {
             async let safetyRefresh: Void = safety.refresh()
             async let hallRejoin: Void = hall.rejoin()
             async let pushSync: Void = push.signedIn()
-            _ = await (seatRefresh, categoriesRefresh, tasksRefresh, friendsRefresh, safetyRefresh, pushSync, hallRejoin)
+            async let plusSync: Void = plus.signedIn()
+            _ = await (seatRefresh, categoriesRefresh, tasksRefresh, friendsRefresh, safetyRefresh, pushSync, plusSync, hallRejoin)
             // The server forgot what this connection looked at; catch up on messages missed while offline.
             if let roomId = hall.room?.id { await chat.open(roomId: roomId) }
         } catch {

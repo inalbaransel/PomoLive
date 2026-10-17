@@ -11,6 +11,7 @@ import UserNotifications
 final class PushNotifications: NSObject {
     enum Route: Hashable {
         case friends
+        case stats
     }
 
     /// Where a tapped notification asked to go; the screen that handles it sets it back to nil.
@@ -97,7 +98,12 @@ extension PushNotifications: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         let kind = response.notification.request.content.userInfo["kind"] as? String
-        guard kind == "friendStarted" else { return }
-        await MainActor.run { pendingRoute = .friends }
+        let route: Route? = switch kind {
+        case "friendStarted": .friends
+        case WeeklySummary.kind: .stats
+        default: nil
+        }
+        guard let route else { return }
+        await MainActor.run { pendingRoute = route }
     }
 }

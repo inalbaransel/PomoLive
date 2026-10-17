@@ -6,6 +6,8 @@ import { ChatModule } from '../chat/chat.module.js';
 import { CommunityModule } from '../community/community.module.js';
 import { LibraryModule } from '../library/library.module.js';
 import { ModerationModule } from '../moderation/moderation.module.js';
+import { MatchModule } from '../match/match.module.js';
+import { PlusModule } from '../plus/plus.module.js';
 import { PushModule } from '../push/push.module.js';
 import { ReactionsModule } from '../reactions/reactions.module.js';
 import { StatsModule } from '../stats/stats.module.js';
@@ -20,6 +22,8 @@ import { LibraryGateway } from './library.gateway.js';
     LibraryModule,
     ModerationModule,
     PushModule,
+    PlusModule,
+    MatchModule,
     ReactionsModule,
     CategoriesModule,
     ChatModule,

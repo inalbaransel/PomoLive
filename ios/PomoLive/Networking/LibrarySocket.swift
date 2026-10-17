@@ -134,6 +134,7 @@ actor LibrarySocket {
         case "room:events": return payload(RoomPayload.self).map { .roomEventsChanged(roomId: $0.roomId) }
         case "friend:started": return payload(DeskPayload.self).map { .friendStarted(roomId: $0.roomId, desk: $0.desk) }
         case "chat:typing": return payload(ChatTypingPayload.self).map { .chatTyping(roomId: $0.roomId, user: $0.user) }
+        case "match:found": return payload(MatchPayload.self).map { .matchFound($0.match) }
         case "desk:reaction":
             return payload(ReactionPayload.self).map {
                 .deskReaction(roomId: $0.roomId, deskId: $0.deskId, ownerId: $0.userId, reaction: $0.reaction, from: $0.from)
@@ -212,6 +213,7 @@ private struct ChatMessagePayload: Decodable { let message: ChatMessage }
 private struct ChatDeletedPayload: Decodable { let roomId: String; let messageId: String }
 private struct ChatTypingPayload: Decodable { let roomId: String; let user: PublicUser }
 private struct MemberRemovedPayload: Decodable { let roomId: String; let userId: String }
+private struct MatchPayload: Decodable { let match: MatchFound }
 private struct ReactionPayload: Decodable {
     let roomId: String
     let deskId: String

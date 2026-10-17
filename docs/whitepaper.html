@@ -173,26 +173,26 @@ code { font: 13.5px var(--mono); }
       <div class="table"><table>
         <thead><tr><th>Özellik</th><th>Ücretsiz</th><th>PomoLive Plus</th></tr></thead>
         <tbody>
-          <tr><td>Salonlar, masa, sayaç, sohbet, takip</td><td>Sınırsız</td><td>Sınırsız</td></tr>
-          <tr><td>Kendi odaların</td><td>2 oda, 25 masa</td><td>Sınırsız oda, 50 masaya kadar</td></tr>
-          <tr><td>Oda temaları</td><td>Klasik, Kafe</td><td>Tüm temalar ve sezonluk temalar</td></tr>
-          <tr><td>Avatarlar ve masa süsleri</td><td>Temel set</td><td>Plus avatarları, lamba ve masa kozmetikleri</td></tr>
-          <tr><td>İstatistik</td><td>Son 7 gün, seri, hedef</td><td>Tüm geçmiş, yıllık ısı haritası, kategori trendleri, CSV dışa aktarma</td></tr>
-          <tr><td>Odak sesleri</td><td>3 ses</td><td>Tüm sesler ve ses karıştırma</td></tr>
-          <tr><td>Odak modu</td><td>Dijital saat</td><td>Tüm saat yüzleri, renkler, gece haritası</td></tr>
-          <tr><td>Oda etkinlikleri</td><td>Katılma</td><td>Tekrarlayan etkinlik planlama</td></tr>
+          <tr><td>Salonlar, masa, sayaç, sohbet, takip, tepkiler, canlı akış</td><td>Sınırsız</td><td>Sınırsız</td></tr>
+          <tr><td>Çalışma arkadaşı eşleştirme, oda etkinlikleri</td><td>Sınırsız</td><td>Sınırsız</td></tr>
+          <tr><td>Kendi odaların</td><td>2 oda</td><td>10 oda</td></tr>
+          <tr><td>Oda temaları</td><td>Klasik, Kafe</td><td>Orman, Sahil, Uzay ve sonraki temalar</td></tr>
+          <tr><td>Karakterler</td><td>13 karakter</td><td>Kedi, büyücü ve Plus karakterleri</td></tr>
+          <tr><td>İstatistik</td><td>Son 7 gün, seri, hedef, rozetler</td><td>Yıllık ısı haritası, aylık trendler, en verimli saat ve gün, CSV dışa aktarma</td></tr>
+          <tr><td>Odak sesleri</td><td>Yağmur, derin uğultu, beyaz gürültü</td><td>Dalgalar, şömine, pembe gürültü</td></tr>
+          <tr><td>Odak modu</td><td>Dijital saat</td><td>Halka ve kadran saatler, renkler, gece haritası</td></tr>
         </tbody>
       </table></div>
 
-      <h3>Fiyatlandırma (öneri)</h3>
+      <h3>Fiyatlandırma</h3>
       <div class="table"><table>
-        <thead><tr><th>Plan</th><th>Türkiye</th><th>Global</th><th>Not</th></tr></thead>
+        <thead><tr><th>Plan</th><th>Türkiye</th><th>ABD / Avrupa</th><th>Not</th></tr></thead>
         <tbody>
-          <tr><td>Aylık</td><td class="n">₺79,99</td><td class="n">$3,99</td><td>Giriş seviyesi</td></tr>
-          <tr><td>Yıllık</td><td class="n">₺499,99</td><td class="n">$24,99</td><td>~%48 indirim, 7 gün ücretsiz deneme. Varsayılan plan.</td></tr>
-          <tr><td>Ömür boyu</td><td class="n">₺1.499,99</td><td class="n">$69,99</td><td>Lansman dönemine özel, sınırlı</td></tr>
+          <tr><td>Aylık</td><td class="n">₺39,99</td><td class="n">$7,99 / €7,99</td><td>Giriş seviyesi</td></tr>
+          <tr><td>Yıllık</td><td class="n">₺299,99</td><td class="n">$49,99 / €49,99</td><td>~%45 indirim, 7 gün ücretsiz deneme. Varsayılan plan.</td></tr>
         </tbody>
       </table></div>
+      <p class="note">Fiyatlar App Store Connect'te ülke bazında girilir. Diğer ülkeler ABD fiyatından Apple'ın otomatik çevirisini kullanır; alım gücü düşük ülkelerde (Hindistan, Brezilya, Endonezya gibi) Türkiye gibi elle düşük fiyat konur. Mevcut kullanıcıların kullandığı tema ve karakterler ellerinden alınmaz.</p>
       <p class="note">Satış StoreKit 2 ile yapılacak. Yıllık gelir 1 milyon doların altındayken Apple Small Business Program kapsamında komisyon %15. Öğrenci kitlesi fiyata hassas olduğundan Türkiye fiyatı satın alma gücüne göre ayrı belirleniyor. Sınav dönemlerinde (YKS öncesi) kampanya yapılabilir.</p>
 
       <h3>Ek gelir kanalları</h3>
@@ -304,7 +304,7 @@ flowchart LR
           <tr><td>Boş salon: ilk kullanıcılar kimseyi görmez ve gider</td><td>Lansmanda tek genel salon, beta topluluğu, etkinliklerle saat yoğunlaştırma, "şu an X kişi çalışıyor" vurgusu</td></tr>
           <tr><td>Yalnızca iOS: Türkiye'de Android payı yüksek</td><td>Önce iOS'ta ürün-pazar uyumunu kanıtla. Android kararını Q4 2027'de metriklerle ver.</td></tr>
           <tr><td>Sohbette taciz veya spam</td><td>Raporlama, engelleme, oda sahibi moderasyonu, hız sınırları</td></tr>
-          <tr><td>Düşük ödeme isteği (öğrenci kitlesi)</td><td>Bölgesel fiyat, yıllık plan, ömür boyu lansman fırsatı, kozmetik IAP</td></tr>
+          <tr><td>Düşük ödeme isteği (öğrenci kitlesi)</td><td>Bölgesel fiyat (TR ₺39,99), yıllık plan ve 7 gün deneme, ücretsiz katmanın cömert kalması</td></tr>
           <tr><td>Rakiplerin özelliği kopyalaması</td><td>Native kalite, kendine özgü kimlik ve topluluk ağı. Bunlar özellik listesinden daha zor kopyalanır.</td></tr>
           <tr><td>Tek geliştirici bağımlılığı</td><td>Temiz mimari, testler, dokümantasyon ve otomatik dağıtım</td></tr>
         </tbody>

@@ -7,6 +7,7 @@ enum Preferences {
     static let phaseNotifications = "phaseNotificationsEnabled"
     static let haptics = "hapticsEnabled"
     static let friendNotifications = "friendNotificationsEnabled"
+    static let weeklySummary = "weeklySummaryEnabled"
     static let hasSeenOnboarding = "hasSeenOnboarding"
     /// Prefix; one list of already celebrated badge ids per account.
     static let celebratedBadges = "celebratedBadges"

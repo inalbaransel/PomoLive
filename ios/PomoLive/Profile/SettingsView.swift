@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(Preferences.phaseNotifications) private var phaseNotifications = true
     @AppStorage(Preferences.haptics) private var haptics = true
     @AppStorage(Preferences.friendNotifications) private var friendNotifications = true
+    @AppStorage(Preferences.weeklySummary) private var weeklySummary = true
     @AppStorage(Preferences.appearance) private var appearance = Appearance.system
     @Environment(\.openURL) private var openURL
 
@@ -40,6 +41,13 @@ struct SettingsView: View {
                             }
                         }
                         .padding(.vertical, 2)
+                    }
+                }
+
+                Section {
+                    PlusRow()
+                    Button("Satın Alımları Geri Yükle") {
+                        Task { try? await app.plus.restore() }
                     }
                 }
 
@@ -101,11 +109,24 @@ struct SettingsView: View {
                 Toggle(isOn: $friendNotifications) {
                     SettingsLabel(title: "Arkadaşım Çalışmaya Başlayınca", systemName: "person.2.wave.2.fill", color: .green)
                 }
+                Toggle(isOn: $weeklySummary) {
+                    SettingsLabel(title: "Haftalık Özet", systemName: "calendar.badge.clock", color: .indigo)
+                }
                 Toggle(isOn: $haptics) {
                     SettingsLabel(title: "Titreşim", systemName: "iphone.radiowaves.left.and.right", color: .pink)
                 }
             }
             .onChange(of: phaseNotifications) { app.seat.preferencesChanged() }
+            .onChange(of: weeklySummary) { _, isOn in
+                if isOn, let summary = app.stats.summary {
+                    Task {
+                        await app.push.requestPermission()
+                        await WeeklySummary.schedule(with: summary)
+                    }
+                } else if !isOn {
+                    WeeklySummary.cancel()
+                }
+            }
             .onChange(of: friendNotifications) { _, isOn in
                 Task { isOn ? await app.push.requestPermission() : await app.push.sync() }
             }

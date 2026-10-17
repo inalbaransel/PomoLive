@@ -366,6 +366,8 @@ struct DayTotal: Decodable, Hashable, Sendable, Identifiable {
 struct StatsSummary: Decodable, Hashable, Sendable {
     var todayMs: Int64
     var weekMs: Int64
+    /// Missing from servers older than the weekly summary.
+    var lastWeekMs: Int64?
     var totalMs: Int64
     var sessionCount: Int
     var streakDays: Int
@@ -492,6 +494,8 @@ enum LibraryEvent: Sendable {
     case friendStarted(roomId: String, desk: DeskRecord)
     /// A room's scheduled events changed; reload them.
     case roomEventsChanged(roomId: String)
+    /// A study buddy was found; both go to neighbouring desks in `match.roomId`.
+    case matchFound(MatchFound)
     /// Someone left a reaction on the desk `deskId`, which `ownerId` holds.
     case deskReaction(roomId: String, deskId: String, ownerId: String, reaction: DeskReaction, from: FeedActor)
 }
@@ -551,4 +555,49 @@ enum ReportReason: String, Codable, CaseIterable, Identifiable, Sendable {
     case other = "OTHER"
 
     var id: String { rawValue }
+}
+
+/// PomoLive Plus: the long view of the reader's focus.
+struct StatsInsights: Decodable, Hashable, Sendable {
+    struct Day: Decodable, Hashable, Sendable {
+        var date: String
+        var ms: Int64
+    }
+
+    struct Month: Decodable, Hashable, Sendable, Identifiable {
+        var month: String
+        var totalMs: Int64
+        var categories: [CategoryTotal]
+
+        var id: String { month }
+    }
+
+    var days: [Day]
+    var months: [Month]
+    var bestHour: Int?
+    /// 1 = Monday … 7 = Sunday.
+    var bestWeekday: Int?
+    var averageSessionMs: Int64
+    var longestSessionMs: Int64
+}
+
+/// One recorded session in the CSV export.
+struct ExportedSession: Decodable, Sendable {
+    var startedAt: Int64
+    var endedAt: Int64
+    var focusedMs: Int64
+    var category: String
+    var roomName: String
+    var mode: String
+    var note: String?
+}
+
+/// A study buddy found by the server.
+struct MatchFound: Decodable, Hashable, Sendable {
+    var roomId: String
+    var deskId: String
+    var focusMinutes: Int
+    var breakMinutes: Int
+    var categoryKey: String
+    var partner: FeedActor
 }

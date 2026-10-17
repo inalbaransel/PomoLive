@@ -3,6 +3,11 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { Test } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';
 import { AddressInfo } from 'node:net';
+import { execFileSync } from 'node:child_process';
+import { createPrivateKey, sign, X509Certificate } from 'node:crypto';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { AppModule } from '../src/app.module.js';
 import { RedisService } from '../src/infra/redis.service.js';
@@ -1113,6 +1118,180 @@ describe('Library realtime protocol (e2e)', () => {
     ).toBe(false);
     owner.close();
     guest.close();
+  });
+
+  /** A transaction signed the way Xcode's local StoreKit testing signs it. */
+  function xcodeTransaction(productId: string, expiresDate: number): string {
+    const dir = mkdtempSync(join(tmpdir(), 'storekit-'));
+    execFileSync(
+      'openssl',
+      ['ecparam', '-name', 'prime256v1', '-genkey', '-noout', '-out', 'k.pem'],
+      { cwd: dir },
+    );
+    execFileSync(
+      'openssl',
+      [
+        'req',
+        '-x509',
+        '-new',
+        '-key',
+        'k.pem',
+        '-subj',
+        '/CN=StoreKit Testing',
+        '-days',
+        '2',
+        '-out',
+        'c.pem',
+      ],
+      { cwd: dir },
+    );
+    const x5c = [
+      new X509Certificate(readFileSync(join(dir, 'c.pem'))).raw.toString(
+        'base64',
+      ),
+    ];
+    const encode = (part: object) =>
+      Buffer.from(JSON.stringify(part)).toString('base64url');
+    const input = `${encode({ alg: 'ES256', x5c })}.${encode({
+      originalTransactionId: `${Date.now()}`,
+      transactionId: `${Date.now()}1`,
+      bundleId: 'com.baransel.pomolive',
+      productId,
+      expiresDate,
+      environment: 'Xcode',
+    })}`;
+    const signature = sign('sha256', Buffer.from(input), {
+      key: createPrivateKey(readFileSync(join(dir, 'k.pem'))),
+      dsaEncoding: 'ieee-p1363',
+    });
+    return `${input}.${signature.toString('base64url')}`;
+  }
+
+  it('keeps Plus features behind a verified subscription', async () => {
+    const reader = await signedIn('Plusci');
+    const room = (name: string, theme = 'classic') =>
+      reader.send('room:create', {
+        name,
+        symbol: 'books.vertical.fill',
+        color: 'indigo',
+        visibility: 'PRIVATE',
+        theme,
+      });
+    expect((await reader.send('plus:status')).result.status).toMatchObject({
+      active: false,
+    });
+    expect(await room('Orman', 'forest')).toMatchObject({
+      ok: false,
+      error: { code: 'PLUS_REQUIRED' },
+    });
+    expect((await room('Bir')).ok).toBe(true);
+    expect((await room('İki')).ok).toBe(true);
+    expect(await room('Üç')).toMatchObject({
+      ok: false,
+      error: { code: 'PLUS_REQUIRED' },
+    });
+    expect(
+      await reader.send('profile:update', { avatarSpriteId: 'cat_01' }),
+    ).toMatchObject({
+      ok: false,
+      error: { code: 'PLUS_REQUIRED' },
+    });
+    expect(await reader.send('stats:insights')).toMatchObject({
+      ok: false,
+      error: { code: 'PLUS_REQUIRED' },
+    });
+    expect(
+      await reader.send('plus:sync', { signedTransaction: 'x'.repeat(120) }),
+    ).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_PAYLOAD' },
+    });
+
+    const expired = await reader.send('plus:sync', {
+      signedTransaction: xcodeTransaction(
+        'com.baransel.pomolive.plus.monthly',
+        Date.now() - 1000,
+      ),
+    });
+    expect(expired.result.status.active).toBe(false);
+    const synced = await reader.send('plus:sync', {
+      signedTransaction: xcodeTransaction(
+        'com.baransel.pomolive.plus.yearly',
+        Date.now() + 86_400_000,
+      ),
+    });
+    expect(synced.result.status).toMatchObject({
+      active: true,
+      productId: 'com.baransel.pomolive.plus.yearly',
+    });
+
+    expect((await room('Üç', 'forest')).ok).toBe(true);
+    expect(
+      (await reader.send('profile:update', { avatarSpriteId: 'cat_01' })).ok,
+    ).toBe(true);
+    const insights = (await reader.send('stats:insights')).result.insights;
+    expect(insights.months).toHaveLength(6);
+    expect((await reader.send('stats:export')).result.sessions).toEqual([]);
+    reader.close();
+  });
+
+  it('pairs two readers asking for a study buddy at neighbouring desks', async () => {
+    const { client: first, userId: firstId } = await signedInWithId('Eslesen');
+    const { client: second, userId: secondId } =
+      await signedInWithId('Eslesilen');
+    expect(
+      (
+        await first.send('match:request', {
+          focusMinutes: 50,
+          categoryKey: 'study',
+        })
+      ).result.status,
+    ).toBe('WAITING');
+    expect(
+      (
+        await second.send('match:request', {
+          focusMinutes: 50,
+          categoryKey: 'software',
+        })
+      ).result.status,
+    ).toBe('MATCHED');
+    const [forFirst, forSecond] = await Promise.all([
+      first.next((frame) => frame.event === 'match:found'),
+      second.next((frame) => frame.event === 'match:found'),
+    ]);
+    expect(forFirst.data.match).toMatchObject({
+      focusMinutes: 50,
+      breakMinutes: 10,
+      categoryKey: 'study',
+      partner: { id: secondId },
+    });
+    expect(forSecond.data.match).toMatchObject({
+      categoryKey: 'software',
+      partner: { id: firstId },
+    });
+    expect(forFirst.data.match.roomId).toBe(forSecond.data.match.roomId);
+    expect(forFirst.data.match.deskId).not.toBe(forSecond.data.match.deskId);
+
+    expect(
+      (
+        await first.send('match:request', {
+          focusMinutes: 25,
+          categoryKey: 'study',
+        })
+      ).result.status,
+    ).toBe('WAITING');
+    await first.send('match:cancel');
+    expect(
+      (
+        await second.send('match:request', {
+          focusMinutes: 25,
+          categoryKey: 'study',
+        })
+      ).result.status,
+    ).toBe('WAITING');
+    await second.send('match:cancel');
+    first.close();
+    second.close();
   });
 
   it('schedules room events that readers can join', async () => {

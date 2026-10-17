@@ -39,6 +39,7 @@ model User {
   reportsFiled   Report[]         @relation("reporter")
   reportsAgainst Report[]         @relation("reported")
   pushDevices    PushDevice[]
+  subscriptions  PlusSubscription[]
 }
 
 enum RoomVisibility {
@@ -260,4 +261,20 @@ model PushDevice {
   updatedAt   DateTime        @updatedAt
 
   @@index([userId])
+}
+
+/// A PomoLive Plus subscription, verified from Apple's signed transaction. One Apple purchase
+/// belongs to one account at a time; restoring it on another account moves it there.
+model PlusSubscription {
+  originalTransactionId String   @id @db.VarChar(64)
+  userId                String   @db.Uuid
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId             String   @db.VarChar(100)
+  expiresAt             DateTime
+  /// Production, Sandbox or Xcode (local StoreKit testing).
+  environment           String   @db.VarChar(16)
+  revoked               Boolean  @default(false)
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId, expiresAt])
 }

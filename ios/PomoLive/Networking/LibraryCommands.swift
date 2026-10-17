@@ -465,3 +465,63 @@ struct ReactCommand: LibraryCommand {
     var deskId: String
     var reaction: DeskReaction
 }
+
+struct PlusStatus: Decodable, Hashable, Sendable {
+    var active: Bool
+    var expiresAt: Int64?
+    var productId: String?
+}
+
+struct PlusStatusResult: Decodable, Sendable {
+    var status: PlusStatus
+}
+
+struct PlusStatusCommand: LibraryCommand {
+    typealias Result = PlusStatusResult
+    static let event = "plus:status"
+}
+
+struct SyncPlusCommand: LibraryCommand {
+    typealias Result = PlusStatusResult
+    static let event = "plus:sync"
+    var signedTransaction: String
+}
+
+struct InsightsResult: Decodable, Sendable {
+    var insights: StatsInsights
+}
+
+struct StatsInsightsCommand: LibraryCommand {
+    typealias Result = InsightsResult
+    static let event = "stats:insights"
+}
+
+struct ExportResult: Decodable, Sendable {
+    var sessions: [ExportedSession]
+}
+
+struct ExportStatsCommand: LibraryCommand {
+    typealias Result = ExportResult
+    static let event = "stats:export"
+}
+
+struct MatchRequestResult: Decodable, Sendable {
+    enum Status: String, Decodable, Sendable {
+        case waiting = "WAITING"
+        case matched = "MATCHED"
+    }
+
+    var status: Status
+}
+
+struct RequestMatchCommand: LibraryCommand {
+    typealias Result = MatchRequestResult
+    static let event = "match:request"
+    var focusMinutes: Int
+    var categoryKey: String
+}
+
+struct CancelMatchCommand: LibraryCommand {
+    typealias Result = NoResult
+    static let event = "match:cancel"
+}

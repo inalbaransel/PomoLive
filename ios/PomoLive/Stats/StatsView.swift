@@ -5,6 +5,7 @@ import SwiftUI
 /// the week as a simple bar chart, categories as proportion bars, then recent sessions.
 struct StatsView: View {
     @Environment(AppModel.self) private var app
+    @State private var showsPaywall = false
 
     var body: some View {
         @Bindable var stats = app.stats
@@ -23,6 +24,18 @@ struct StatsView: View {
 
                     if let badges = summary.badges {
                         Section("Rozetler") { BadgeShelf(badges: badges) }
+                    }
+
+                    Section {
+                        if app.plus.isActive {
+                            NavigationLink {
+                                PlusInsightsView()
+                            } label: {
+                                SettingsLabel(title: "Gelişmiş İstatistik", systemName: "chart.bar.xaxis", color: .indigo)
+                            }
+                        } else {
+                            PlusInsightsTeaser { showsPaywall = true }
+                        }
                     }
 
                     Section("Son 7 Gün") {
@@ -53,6 +66,7 @@ struct StatsView: View {
                 }
             }
             .navigationTitle("İstatistik")
+            .plusPaywall(isPresented: $showsPaywall)
             .toolbar {
                 if let user = app.user, let summary = app.stats.summary, summary.isUnlocked {
                     ToolbarItem(placement: .topBarTrailing) {

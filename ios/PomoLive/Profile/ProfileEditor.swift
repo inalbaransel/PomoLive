@@ -11,6 +11,7 @@ struct ProfileEditor: View {
     @State private var displayName: String
     @State private var bio: String
     @State private var avatar: AvatarSprite
+    @State private var showsPaywall = false
     @State private var isSaving = false
     @State private var error: LibraryError?
 
@@ -40,12 +41,20 @@ struct ProfileEditor: View {
         changes.username != nil || changes.displayName != nil || changes.avatarSpriteId != nil || changes.bio != nil
     }
 
+    /// A Plus character already worn stays available.
+    private func isLocked(_ sprite: AvatarSprite) -> Bool {
+        !app.plus.isActive && PlusCatalog.avatars.contains(sprite) && sprite.rawValue != user.avatarSpriteId
+    }
+
     var body: some View {
         Form {
             Section("Karakter") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
                     ForEach(AvatarSprite.allCases) { sprite in
-                        Button { avatar = sprite } label: {
+                        Button {
+                            if isLocked(sprite) { return showsPaywall = true }
+                            avatar = sprite
+                        } label: {
                             VStack(spacing: 6) {
                                 Image(decorative: SpriteCache.shared.avatar(sprite), scale: 1)
                                     .resizable()
@@ -58,6 +67,9 @@ struct ProfileEditor: View {
                             .padding(8)
                             .frame(maxWidth: .infinity)
                             .selectableBackground(avatar == sprite, in: .rect(cornerRadius: 16))
+                            .overlay(alignment: .topTrailing) {
+                                if isLocked(sprite) { PlusBadge().padding(4) }
+                            }
                         }
                         .buttonStyle(.plain)
                         .accessibilityAddTraits(avatar == sprite ? .isSelected : [])
@@ -92,6 +104,7 @@ struct ProfileEditor: View {
                     .monospacedDigit()
             }
         }
+        .plusPaywall(isPresented: $showsPaywall)
         .navigationTitle("Profili Düzenle")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

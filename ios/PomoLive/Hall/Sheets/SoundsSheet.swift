@@ -6,6 +6,7 @@ struct SoundsSheet: View {
 
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
+    @State private var showsPaywall = false
 
     var body: some View {
         @Bindable var player = app.sounds
@@ -36,6 +37,7 @@ struct SoundsSheet: View {
                 }
             }
             .navigationTitle("Odak Sesleri")
+            .plusPaywall(isPresented: $showsPaywall)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -52,7 +54,11 @@ struct SoundsSheet: View {
 
     private func tile(_ sound: AmbientSound) -> some View {
         let isPlaying = app.sounds.current == sound
-        return Button { app.sounds.toggle(sound) } label: {
+        let isLocked = !app.plus.isActive && PlusCatalog.sounds.contains(sound)
+        return Button {
+            if isLocked { return showsPaywall = true }
+            app.sounds.toggle(sound)
+        } label: {
             VStack(spacing: 8) {
                 Image(systemName: sound.symbol)
                     .font(.title2)
@@ -68,6 +74,9 @@ struct SoundsSheet: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(isPlaying ? AnyShapeStyle(sound.color.gradient) : AnyShapeStyle(.fill.tertiary), in: .rect(cornerRadius: 16))
+            .overlay(alignment: .topTrailing) {
+                if isLocked { PlusBadge().padding(6) }
+            }
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isPlaying)

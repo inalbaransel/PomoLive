@@ -4,6 +4,7 @@ import SwiftUI
 /// Closing the screen only stops looking at the room; a desk taken here keeps running.
 struct HallScreen: View {
     let target: HallStore.Target
+    var pendingSit: PendingSit?
 
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
@@ -128,6 +129,7 @@ struct HallScreen: View {
         .task {
             do {
                 try await app.hall.enter(target)
+                if let pendingSit { await take(pendingSit) }
                 if let roomId = app.hall.room?.id { await app.chat.open(roomId: roomId) }
             } catch {
                 entryError = LibraryError(error)
@@ -397,6 +399,16 @@ struct HallScreen: View {
         case .online: String(localized: "\(room.presenceCount) kişi · \(room.occupiedCount)/\(room.capacity) masa dolu")
         case .connecting: String(localized: "Bağlanıyor…")
         case .offline: String(localized: "Çevrimdışı")
+        }
+    }
+
+    /// Sits at the reserved desk, or the nearest free one if someone got there first.
+    private func take(_ pending: PendingSit) async {
+        guard let layout = app.hall.layout else { return }
+        let free = layout.desks.filter { app.hall.desks[$0.deskId] == nil }
+        guard let desk = free.first(where: { $0.deskId == pending.deskId }) ?? free.first else { return }
+        if await app.hall.sit(at: desk, timer: pending.timer, categoryKey: pending.categoryKey, note: nil) {
+            focusOnMyDesk()
         }
     }
 

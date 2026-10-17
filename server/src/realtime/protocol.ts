@@ -62,6 +62,12 @@ export const ClientEvent = {
   registerPush: 'push:register',
   unregisterPush: 'push:unregister',
   react: 'desk:react',
+  plusStatus: 'plus:status',
+  syncPlus: 'plus:sync',
+  statsInsights: 'stats:insights',
+  exportStats: 'stats:export',
+  requestMatch: 'match:request',
+  cancelMatch: 'match:cancel',
 } as const;
 
 export const ServerEvent = {
@@ -79,6 +85,7 @@ export const ServerEvent = {
   friendStarted: 'friend:started',
   roomEventsChanged: 'room:events',
   deskReaction: 'desk:reaction',
+  matchFound: 'match:found',
 } as const;
 
 /** Shown in place of the validator's report when only the wording was wrong. */
@@ -347,6 +354,16 @@ export const unregisterPushSchema = z.object({
 export const reactSchema = z.object({
   deskId: z.string().regex(/^desk_\d{1,3}$/),
   reaction: z.enum(REACTIONS),
+});
+
+export const syncPlusSchema = z.object({
+  /** StoreKit 2 `Transaction.jwsRepresentation`. */
+  signedTransaction: z.string().min(100).max(20_000),
+});
+
+export const requestMatchSchema = z.object({
+  focusMinutes: z.union([z.literal(25), z.literal(50)]),
+  categoryKey: z.string().min(1).max(64),
 });
 
 export const deleteAccountSchema = z.object({ password });
