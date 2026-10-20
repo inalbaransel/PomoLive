@@ -50,7 +50,7 @@ struct RoomsView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Odalar")
-            .navigationSubtitle(greeting)
+            .navigationSubtitle(app.connection == .online ? greeting : String(localized: "Sunucuya bağlanılıyor…"))
             .searchable(text: $query, prompt: "Oda ara")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

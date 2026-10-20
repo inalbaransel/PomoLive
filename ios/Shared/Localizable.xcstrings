@@ -5108,6 +5108,16 @@
         }
       }
     },
+    "Sunucuya bağlanılıyor…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting to the server…"
+          }
+        }
+      }
+    },
     "Sunucuya bağlı değilsin." : {
       "localizations" : {
         "en" : {
